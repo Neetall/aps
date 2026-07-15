@@ -1,0 +1,8 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=79b89889_002D6c02_002D4754_002Dbe15_002Dfefb745dca5d/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="GreedyScheduler_Should_Create_Valid_Schedule" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::9EB0F93E-1665-43DD-BBE0-AA9801167358::net10.0::ProductionScheduling.Test.GreedySchedulerTests&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::9EB0F93E-1665-43DD-BBE0-AA9801167358::net10.0::ProductionScheduling.Test.ChangeMachineMoveTests.ChangeMachineMove_Should_Move_To_Faster_Machine&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::9EB0F93E-1665-43DD-BBE0-AA9801167358::net10.0::ProductionScheduling.Test.ShiftTimeMoveTests&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
