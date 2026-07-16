@@ -128,7 +128,8 @@ public class SchedulingEngine
              */
             var result =
                 resultConverter.Convert(
-                    solution);
+                    solution,
+                    timeline);
 
 
 

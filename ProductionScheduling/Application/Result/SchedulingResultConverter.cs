@@ -1,4 +1,3 @@
-using ProductionScheduling.Algorithm;
 using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
@@ -10,27 +9,31 @@ public class SchedulingResultConverter
     private readonly TimelineConverter converter;
 
 
-    public SchedulingResultConverter(
-        TimelineConverter converter)
+    public SchedulingResultConverter()
     {
-        this.converter = converter;
+        converter =
+            new TimelineConverter();
     }
 
 
+
     public SchedulingResult Convert(
-        SchedulingSolution solution)
+        SchedulingSolution solution,
+        TimelineContext timeline)
     {
         var result =
             new SchedulingResult
             {
-                Success = solution.IsFeasible
+                Success =
+                    solution.IsFeasible
             };
 
 
-        foreach (var operation in solution.Operations)
+        foreach(var operation in solution.Operations)
         {
             var period =
                 converter.ToPeriod(
+                    timeline.Timeline,
                     operation.StartSlot,
                     operation.DurationSlots);
 
@@ -41,10 +44,8 @@ public class SchedulingResultConverter
                     JobTicketCode =
                         operation.JobTicketCode,
 
-
                     MachineCode =
                         operation.MachineCode,
-
 
                     ShiftPeriods =
                     [

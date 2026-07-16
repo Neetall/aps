@@ -2,51 +2,38 @@ using ProductionScheduling.Domain.Calendars;
 
 namespace ProductionScheduling.Timeline;
 
-/// <summary>
-///     时间槽转换工具
-/// </summary>
 public class TimelineConverter
 {
-    private readonly SchedulingTimeline timeline;
-
-
-    public TimelineConverter(
-        SchedulingTimeline timeline)
-    {
-        this.timeline = timeline;
-    }
-
-
-    /// <summary>
-    ///     Slot转换开始时间
-    /// </summary>
     public DateTime GetStartTime(
+        SchedulingTimeline timeline,
         int slot)
     {
-        Validate(slot);
+        Validate(
+            timeline,
+            slot);
 
         return timeline[slot]
             .StartTime;
     }
 
 
-    /// <summary>
-    ///     Slot转换结束时间
-    /// </summary>
+
     public DateTime GetEndTime(
+        SchedulingTimeline timeline,
         int slot)
     {
-        Validate(slot);
+        Validate(
+            timeline,
+            slot);
 
         return timeline[slot]
             .EndTime;
     }
 
 
-    /// <summary>
-    ///     Slot区间转换时间段
-    /// </summary>
+
     public ShiftPeriod ToPeriod(
+        SchedulingTimeline timeline,
         int startSlot,
         int duration)
     {
@@ -63,11 +50,13 @@ public class TimelineConverter
     }
 
 
+
     private void Validate(
+        SchedulingTimeline timeline,
         int slot)
     {
-        if (slot < 0 ||
-            slot >= timeline.Count)
+        if(slot < 0 ||
+           slot >= timeline.Count)
             throw new ArgumentOutOfRangeException(
                 nameof(slot));
     }
