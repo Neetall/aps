@@ -1,0 +1,331 @@
+using ProductionScheduling.Algorithm;
+using ProductionScheduling.Algorithm.Evaluation;
+using ProductionScheduling.Algorithm.Index;
+using ProductionScheduling.Algorithm.Moves;
+using ProductionScheduling.Algorithm.Optimization;
+using ProductionScheduling.Domain.Calendars;
+using ProductionScheduling.Domain.Orders;
+using ProductionScheduling.Domain.Resources;
+using ProductionScheduling.Domain.Scheduling;
+using ProductionScheduling.Timeline;
+using Xunit;
+
+namespace ProductionScheduling.Test;
+
+public class SimulatedAnnealingOptimizerTests
+{
+    [Fact]
+    public void SimulatedAnnealing_Should_Return_Better_Or_Equal_Solution()
+    {
+        /*
+         * =========================
+         * 1. 创建订单
+         * =========================
+         */
+
+        var order =
+            new Order
+            {
+                Code = "ORD001",
+                Priority = 1
+            };
+
+
+        var ticket =
+            new JobTicket
+            {
+                Code = "JT001",
+                Sequence = 1,
+                Length = 100
+            };
+
+
+        order.JobTickets.Add(
+            ticket);
+
+
+
+        /*
+         * =========================
+         * 2. 创建设备
+         *
+         * M001慢
+         * M002快
+         *
+         * =========================
+         */
+
+        var machines =
+            new List<Machine>
+            {
+                new Machine
+                {
+                    Code = "M001",
+
+                    Capabilities =
+                    [
+                        new MachineCapability
+                        {
+                            MachineCode = "M001",
+                            JobTicketCode = "JT001",
+                            HourlyCapacity = 50,
+                            SetupMinutes = 0
+                        }
+                    ]
+                },
+
+
+                new Machine
+                {
+                    Code = "M002",
+
+                    Capabilities =
+                    [
+                        new MachineCapability
+                        {
+                            MachineCode = "M002",
+                            JobTicketCode = "JT001",
+                            HourlyCapacity = 100,
+                            SetupMinutes = 0
+                        }
+                    ]
+                }
+            };
+
+
+
+        /*
+         * =========================
+         * 3. SchedulingContext
+         * =========================
+         */
+
+        var context =
+            new SchedulingContext
+            {
+                Orders =
+                [
+                    order
+                ],
+
+                Machines =
+                    machines,
+
+                Options =
+                {
+                    TimeGranularityMinutes = 60
+                }
+            };
+
+
+        context.FactoryCalendars.Add(
+            new FactoryCalendar
+            {
+                Periods =
+                [
+                    new ShiftPeriod
+                    {
+                        StartTime =
+                            DateTime.Today
+                                .AddHours(8),
+
+                        EndTime =
+                            DateTime.Today
+                                .AddHours(18)
+                    }
+                ]
+            });
+
+
+
+        /*
+         * =========================
+         * 4. Timeline
+         * =========================
+         */
+
+        var timeline =
+            new TimelineInitializer()
+                .Initialize(
+                    context);
+
+
+
+        /*
+         * =========================
+         * 5. 初始方案
+         *
+         * 故意放慢设备
+         *
+         * JT001 -> M001
+         *
+         * =========================
+         */
+
+        var solution =
+            new SchedulingSolution();
+
+
+        solution.Operations.Add(
+            new ScheduledOperation
+            {
+                JobTicketCode = "JT001",
+
+                MachineCode = "M001",
+
+                StartSlot = 0,
+
+                DurationSlots = 2
+            });
+
+
+        timeline.Machines["M001"]
+            .Occupy(
+                0,
+                2);
+
+
+
+        /*
+         * =========================
+         * 6. Index
+         * =========================
+         */
+
+        var resourceIndex =
+            new SchedulingResourceIndex();
+
+
+        resourceIndex.Build(
+            machines);
+
+
+
+        var ticketIndex =
+            new JobTicketIndex();
+
+
+        ticketIndex.Build(
+            context.Orders);
+
+
+
+        /*
+         * =========================
+         * 7. Move
+         * =========================
+         */
+
+        var moveSelector =
+            new MoveSelector(
+                new Random(1));
+
+
+        moveSelector.Register(
+            new ChangeMachineMove(
+                new ScheduleDurationCalculator()),
+            10);
+
+
+        moveSelector.Register(
+            new ShiftTimeMove(),
+            1);
+
+
+
+        /*
+         * =========================
+         * 8. SA
+         * =========================
+         */
+
+        var optimizer =
+            new SimulatedAnnealingOptimizer(
+                resourceIndex,
+                ticketIndex,
+                new OperationSelector(
+                    new Random(1)),
+                moveSelector,
+                new SolutionCloner(),
+                iterations:100,
+                initialTemperature:100,
+                coolingRate:0.95,
+                random:new Random(1));
+
+
+
+        var evaluator =
+            new ScheduleEvaluator();
+
+
+
+        var before =
+            evaluator.Evaluate(
+                solution,
+                timeline,
+                context);
+
+
+
+        /*
+         * =========================
+         * 9. 执行SA
+         * =========================
+         */
+
+        var result =
+            optimizer.Optimize(
+                solution,
+                context,
+                timeline,
+                evaluator);
+
+
+
+        /*
+         * =========================
+         * 10. 验证
+         * =========================
+         */
+
+        Assert.NotNull(
+            result.Solution);
+
+
+        Assert.NotNull(
+            result.Timeline);
+
+
+
+        Assert.True(
+            result.Solution.IsFeasible);
+
+
+
+        /*
+         * SA返回best
+         *
+         * 不应该比初始差
+         */
+        Assert.True(
+            result.Evaluation!.Score
+            <=
+            before.Score);
+
+
+
+        /*
+         * Timeline和Solution一致
+         */
+        var operation =
+            result.Solution
+                .Operations[0];
+
+
+        Assert.False(
+            result.Timeline
+                .Machines[operation.MachineCode]
+                .IsFree(
+                    operation.StartSlot));
+    }
+}
