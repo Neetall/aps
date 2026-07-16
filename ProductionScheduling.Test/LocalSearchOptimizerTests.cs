@@ -1,5 +1,5 @@
-using ProductionScheduling.Algorithm;
 using ProductionScheduling.Algorithm.Calculation;
+using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Index;
 using ProductionScheduling.Algorithm.Moves;
@@ -45,6 +45,7 @@ public class LocalSearchOptimizerTests
         order.JobTickets.Add(ticket);
 
 
+
         /*
          * 2. 创建设备
          */
@@ -86,8 +87,9 @@ public class LocalSearchOptimizerTests
             };
 
 
+
         /*
-         * 3. Context
+         * 3. SchedulingContext
          */
         var context =
             new SchedulingContext
@@ -107,6 +109,7 @@ public class LocalSearchOptimizerTests
             };
 
 
+
         context.FactoryCalendars.Add(
             new FactoryCalendar
             {
@@ -124,12 +127,15 @@ public class LocalSearchOptimizerTests
             });
 
 
+
         /*
          * 4. Timeline
          */
         var timeline =
             new TimelineBuilder()
-                .Build(context);
+                .Build(
+                    context);
+
 
 
         /*
@@ -154,15 +160,14 @@ public class LocalSearchOptimizerTests
             });
 
 
+
         timeline.Machines["M001"]
             .Occupy(
                 0,
                 2);
 
 
-        /*
-         * 保存原始状态
-         */
+
         var originalMachine =
             solution.Operations[0]
                 .MachineCode;
@@ -171,6 +176,7 @@ public class LocalSearchOptimizerTests
         var originalDuration =
             solution.Operations[0]
                 .DurationSlots;
+
 
 
         /*
@@ -184,12 +190,14 @@ public class LocalSearchOptimizerTests
             machines);
 
 
+
         var ticketIndex =
             new JobTicketIndex();
 
 
         ticketIndex.Build(
             context.Orders);
+
 
 
         /*
@@ -202,11 +210,27 @@ public class LocalSearchOptimizerTests
 
         moveSelector.Register(
             new ChangeMachineMove(
-                new ScheduleDurationCalculator()));
+                new ScheduleDurationCalculator()),
+            10);
+
 
 
         /*
-         * 8. Optimizer
+         * 8. 算法配置
+         */
+        var algorithmOptions =
+            new SchedulingAlgorithmOptions
+            {
+                LocalSearch =
+                    new LocalSearchOptions
+                    {
+                        Iterations = 10
+                    }
+            };
+
+
+        /*
+         * 9. Optimizer
          */
         var optimizer =
             new LocalSearchOptimizer(
@@ -216,11 +240,13 @@ public class LocalSearchOptimizerTests
                     new Random(1)),
                 moveSelector,
                 new SolutionCloner(),
-                10);
+                algorithmOptions.LocalSearch);
+
 
 
         var evaluator =
             new ScheduleEvaluator();
+
 
 
         var before =
@@ -230,8 +256,9 @@ public class LocalSearchOptimizerTests
                 context);
 
 
+
         /*
-         * 9. 执行优化
+         * 10. 执行优化
          */
         var result =
             optimizer.Optimize(
@@ -241,12 +268,14 @@ public class LocalSearchOptimizerTests
                 evaluator);
 
 
+
         var after =
             result.Evaluation!;
 
 
+
         /*
-         * 10. 验证优化结果
+         * 11. 验证优化结果
          */
 
         Assert.Equal(
@@ -256,6 +285,7 @@ public class LocalSearchOptimizerTests
                 .MachineCode);
 
 
+
         Assert.Equal(
             1,
             result.Solution
@@ -263,18 +293,21 @@ public class LocalSearchOptimizerTests
                 .DurationSlots);
 
 
+
         Assert.True(
             after.Score <
             before.Score);
 
 
+
         /*
-         * 11. 验证原方案没有污染
+         * 12. 验证原方案没有污染
          */
         Assert.Equal(
             originalMachine,
             solution.Operations[0]
                 .MachineCode);
+
 
 
         Assert.Equal(
@@ -283,10 +316,16 @@ public class LocalSearchOptimizerTests
                 .DurationSlots);
 
 
+
         Assert.False(
             result.Timeline
-                .Machines[result.Solution.Operations[0].MachineCode]
+                .Machines[
+                    result.Solution
+                        .Operations[0]
+                        .MachineCode]
                 .IsFree(
-                    result.Solution.Operations[0].StartSlot));
+                    result.Solution
+                        .Operations[0]
+                        .StartSlot));
     }
 }

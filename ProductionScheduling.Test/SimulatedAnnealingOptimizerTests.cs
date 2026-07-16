@@ -1,9 +1,7 @@
-using ProductionScheduling.Algorithm;
 using ProductionScheduling.Algorithm.Calculation;
+using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Index;
-using ProductionScheduling.Algorithm.Moves;
-using ProductionScheduling.Algorithm.Moves.Implementations;
 using ProductionScheduling.Algorithm.Optimization.Core;
 using ProductionScheduling.Algorithm.Optimization.Selection;
 using ProductionScheduling.Algorithm.Optimization.SimulatedAnnealing;
@@ -23,11 +21,8 @@ public class SimulatedAnnealingOptimizerTests
     public void SimulatedAnnealing_Should_Return_Better_Or_Equal_Solution()
     {
         /*
-         * =========================
          * 1. 创建订单
-         * =========================
          */
-
         var order =
             new Order
             {
@@ -49,16 +44,10 @@ public class SimulatedAnnealingOptimizerTests
             ticket);
 
 
-        /*
-         * =========================
-         * 2. 创建设备
-         *
-         * M001慢
-         * M002快
-         *
-         * =========================
-         */
 
+        /*
+         * 2. 创建设备
+         */
         var machines =
             new List<Machine>
             {
@@ -97,12 +86,10 @@ public class SimulatedAnnealingOptimizerTests
             };
 
 
-        /*
-         * =========================
-         * 3. SchedulingContext
-         * =========================
-         */
 
+        /*
+         * 3. 排产上下文
+         */
         var context =
             new SchedulingContext
             {
@@ -129,40 +116,33 @@ public class SimulatedAnnealingOptimizerTests
                     new ShiftPeriod
                     {
                         StartTime =
-                            DateTime.Today
-                                .AddHours(8),
+                            DateTime.Today.AddHours(8),
 
                         EndTime =
-                            DateTime.Today
-                                .AddHours(18)
+                            DateTime.Today.AddHours(18)
                     }
                 ]
             });
 
 
-        /*
-         * =========================
-         * 4. Timeline
-         * =========================
-         */
 
+        /*
+         * 4. Timeline
+         */
         var timeline =
-            new TimelineInitializer()
-                .Initialize(
+            new TimelineBuilder()
+                .Build(
                     context);
 
 
+
         /*
-         * =========================
          * 5. 初始方案
          *
          * 故意放慢设备
          *
          * JT001 -> M001
-         *
-         * =========================
          */
-
         var solution =
             new SchedulingSolution();
 
@@ -186,12 +166,10 @@ public class SimulatedAnnealingOptimizerTests
                 2);
 
 
-        /*
-         * =========================
-         * 6. Index
-         * =========================
-         */
 
+        /*
+         * 6. Index
+         */
         var resourceIndex =
             new SchedulingResourceIndex();
 
@@ -208,48 +186,62 @@ public class SimulatedAnnealingOptimizerTests
             context.Orders);
 
 
-        /*
-         * =========================
-         * 7. 注册Move
-         * =========================
-         */
 
+        /*
+         * 7. 算法配置
+         */
+        var algorithmOptions =
+            new SchedulingAlgorithmOptions
+            {
+                SimulatedAnnealing =
+                    new SimulatedAnnealingOptions
+                    {
+                        Iterations = 100,
+
+                        InitialTemperature = 100,
+
+                        CoolingRate = 0.95
+                    }
+            };
+
+
+
+        /*
+         * 8. MoveSelector工厂创建
+         */
         var moveSelector =
-            new MoveSelector(
-                new Random(1));
+            new MoveSelectorFactory(
+                    algorithmOptions.Moves)
+                .Create();
 
-
-        moveSelector.Register(
-            new ChangeMachineMove(
-                new ScheduleDurationCalculator()),
-            10);
-
-
-        moveSelector.Register(
-            new ShiftTimeMove(),
-            3);
 
 
         /*
-         * =========================
-         * 8. 创建SA
-         * =========================
+         * 9. 创建SA优化器
          */
-
         var optimizer =
             new SimulatedAnnealingOptimizer(
                 resourceIndex,
+
                 ticketIndex,
-                new OperationSelector(new Random(1)),
+
+                new OperationSelector(
+                    new Random(1)),
+
                 moveSelector,
+
                 new SolutionCloner(),
-                new AcceptanceCriteria(new Random(1)),
-                100,
-                100);
+
+                new AcceptanceCriteria(
+                    algorithmOptions.Acceptance),
+
+                algorithmOptions.SimulatedAnnealing);
+
 
 
         var evaluator =
             new ScheduleEvaluator();
+
 
 
         var before =
@@ -259,12 +251,10 @@ public class SimulatedAnnealingOptimizerTests
                 context);
 
 
-        /*
-         * =========================
-         * 9. 执行SA
-         * =========================
-         */
 
+        /*
+         * 10. 执行优化
+         */
         var result =
             optimizer.Optimize(
                 solution,
@@ -273,12 +263,10 @@ public class SimulatedAnnealingOptimizerTests
                 evaluator);
 
 
-        /*
-         * =========================
-         * 10. 验证结果
-         * =========================
-         */
 
+        /*
+         * 11. 验证结果
+         */
         Assert.NotNull(
             result.Solution);
 
@@ -291,21 +279,20 @@ public class SimulatedAnnealingOptimizerTests
             result.Evaluation);
 
 
+
         Assert.True(
             result.Solution.IsFeasible);
 
 
-        /*
-         * SA不能比初始差
-         */
+
         Assert.True(
-            result.Evaluation.Score
-            <=
+            result.Evaluation.Score <=
             before.Score);
 
 
+
         /*
-         * 应该迁移到快设备
+         * 应迁移到快设备
          */
         var operation =
             result.Solution
@@ -317,8 +304,9 @@ public class SimulatedAnnealingOptimizerTests
             operation.MachineCode);
 
 
+
         /*
-         * M002:
+         * M002加工时间:
          *
          * 100 / 100 = 1小时
          */
@@ -327,14 +315,16 @@ public class SimulatedAnnealingOptimizerTests
             operation.DurationSlots);
 
 
+
         /*
-         * Timeline一致
+         * 新设备时间轴占用
          */
         Assert.False(
             result.Timeline
-                .Machines[operation.MachineCode]
+                .Machines["M002"]
                 .IsFree(
                     operation.StartSlot));
+
 
 
         /*
@@ -343,6 +333,7 @@ public class SimulatedAnnealingOptimizerTests
         Assert.True(
             result.Timeline
                 .Machines["M001"]
-                .IsFree(0));
+                .IsFree(
+                    0));
     }
 }
