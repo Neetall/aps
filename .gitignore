@@ -1,0 +1,67 @@
+# ==========================================
+#              .NET 10 .gitignore
+# ==========================================
+
+# --------- 1. 编译与构建输出 ---------
+[Dd]ebug/
+[Dd]ebugPS/
+[Rr]elease/
+[Xx]64/
+[Xx]86/
+[Aa]R[Mm]/
+[Aa]R[Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# --------- 2. .NET / Visual Studio 工具缓存 ---------
+.vs/
+# 如果你使用 VS Code，排除其配置文件夹（根据团队需求可选）
+.vscode/
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.settings/
+
+# --------- 3. 用户特定文件 (本地配置) ---------
+*.user
+*.userosscache
+*.sln.docstates
+
+# --------- 4. 依赖包管理 (NuGet, npm) ---------
+# 排除本地包缓存，但保留项目文件
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# 如果项目包含前端/Blazor (排除 node_modules)
+node_modules/
+jspm_packages/
+web_deploy/
+
+# --------- 5. 敏感信息与本地运行设置 (极其重要) ---------
+# 排除本地开发机密文件（.NET 10 的本地机密和应用配置）
+appsettings.Development.json
+# 如果你希望保留模板，可以不排除 appsettings.json，只排除 Secrets
+**/Properties/launchSettings.json
+*.suo
+*.user
+*.usersecrets
+secrets.json
+
+# --------- 6. 单元测试与代码覆盖率 ---------
+TestResults/
+*.mstest
+*.testsettings
+_Chutzpah*
+CoverletSourceRoots.txt
+
+# --------- 7. 操作系统临时文件 ---------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini

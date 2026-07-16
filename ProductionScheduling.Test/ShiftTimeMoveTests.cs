@@ -188,9 +188,24 @@ public class ShiftTimeMoveTests
 
         /*
          * =========================
-         * 7. 创建MoveContext
+         * 7. 创建JobTicket索引
          * =========================
          */
+
+        var jobTicketIndex =
+            new JobTicketIndex();
+
+
+        jobTicketIndex.Build(
+            context.Orders);
+
+
+
+/*
+ * =========================
+ * 8. 创建MoveContext
+ * =========================
+ */
 
         var moveContext =
             new MoveContext
@@ -205,9 +220,14 @@ public class ShiftTimeMoveTests
                     timeline,
 
                 ResourceIndex =
-                    resourceIndex
-            };
+                    resourceIndex,
 
+                JobTicketIndex =
+                    jobTicketIndex,
+
+                CurrentOperation =
+                    solution.Operations[0]
+            };
 
 
         /*

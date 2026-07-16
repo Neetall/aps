@@ -199,9 +199,18 @@ public class ChangeMachineMoveTests
 
         /*
          * =========================
-         * 7. 创建MoveContext
+         * 7. 创建索引
          * =========================
          */
+
+        var jobTicketIndex =
+            new JobTicketIndex();
+
+
+        jobTicketIndex.Build(
+            context.Orders);
+
+
 
         var moveContext =
             new MoveContext
@@ -216,10 +225,14 @@ public class ChangeMachineMoveTests
                     timeline,
 
                 ResourceIndex =
-                    resourceIndex
+                    resourceIndex,
+
+                JobTicketIndex =
+                    jobTicketIndex,
+
+                CurrentOperation =
+                    solution.Operations[0]
             };
-
-
 
         /*
          * =========================
