@@ -7,6 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Folder Include="Algorithm\Optimization\Genetic\" />
+        <Folder Include="Algorithm\Optimization\Lns\" />
         <Folder Include="Infrastructure\"/>
     </ItemGroup>
 

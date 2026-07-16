@@ -1,7 +1,7 @@
 using ProductionScheduling.Algorithm.Moves.Core;
 using ProductionScheduling.Algorithm.Scheduling;
 
-namespace ProductionScheduling.Algorithm.Moves;
+namespace ProductionScheduling.Algorithm.Moves.Implementations;
 
 /// <summary>
 ///     交换两个派工单时间顺序

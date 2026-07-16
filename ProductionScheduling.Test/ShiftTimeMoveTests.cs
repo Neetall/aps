@@ -2,6 +2,7 @@ using ProductionScheduling.Algorithm;
 using ProductionScheduling.Algorithm.Index;
 using ProductionScheduling.Algorithm.Moves;
 using ProductionScheduling.Algorithm.Moves.Core;
+using ProductionScheduling.Algorithm.Moves.Implementations;
 using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Domain.Calendars;
 using ProductionScheduling.Domain.Orders;

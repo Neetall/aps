@@ -3,6 +3,7 @@ using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Index;
 using ProductionScheduling.Algorithm.Moves;
+using ProductionScheduling.Algorithm.Moves.Implementations;
 using ProductionScheduling.Algorithm.Optimization.Core;
 using ProductionScheduling.Algorithm.Optimization.LocalSearch;
 using ProductionScheduling.Algorithm.Optimization.Selection;

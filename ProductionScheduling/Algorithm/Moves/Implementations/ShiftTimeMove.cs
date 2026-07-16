@@ -1,6 +1,6 @@
 using ProductionScheduling.Algorithm.Moves.Core;
 
-namespace ProductionScheduling.Algorithm.Moves;
+namespace ProductionScheduling.Algorithm.Moves.Implementations;
 
 /// <summary>
 ///     同设备时间移动

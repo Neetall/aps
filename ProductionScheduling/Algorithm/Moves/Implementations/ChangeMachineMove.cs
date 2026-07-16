@@ -1,8 +1,7 @@
 using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Moves.Core;
-using ProductionScheduling.Timeline;
 
-namespace ProductionScheduling.Algorithm.Moves;
+namespace ProductionScheduling.Algorithm.Moves.Implementations;
 
 public class ChangeMachineMove : IMove
 {
