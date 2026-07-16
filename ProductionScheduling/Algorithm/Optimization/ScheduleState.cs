@@ -24,6 +24,11 @@ public class ScheduleState
     /// 评价结果
     /// </summary>
     public EvaluationResult? Evaluation { get; set; }
+
+    /// <summary>
+    /// 优化过程记录
+    /// </summary>
+    public List<MoveExecutionRecord> History { get; set; } = [];
     
     public void ApplyTo(
         SchedulingSolution solution,

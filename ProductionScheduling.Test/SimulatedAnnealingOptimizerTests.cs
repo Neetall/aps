@@ -212,7 +212,7 @@ public class SimulatedAnnealingOptimizerTests
 
         /*
          * =========================
-         * 7. Move
+         * 7. 注册Move
          * =========================
          */
 
@@ -229,13 +229,13 @@ public class SimulatedAnnealingOptimizerTests
 
         moveSelector.Register(
             new ShiftTimeMove(),
-            1);
+            3);
 
 
 
         /*
          * =========================
-         * 8. SA
+         * 8. 创建SA
          * =========================
          */
 
@@ -284,7 +284,7 @@ public class SimulatedAnnealingOptimizerTests
 
         /*
          * =========================
-         * 10. 验证
+         * 10. 验证结果
          * =========================
          */
 
@@ -297,35 +297,68 @@ public class SimulatedAnnealingOptimizerTests
 
 
 
+        Assert.NotNull(
+            result.Evaluation);
+
+
+
         Assert.True(
             result.Solution.IsFeasible);
 
 
 
         /*
-         * SA返回best
-         *
-         * 不应该比初始差
+         * SA不能比初始差
          */
         Assert.True(
-            result.Evaluation!.Score
+            result.Evaluation.Score
             <=
             before.Score);
 
 
 
         /*
-         * Timeline和Solution一致
+         * 应该迁移到快设备
          */
         var operation =
             result.Solution
                 .Operations[0];
 
 
+        Assert.Equal(
+            "M002",
+            operation.MachineCode);
+
+
+
+        /*
+         * M002:
+         *
+         * 100 / 100 = 1小时
+         */
+        Assert.Equal(
+            1,
+            operation.DurationSlots);
+
+
+
+        /*
+         * Timeline一致
+         */
         Assert.False(
             result.Timeline
                 .Machines[operation.MachineCode]
                 .IsFree(
                     operation.StartSlot));
+
+
+
+        /*
+         * 原设备释放
+         */
+        Assert.True(
+            result.Timeline
+                .Machines["M001"]
+                .IsFree(0));
     }
 }

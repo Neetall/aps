@@ -27,7 +27,68 @@ public class SolutionCloner
 
             Evaluation =
                 CloneEvaluation(
-                    source.Evaluation)
+                    source.Evaluation),
+            History =
+                source.History
+                    .Select(x => new MoveExecutionRecord
+                    {
+                        MoveName =
+                            x.MoveName,
+
+                        Success =
+                            x.Success,
+
+
+                        JobTicketCode =
+                            x.JobTicketCode,
+
+                        SecondJobTicketCode =
+                            x.SecondJobTicketCode,
+
+
+                        OldMachineCode =
+                            x.OldMachineCode,
+
+                        SecondOldMachineCode =
+                            x.SecondOldMachineCode,
+
+
+                        OldStartSlot =
+                            x.OldStartSlot,
+
+                        NewStartSlot =
+                            x.NewStartSlot,
+
+
+                        SecondOldStartSlot =
+                            x.SecondOldStartSlot,
+
+                        SecondNewStartSlot =
+                            x.SecondNewStartSlot,
+
+
+                        OldDurationSlots =
+                            x.OldDurationSlots,
+
+                        NewDurationSlots =
+                            x.NewDurationSlots,
+
+
+                        SecondDurationSlots =
+                            x.SecondDurationSlots,
+
+
+                        OldScore =
+                            x.OldScore,
+
+                        NewScore =
+                            x.NewScore,
+
+
+                        Accepted =
+                            x.Accepted
+                    })
+                    .ToList()
         };
     }
 

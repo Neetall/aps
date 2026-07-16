@@ -1,40 +1,15 @@
 using ProductionScheduling.Algorithm.Optimization;
-using ProductionScheduling.Timeline;
 
 namespace ProductionScheduling.Algorithm.Moves;
 
 /// <summary>
-/// 调整派工单开始时间
+/// 同设备时间移动
 ///
-/// 设备不变
-///
-/// 只改变:
-/// StartSlot
+/// 不改变设备
+/// 只调整开始时间
 /// </summary>
 public class ShiftTimeMove : IMove
 {
-    private ScheduledOperation? operation;
-
-
-    private int oldStartSlot;
-
-
-
-    private readonly Random random;
-
-
-
-    public ShiftTimeMove(
-        Random? random = null)
-    {
-        this.random =
-            random
-            ??
-            new Random();
-    }
-
-
-
     public string Name =>
         "ShiftTime";
 
@@ -43,68 +18,69 @@ public class ShiftTimeMove : IMove
     public bool Apply(
         MoveContext context)
     {
-        operation =
+        var operation =
             context.CurrentOperation;
-
 
 
         if(operation == null)
         {
+            context.ExecutionRecord =
+                new MoveExecutionRecord
+                {
+                    MoveName = Name,
+                    Success = false
+                };
+
             return false;
         }
-
-
-
-        oldStartSlot =
-            operation.StartSlot;
 
 
 
         if(!context.Timeline.Machines
             .TryGetValue(
                 operation.MachineCode,
-                out var machineTimeline))
+                out var timeline))
         {
-            Clear();
+            context.ExecutionRecord =
+                new MoveExecutionRecord
+                {
+                    MoveName = Name,
+                    Success = false
+                };
 
             return false;
         }
 
 
 
+        var oldStart =
+            operation.StartSlot;
+
+
+        var duration =
+            operation.DurationSlots;
+
+
+
         /*
-         * 释放旧时间
+         * 释放旧位置
          */
-        machineTimeline.Release(
-            operation.StartSlot,
-            operation.DurationSlots);
-
-
-
-        int newStart;
+        timeline.Release(
+            oldStart,
+            duration);
 
 
 
         /*
-         * 随机选择方向
+         * 查找新的时间
          *
-         * 50%前移
-         * 50%后移
+         * 当前策略:
+         * 向后移动
          */
-        if(random.Next(2) == 0)
-        {
-            newStart =
-                FindForward(
-                    machineTimeline,
-                    operation);
-        }
-        else
-        {
-            newStart =
-                FindBackward(
-                    machineTimeline,
-                    operation);
-        }
+        var newStart =
+            timeline.FindEarliest(
+                duration,
+                oldStart + 1);
 
 
 
@@ -113,12 +89,19 @@ public class ShiftTimeMove : IMove
             /*
              * 恢复
              */
-            machineTimeline.Occupy(
-                oldStartSlot,
-                operation.DurationSlots);
+            timeline.Occupy(
+                oldStart,
+                duration);
 
 
-            Clear();
+
+            context.ExecutionRecord =
+                new MoveExecutionRecord
+                {
+                    MoveName = Name,
+                    Success = false
+                };
+
 
             return false;
         }
@@ -128,9 +111,9 @@ public class ShiftTimeMove : IMove
         /*
          * 占用新位置
          */
-        machineTimeline.Occupy(
+        timeline.Occupy(
             newStart,
-            operation.DurationSlots);
+            duration);
 
 
 
@@ -139,15 +122,64 @@ public class ShiftTimeMove : IMove
 
 
 
+        context.ExecutionRecord =
+            new MoveExecutionRecord
+            {
+                MoveName =
+                    Name,
+
+                Success =
+                    true,
+
+                JobTicketCode =
+                    operation.JobTicketCode,
+
+
+                OldMachineCode =
+                    operation.MachineCode,
+
+
+                OldStartSlot =
+                    oldStart,
+
+
+                NewStartSlot =
+                    newStart,
+
+
+                OldDurationSlots =
+                    duration,
+
+
+                NewDurationSlots =
+                    duration
+            };
+
+
+
         return true;
     }
 
 
 
+    /// <summary>
+    /// 撤销移动
+    /// </summary>
     public void Undo(
         MoveContext context)
     {
-        if(operation == null)
+        var record =
+            context.ExecutionRecord;
+
+
+        var operation =
+            context.CurrentOperation;
+
+
+
+        if(record == null ||
+           !record.Success ||
+           operation == null)
         {
             return;
         }
@@ -156,8 +188,8 @@ public class ShiftTimeMove : IMove
 
         if(!context.Timeline.Machines
             .TryGetValue(
-                operation.MachineCode,
-                out var machineTimeline))
+                record.OldMachineCode!,
+                out var timeline))
         {
             return;
         }
@@ -165,71 +197,34 @@ public class ShiftTimeMove : IMove
 
 
         /*
-         * 释放当前位置
+         * 删除新位置
          */
-        machineTimeline.Release(
-            operation.StartSlot,
-            operation.DurationSlots);
+        timeline.Release(
+            record.NewStartSlot,
+            record.NewDurationSlots);
 
 
 
         /*
          * 恢复旧位置
          */
-        machineTimeline.Occupy(
-            oldStartSlot,
-            operation.DurationSlots);
+        timeline.Occupy(
+            record.OldStartSlot,
+            record.OldDurationSlots);
 
 
 
         operation.StartSlot =
-            oldStartSlot;
+            record.OldStartSlot;
 
 
 
-        Clear();
-    }
+        operation.DurationSlots =
+            record.OldDurationSlots;
 
 
 
-    private int FindForward(
-        MachineTimeline timeline,
-        ScheduledOperation operation)
-    {
-        return timeline.FindEarliest(
-            operation.DurationSlots,
-            oldStartSlot + 1);
-    }
-
-
-
-    private int FindBackward(
-        MachineTimeline timeline,
-        ScheduledOperation operation)
-    {
-        for(
-            var i = oldStartSlot - 1;
-            i >= 0;
-            i--)
-        {
-            if(timeline.CanOccupy(
-                   i,
-                   operation.DurationSlots))
-            {
-                return i;
-            }
-        }
-
-
-        return -1;
-    }
-
-
-
-    private void Clear()
-    {
-        operation = null;
-
-        oldStartSlot = 0;
+        context.ExecutionRecord =
+            null;
     }
 }

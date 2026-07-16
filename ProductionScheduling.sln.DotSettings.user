@@ -8,5 +8,6 @@
     &lt;TestId&gt;xUnit::9EB0F93E-1665-43DD-BBE0-AA9801167358::net10.0::ProductionScheduling.Test.SolutionClonerTests&lt;/TestId&gt;
     &lt;TestId&gt;xUnit::9EB0F93E-1665-43DD-BBE0-AA9801167358::net10.0::ProductionScheduling.Test.LocalSearchOptimizerTests&lt;/TestId&gt;
     &lt;TestId&gt;xUnit::9EB0F93E-1665-43DD-BBE0-AA9801167358::net10.0::ProductionScheduling.Test.SimulatedAnnealingOptimizerTests&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::9EB0F93E-1665-43DD-BBE0-AA9801167358::net10.0::ProductionScheduling.Test.SwapOperationMoveTests&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

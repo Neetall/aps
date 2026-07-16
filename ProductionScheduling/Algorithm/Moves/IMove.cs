@@ -16,6 +16,9 @@ public interface IMove
 
     /// <summary>
     /// 执行移动
+    /// 
+    /// 成功后必须写入:
+    /// context.ExecutionRecord
     /// </summary>
     bool Apply(
         MoveContext context);
@@ -23,7 +26,7 @@ public interface IMove
 
 
     /// <summary>
-    /// 撤销移动
+    /// 根据执行记录撤销
     /// </summary>
     void Undo(
         MoveContext context);

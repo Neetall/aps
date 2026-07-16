@@ -4,29 +4,9 @@ using ProductionScheduling.Timeline;
 
 namespace ProductionScheduling.Algorithm.Moves;
 
-/// <summary>
-/// 更换加工设备
-///
-/// 一个派工单整体迁移到另一台设备
-///
-/// 不拆分工单
-/// 整体迁移
-/// </summary>
 public class ChangeMachineMove : IMove
 {
     private readonly ScheduleDurationCalculator durationCalculator;
-
-
-    private ScheduledOperation? operation;
-
-
-    private string? oldMachine;
-
-
-    private int oldStartSlot;
-
-
-    private int oldDuration;
 
 
 
@@ -47,153 +27,137 @@ public class ChangeMachineMove : IMove
     public bool Apply(
         MoveContext context)
     {
-        operation =
+        var operation =
             context.CurrentOperation;
 
 
         if(operation == null)
-        {
             return false;
-        }
 
 
 
-        oldMachine =
+        var oldMachine =
             operation.MachineCode;
 
 
-        oldStartSlot =
+        var oldStart =
             operation.StartSlot;
 
 
-        oldDuration =
+        var oldDuration =
             operation.DurationSlots;
 
 
 
-        /*
-         * 获取派工单
-         */
         var ticket =
-            context.JobTicketIndex
-                .Get(
-                    operation.JobTicketCode);
+            context.JobTicketIndex.Get(
+                operation.JobTicketCode);
 
 
         if(ticket == null)
-        {
             return false;
-        }
 
 
 
-        /*
-         * 获取支持该工单的设备能力
-         */
         var capabilities =
-            context.ResourceIndex
-                .GetCapabilities(
-                    operation.JobTicketCode);
+            context.ResourceIndex.GetCapabilities(
+                operation.JobTicketCode);
 
 
 
         foreach(var capability in capabilities)
         {
-
-            /*
-             * 当前设备跳过
-             */
             if(capability.MachineCode ==
                oldMachine)
-            {
                 continue;
-            }
 
 
 
-            /*
-             * 获取新设备时间轴
-             */
             if(!context.Timeline.Machines
                 .TryGetValue(
                     capability.MachineCode,
                     out var newTimeline))
-            {
                 continue;
-            }
 
 
 
-            /*
-             * 重新计算加工时间
-             */
-            var newDuration =
+            var duration =
                 durationCalculator.Calculate(
                     ticket,
                     capability);
 
 
 
-            /*
-             * 查找新设备空闲时间
-             */
-            var newStart =
+            var start =
                 newTimeline.FindEarliest(
-                    newDuration);
+                    duration);
 
 
 
-            if(newStart < 0)
-            {
+            if(start < 0)
                 continue;
-            }
 
 
 
-            /*
-             * 获取旧设备时间轴
-             */
-            if(!context.Timeline.Machines
-                .TryGetValue(
-                    oldMachine,
-                    out var oldTimeline))
-            {
-                return false;
-            }
+            var oldTimeline =
+                context.Timeline.Machines
+                    [oldMachine];
 
 
 
-            /*
-             * 释放旧设备
-             */
             oldTimeline.Release(
-                oldStartSlot,
+                oldStart,
                 oldDuration);
 
 
 
-            /*
-             * 占用新设备
-             */
             newTimeline.Occupy(
-                newStart,
-                newDuration);
+                start,
+                duration);
 
 
-            /*
-             * 更新排产结果
-             */
+
             operation.MachineCode =
                 capability.MachineCode;
 
 
             operation.StartSlot =
-                newStart;
+                start;
 
 
             operation.DurationSlots =
-                newDuration;
+                duration;
 
+
+
+            context.ExecutionRecord =
+                new MoveExecutionRecord
+                {
+                    MoveName = Name,
+
+                    Success = true,
+
+                    JobTicketCode =
+                        operation.JobTicketCode,
+
+                    OldMachineCode =
+                        oldMachine,
+
+                    NewMachineCode =
+                        capability.MachineCode,
+
+                    OldStartSlot =
+                        oldStart,
+
+                    NewStartSlot =
+                        start,
+
+                    OldDurationSlots =
+                        oldDuration,
+
+                    NewDurationSlots =
+                        duration
+                };
 
 
             return true;
@@ -201,77 +165,73 @@ public class ChangeMachineMove : IMove
 
 
 
+        context.ExecutionRecord =
+            new MoveExecutionRecord
+            {
+                MoveName = Name,
+                Success = false
+            };
+
+
         return false;
     }
 
 
 
-    /// <summary>
-    /// 撤销操作
-    ///
-    /// SA接受失败方案时使用
-    /// </summary>
+
     public void Undo(
         MoveContext context)
     {
-        if(operation == null ||
-           oldMachine == null)
-        {
+        var record =
+            context.ExecutionRecord;
+
+
+        var operation =
+            context.CurrentOperation;
+
+
+
+        if(record == null ||
+           !record.Success ||
+           operation == null)
             return;
-        }
 
 
 
-        /*
-         * 当前设备释放
-         */
-        if(context.Timeline.Machines
-            .TryGetValue(
-                operation.MachineCode,
-                out var currentTimeline))
-        {
-            currentTimeline.Release(
-                operation.StartSlot,
-                operation.DurationSlots);
-        }
+        var newTimeline =
+            context.Timeline.Machines
+                [record.NewMachineCode!];
+
+
+        newTimeline.Release(
+            record.NewStartSlot,
+            record.NewDurationSlots);
 
 
 
-        /*
-         * 恢复旧设备
-         */
-        if(context.Timeline.Machines
-            .TryGetValue(
-                oldMachine,
-                out var oldTimeline))
-        {
-            oldTimeline.Occupy(
-                oldStartSlot,
-                oldDuration);
-        }
+        var oldTimeline =
+            context.Timeline.Machines
+                [record.OldMachineCode!];
+
+
+        oldTimeline.Occupy(
+            record.OldStartSlot,
+            record.OldDurationSlots);
 
 
 
-        /*
-         * 恢复方案
-         */
         operation.MachineCode =
-            oldMachine;
+            record.OldMachineCode!;
 
 
         operation.StartSlot =
-            oldStartSlot;
+            record.OldStartSlot;
 
 
         operation.DurationSlots =
-            oldDuration;
+            record.OldDurationSlots;
 
 
-
-        /*
-         * 清理状态
-         */
-        operation = null;
-        oldMachine = null;
+        context.ExecutionRecord = null;
     }
 }
