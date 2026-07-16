@@ -1,6 +1,5 @@
-using ProductionScheduling.Algorithm;
 using ProductionScheduling.Algorithm.Evaluation;
-using ProductionScheduling.Algorithm.Optimization.Core;
+using ProductionScheduling.Algorithm.Optimization.Pipeline;
 using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Application.Result;
 using ProductionScheduling.Domain.Scheduling;
@@ -9,18 +8,20 @@ using ProductionScheduling.Timeline;
 namespace ProductionScheduling.Application;
 
 /// <summary>
-///     排产引擎入口
+/// 排产引擎入口
 /// </summary>
 public class SchedulingEngine
 {
     private readonly ScheduleEvaluator evaluator;
 
-    private readonly ISolutionOptimizer? optimizer;
+    private readonly OptimizationPipelineRunner pipelineRunner;
 
     private readonly SchedulingResultConverter resultConverter;
 
     private readonly IScheduler scheduler;
+
     private readonly TimelineInitializer timelineInitializer;
+
 
 
     public SchedulingEngine(
@@ -28,7 +29,7 @@ public class SchedulingEngine
         IScheduler scheduler,
         ScheduleEvaluator evaluator,
         SchedulingResultConverter resultConverter,
-        ISolutionOptimizer? optimizer = null)
+        OptimizationPipelineRunner pipelineRunner)
     {
         this.timelineInitializer =
             timelineInitializer;
@@ -42,13 +43,14 @@ public class SchedulingEngine
         this.resultConverter =
             resultConverter;
 
-        this.optimizer =
-            optimizer;
+        this.pipelineRunner =
+            pipelineRunner;
     }
 
 
+
     /// <summary>
-    ///     执行排产
+    /// 执行排产
     /// </summary>
     public SchedulingResult Execute(
         SchedulingContext context)
@@ -64,6 +66,7 @@ public class SchedulingEngine
                     .Initialize(context);
 
 
+
             /*
              * 2.
              * 生成初始方案
@@ -77,43 +80,46 @@ public class SchedulingEngine
                     timeline);
 
 
+
             /*
              * 3.
-             * 优化方案
+             * 执行优化流水线
              *
-             * 后续:
-             * SA
-             * GA
+             * 根据 SchedulingAlgorithmOptions:
+             *
+             * LocalSearch
+             * SimulatedAnnealing
+             * Tabu
              * LNS
              */
-            if (optimizer != null)
-            {
-                var optimizeResult =
-                    optimizer.Optimize(
-                        solution,
-                        context,
-                        timeline,
-                        evaluator);
+            var optimizeResult =
+                pipelineRunner.Run(
+                    solution,
+                    context,
+                    timeline,
+                    evaluator);
 
 
-                solution =
-                    optimizeResult.Solution;
+
+            solution =
+                optimizeResult.Solution;
 
 
-                timeline =
-                    optimizeResult.Timeline;
-            }
+            timeline =
+                optimizeResult.Timeline;
+
 
 
             /*
              * 4.
-             * 评价最终方案
+             * 最终评价
              */
             var evaluation =
                 evaluator.Evaluate(
                     solution,
                     timeline,
                     context);
+
 
 
             /*
@@ -123,6 +129,7 @@ public class SchedulingEngine
             var result =
                 resultConverter.Convert(
                     solution);
+
 
 
             result.Message =
@@ -135,12 +142,14 @@ public class SchedulingEngine
 
             return result;
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             return new SchedulingResult
             {
                 Success = false,
-                Message = ex.Message
+
+                Message =
+                    ex.Message
             };
         }
     }

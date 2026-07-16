@@ -11,9 +11,10 @@ using ProductionScheduling.Timeline;
 namespace ProductionScheduling.Algorithm.Optimization.SimulatedAnnealing;
 
 /// <summary>
-///     模拟退火优化器
-///     在局部搜索基础上允许接受一定概率的差解
-///     用于跳出局部最优
+/// 模拟退火优化器
+///
+/// 在局部搜索基础上允许接受一定概率的差解
+/// 用于跳出局部最优
 /// </summary>
 public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 {
@@ -67,7 +68,7 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 
 
     /// <summary>
-    ///     执行模拟退火
+    /// 执行模拟退火
     /// </summary>
     public OptimizationResult Optimize(
         SchedulingSolution solution,
@@ -75,9 +76,6 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
         TimelineContext timeline,
         ScheduleEvaluator evaluator)
     {
-        /*
-         * 当前状态
-         */
         var current =
             cloner.Clone(
                 new ScheduleState
@@ -99,9 +97,6 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 
 
 
-        /*
-         * 全局最优
-         */
         var best =
             cloner.Clone(
                 current);
@@ -115,9 +110,6 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 
         for(var i = 0; i < options.Iterations; i++)
         {
-            /*
-             * 创建候选
-             */
             var candidate =
                 cloner.Clone(
                     current);
@@ -161,14 +153,14 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                         jobTicketIndex,
 
                     CurrentOperation =
-                        operation
+                        operation,
+
+                    ExecutionRecord =
+                        null
                 };
 
 
 
-            /*
-             * 移动前评分
-             */
             var oldScore =
                 current.Evaluation!.Score;
 
@@ -182,18 +174,30 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 
             if(!success)
             {
+                candidate.History.Add(
+                    new MoveExecutionRecord
+                    {
+                        MoveName =
+                            move.Name,
+
+                        Success =
+                            false,
+
+                        JobTicketCode =
+                            operation.JobTicketCode
+                    });
+
+
                 temperature =
                     CoolDown(
                         temperature);
+
 
                 continue;
             }
 
 
 
-            /*
-             * 评价新方案
-             */
             candidate.Evaluation =
                 evaluator.Evaluate(
                     candidate.Solution,
@@ -207,9 +211,6 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 
 
 
-            /*
-             * SA接受判断
-             */
             var accepted =
                 acceptanceCriteria.Accept(
                     oldScore,
@@ -218,9 +219,11 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 
 
 
-            /*
-             * 保存移动历史
-             */
+            var execution =
+                moveContext.ExecutionRecord;
+
+
+
             candidate.History.Add(
                 new MoveExecutionRecord
                 {
@@ -230,17 +233,45 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                     Success =
                         true,
 
+                    Accepted =
+                        accepted,
+
                     OldScore =
                         oldScore,
 
                     NewScore =
                         newScore,
 
-                    Accepted =
-                        accepted,
-
                     JobTicketCode =
-                        operation.JobTicketCode
+                        operation.JobTicketCode,
+
+
+                    OldMachineCode =
+                        execution?.OldMachineCode,
+
+
+                    NewMachineCode =
+                        execution?.NewMachineCode,
+
+
+                    OldStartSlot =
+                        execution?.OldStartSlot
+                        ?? 0,
+
+
+                    NewStartSlot =
+                        execution?.NewStartSlot
+                        ?? 0,
+
+
+                    OldDurationSlots =
+                        execution?.OldDurationSlots
+                        ?? 0,
+
+
+                    NewDurationSlots =
+                        execution?.NewDurationSlots
+                        ?? 0
                 });
 
 
@@ -253,9 +284,6 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 
 
 
-            /*
-             * 更新最好解
-             */
             if(current.Evaluation!.Score <
                best.Evaluation!.Score)
             {
