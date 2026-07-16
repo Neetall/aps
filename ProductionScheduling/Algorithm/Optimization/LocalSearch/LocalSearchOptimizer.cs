@@ -1,3 +1,4 @@
+using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Index;
 using ProductionScheduling.Algorithm.Moves.Core;
@@ -17,14 +18,16 @@ public class LocalSearchOptimizer : ISolutionOptimizer
 {
     private readonly SolutionCloner cloner;
 
-    private readonly int iterations;
+    private readonly LocalSearchOptions options;
 
     private readonly JobTicketIndex jobTicketIndex;
 
     private readonly MoveSelector moveSelector;
 
     private readonly OperationSelector operationSelector;
+
     private readonly SchedulingResourceIndex resourceIndex;
+
 
 
     public LocalSearchOptimizer(
@@ -33,7 +36,7 @@ public class LocalSearchOptimizer : ISolutionOptimizer
         OperationSelector operationSelector,
         MoveSelector moveSelector,
         SolutionCloner cloner,
-        int iterations = 1000)
+        LocalSearchOptions options)
     {
         this.resourceIndex =
             resourceIndex;
@@ -50,9 +53,10 @@ public class LocalSearchOptimizer : ISolutionOptimizer
         this.cloner =
             cloner;
 
-        this.iterations =
-            iterations;
+        this.options =
+            options;
     }
+
 
 
     /// <summary>
@@ -81,6 +85,7 @@ public class LocalSearchOptimizer : ISolutionOptimizer
                 });
 
 
+
         current.Evaluation =
             evaluator.Evaluate(
                 current.Solution,
@@ -88,7 +93,8 @@ public class LocalSearchOptimizer : ISolutionOptimizer
                 context);
 
 
-        for (var i = 0; i < iterations; i++)
+
+        for(var i = 0; i < options.Iterations; i++)
         {
             /*
              * 创建候选方案
@@ -96,6 +102,7 @@ public class LocalSearchOptimizer : ISolutionOptimizer
             var candidate =
                 cloner.Clone(
                     current);
+
 
 
             /*
@@ -106,7 +113,12 @@ public class LocalSearchOptimizer : ISolutionOptimizer
                     candidate.Solution);
 
 
-            if (operation == null) continue;
+
+            if(operation == null)
+            {
+                continue;
+            }
+
 
 
             /*
@@ -114,6 +126,7 @@ public class LocalSearchOptimizer : ISolutionOptimizer
              */
             var move =
                 moveSelector.Select();
+
 
 
             var moveContext =
@@ -139,6 +152,7 @@ public class LocalSearchOptimizer : ISolutionOptimizer
                 };
 
 
+
             /*
              * 执行移动
              */
@@ -147,7 +161,12 @@ public class LocalSearchOptimizer : ISolutionOptimizer
                     moveContext);
 
 
-            if (!success) continue;
+
+            if(!success)
+            {
+                continue;
+            }
+
 
 
             /*
@@ -160,14 +179,18 @@ public class LocalSearchOptimizer : ISolutionOptimizer
                     context);
 
 
+
             /*
              * 只接受更优方案
              */
-            if (candidate.Evaluation.Score <
-                current.Evaluation!.Score)
+            if(candidate.Evaluation.Score <
+               current.Evaluation!.Score)
+            {
                 current =
                     candidate;
+            }
         }
+
 
 
         return new OptimizationResult

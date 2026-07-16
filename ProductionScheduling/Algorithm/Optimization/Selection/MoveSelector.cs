@@ -13,6 +13,7 @@ public class MoveSelector
     private readonly Random random;
 
 
+
     public MoveSelector(
         Random? random = null)
     {
@@ -23,8 +24,10 @@ public class MoveSelector
     }
 
 
+
     /// <summary>
     ///     注册Move
+    ///
     ///     weight:
     ///     权重越高概率越大
     /// </summary>
@@ -32,33 +35,44 @@ public class MoveSelector
         IMove move,
         int weight = 1)
     {
-        if (weight <= 0)
+        if(weight <= 0)
+        {
             throw new ArgumentException(
                 "权重必须大于0");
+        }
+
 
 
         moves.Add(
             new MoveEntry
             {
-                Move = move,
+                Move =
+                    move,
 
-                Weight = weight
+                Weight =
+                    weight
             });
     }
 
 
+
     /// <summary>
-    ///     获取一个随机Move
+    ///     获取随机Move
     /// </summary>
     public IMove Select()
     {
-        if (moves.Count == 0)
+        if(moves.Count == 0)
+        {
             throw new InvalidOperationException(
                 "没有注册任何Move");
+        }
+
 
 
         var totalWeight =
-            moves.Sum(x => x.Weight);
+            moves.Sum(
+                x => x.Weight);
+
 
 
         var value =
@@ -67,27 +81,35 @@ public class MoveSelector
                 totalWeight + 1);
 
 
-        var current = 0;
+
+        var current =
+            0;
 
 
-        foreach (var item in moves)
+
+        foreach(var item in moves)
         {
             current +=
                 item.Weight;
 
 
-            if (value <= current) return item.Move;
+            if(value <= current)
+            {
+                return item.Move;
+            }
         }
 
 
-        return moves[^1].Move;
+
+        return moves[^1]
+            .Move;
     }
+
 
 
     private class MoveEntry
     {
         public IMove Move { get; set; } = null!;
-
 
         public int Weight { get; set; }
     }

@@ -1,3 +1,5 @@
+using ProductionScheduling.Algorithm.Configuration;
+
 namespace ProductionScheduling.Algorithm.Optimization.SimulatedAnnealing;
 
 /// <summary>
@@ -7,14 +9,24 @@ public class AcceptanceCriteria
 {
     private readonly Random random;
 
+    private readonly AcceptanceOptions options;
+
+
 
     public AcceptanceCriteria(
+        AcceptanceOptions options,
         Random? random = null)
     {
+        this.options =
+            options;
+
+
         this.random =
-            random ??
+            random
+            ??
             new Random();
     }
+
 
 
     /// <summary>
@@ -28,20 +40,45 @@ public class AcceptanceCriteria
         /*
          * 更优直接接受
          */
-        if (newScore < currentScore) return true;
+        if(newScore < currentScore)
+        {
+            return true;
+        }
+
 
 
         /*
          * 温度过低
          */
-        if (temperature <= 0) return false;
+        if(temperature <= 0)
+        {
+            return false;
+        }
+
+
+
+        var delta =
+            (newScore - currentScore)
+            *
+            options.ScoreScale;
+
 
 
         var probability =
             Math.Exp(
-                -(newScore - currentScore)
-                /
+                -delta /
                 temperature);
+
+
+
+        /*
+         * 限制最大概率
+         */
+        probability =
+            Math.Min(
+                probability,
+                options.MaximumProbability);
+
 
 
         return random.NextDouble()

@@ -11,13 +11,9 @@ public class OperationSelector
     private readonly Random random;
 
 
-    public OperationSelector(
-        Random? random = null)
-    {
-        this.random =
-            random
-            ??
-            new Random();
+    public OperationSelector(Random? random = null)
+    { 
+        this.random = random ?? new Random();
     }
 
 
@@ -28,14 +24,7 @@ public class OperationSelector
         SchedulingSolution solution)
     {
         if (solution.Operations.Count == 0) return null;
-
-
-        var index =
-            random.Next(
-                solution.Operations.Count);
-
-
-        return solution
-            .Operations[index];
+        var index = random.Next(solution.Operations.Count);
+        return solution.Operations[index];
     }
 }

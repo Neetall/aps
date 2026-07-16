@@ -1,3 +1,4 @@
+using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Index;
 using ProductionScheduling.Algorithm.Moves.Core;
@@ -20,18 +21,16 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 
     private readonly SolutionCloner cloner;
 
-    private readonly double coolingRate;
-
-    private readonly double initialTemperature;
-
-    private readonly int iterations;
+    private readonly SimulatedAnnealingOptions options;
 
     private readonly JobTicketIndex jobTicketIndex;
 
     private readonly MoveSelector moveSelector;
 
     private readonly OperationSelector operationSelector;
+
     private readonly SchedulingResourceIndex resourceIndex;
+
 
 
     public SimulatedAnnealingOptimizer(
@@ -41,9 +40,7 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
         MoveSelector moveSelector,
         SolutionCloner cloner,
         AcceptanceCriteria acceptanceCriteria,
-        int iterations = 10000,
-        double initialTemperature = 1000,
-        double coolingRate = 0.95)
+        SimulatedAnnealingOptions options)
     {
         this.resourceIndex =
             resourceIndex;
@@ -63,15 +60,10 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
         this.acceptanceCriteria =
             acceptanceCriteria;
 
-        this.iterations =
-            iterations;
-
-        this.initialTemperature =
-            initialTemperature;
-
-        this.coolingRate =
-            coolingRate;
+        this.options =
+            options;
     }
+
 
 
     /// <summary>
@@ -98,11 +90,13 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                 });
 
 
+
         current.Evaluation =
             evaluator.Evaluate(
                 current.Solution,
                 current.Timeline,
                 context);
+
 
 
         /*
@@ -113,11 +107,13 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                 current);
 
 
+
         var temperature =
-            initialTemperature;
+            options.InitialTemperature;
 
 
-        for (var i = 0; i < iterations; i++)
+
+        for(var i = 0; i < options.Iterations; i++)
         {
             /*
              * 创建候选
@@ -127,16 +123,23 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                     current);
 
 
+
             var operation =
                 operationSelector.Select(
                     candidate.Solution);
 
 
-            if (operation == null) continue;
+
+            if(operation == null)
+            {
+                continue;
+            }
+
 
 
             var move =
                 moveSelector.Select();
+
 
 
             var moveContext =
@@ -162,11 +165,13 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                 };
 
 
+
             /*
-             * 保存移动前评分
+             * 移动前评分
              */
             var oldScore =
                 current.Evaluation!.Score;
+
 
 
             var success =
@@ -174,7 +179,8 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                     moveContext);
 
 
-            if (!success)
+
+            if(!success)
             {
                 temperature =
                     CoolDown(
@@ -182,6 +188,7 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 
                 continue;
             }
+
 
 
             /*
@@ -194,8 +201,10 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                     context);
 
 
+
             var newScore =
                 candidate.Evaluation.Score;
+
 
 
             /*
@@ -208,8 +217,9 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                     temperature);
 
 
+
             /*
-             * 写入Move记录
+             * 保存移动历史
              */
             candidate.History.Add(
                 new MoveExecutionRecord
@@ -234,19 +244,26 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                 });
 
 
-            if (accepted)
+
+            if(accepted)
+            {
                 current =
                     candidate;
+            }
+
 
 
             /*
              * 更新最好解
              */
-            if (current.Evaluation!.Score <
-                best.Evaluation!.Score)
+            if(current.Evaluation!.Score <
+               best.Evaluation!.Score)
+            {
                 best =
                     cloner.Clone(
                         current);
+            }
+
 
 
             temperature =
@@ -254,8 +271,14 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                     temperature);
 
 
-            if (temperature < 0.1) break;
+
+            if(temperature <
+               options.MinimumTemperature)
+            {
+                break;
+            }
         }
+
 
 
         return new OptimizationResult
@@ -272,10 +295,11 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
     }
 
 
+
     private double CoolDown(
         double temperature)
     {
         return temperature *
-               coolingRate;
+               options.CoolingRate;
     }
 }
