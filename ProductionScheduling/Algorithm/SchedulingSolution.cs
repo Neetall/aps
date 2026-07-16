@@ -31,32 +31,43 @@ public class SchedulingSolution
 
 
     /// <summary>
-    ///     克隆方案
-    ///     给GA/SA/LNS使用
+    /// 克隆方案
+    /// 给GA/SA/LNS使用
     /// </summary>
     public SchedulingSolution Clone()
     {
+        var operations =
+            new List<ScheduledOperation>(
+                Operations.Count);
+
+
+        foreach(var x in Operations)
+        {
+            operations.Add(
+                new ScheduledOperation
+                {
+                    JobTicketCode =
+                        x.JobTicketCode,
+
+                    MachineCode =
+                        x.MachineCode,
+
+                    StartSlot =
+                        x.StartSlot,
+
+                    DurationSlots =
+                        x.DurationSlots
+                });
+        }
+
+
         return new SchedulingSolution
         {
-            IsFeasible = IsFeasible,
+            IsFeasible =
+                IsFeasible,
 
             Operations =
-                Operations
-                    .Select(x => new ScheduledOperation
-                    {
-                        JobTicketCode =
-                            x.JobTicketCode,
-
-                        MachineCode =
-                            x.MachineCode,
-
-                        StartSlot =
-                            x.StartSlot,
-
-                        DurationSlots =
-                            x.DurationSlots
-                    })
-                    .ToList()
+                operations
         };
     }
 }
