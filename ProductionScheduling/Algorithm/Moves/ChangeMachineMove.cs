@@ -1,5 +1,5 @@
-using ProductionScheduling.Algorithm.Optimization;
-using ProductionScheduling.Domain.Orders;
+using ProductionScheduling.Algorithm.Calculation;
+using ProductionScheduling.Algorithm.Moves.Core;
 using ProductionScheduling.Timeline;
 
 namespace ProductionScheduling.Algorithm.Moves;
@@ -7,7 +7,6 @@ namespace ProductionScheduling.Algorithm.Moves;
 public class ChangeMachineMove : IMove
 {
     private readonly ScheduleDurationCalculator durationCalculator;
-
 
 
     public ChangeMachineMove(
@@ -18,10 +17,8 @@ public class ChangeMachineMove : IMove
     }
 
 
-
     public string Name =>
         "ChangeMachine";
-
 
 
     public bool Apply(
@@ -31,9 +28,8 @@ public class ChangeMachineMove : IMove
             context.CurrentOperation;
 
 
-        if(operation == null)
+        if (operation == null)
             return false;
-
 
 
         var oldMachine =
@@ -48,15 +44,13 @@ public class ChangeMachineMove : IMove
             operation.DurationSlots;
 
 
-
         var ticket =
             context.JobTicketIndex.Get(
                 operation.JobTicketCode);
 
 
-        if(ticket == null)
+        if (ticket == null)
             return false;
-
 
 
         var capabilities =
@@ -64,21 +58,18 @@ public class ChangeMachineMove : IMove
                 operation.JobTicketCode);
 
 
-
-        foreach(var capability in capabilities)
+        foreach (var capability in capabilities)
         {
-            if(capability.MachineCode ==
-               oldMachine)
+            if (capability.MachineCode ==
+                oldMachine)
                 continue;
 
 
-
-            if(!context.Timeline.Machines
-                .TryGetValue(
-                    capability.MachineCode,
-                    out var newTimeline))
+            if (!context.Timeline.Machines
+                    .TryGetValue(
+                        capability.MachineCode,
+                        out var newTimeline))
                 continue;
-
 
 
             var duration =
@@ -87,16 +78,13 @@ public class ChangeMachineMove : IMove
                     capability);
 
 
-
             var start =
                 newTimeline.FindEarliest(
                     duration);
 
 
-
-            if(start < 0)
+            if (start < 0)
                 continue;
-
 
 
             var oldTimeline =
@@ -104,17 +92,14 @@ public class ChangeMachineMove : IMove
                     [oldMachine];
 
 
-
             oldTimeline.Release(
                 oldStart,
                 oldDuration);
 
 
-
             newTimeline.Occupy(
                 start,
                 duration);
-
 
 
             operation.MachineCode =
@@ -127,7 +112,6 @@ public class ChangeMachineMove : IMove
 
             operation.DurationSlots =
                 duration;
-
 
 
             context.ExecutionRecord =
@@ -164,7 +148,6 @@ public class ChangeMachineMove : IMove
         }
 
 
-
         context.ExecutionRecord =
             new MoveExecutionRecord
             {
@@ -175,8 +158,6 @@ public class ChangeMachineMove : IMove
 
         return false;
     }
-
-
 
 
     public void Undo(
@@ -190,12 +171,10 @@ public class ChangeMachineMove : IMove
             context.CurrentOperation;
 
 
-
-        if(record == null ||
-           !record.Success ||
-           operation == null)
+        if (record == null ||
+            !record.Success ||
+            operation == null)
             return;
-
 
 
         var newTimeline =
@@ -208,7 +187,6 @@ public class ChangeMachineMove : IMove
             record.NewDurationSlots);
 
 
-
         var oldTimeline =
             context.Timeline.Machines
                 [record.OldMachineCode!];
@@ -217,7 +195,6 @@ public class ChangeMachineMove : IMove
         oldTimeline.Occupy(
             record.OldStartSlot,
             record.OldDurationSlots);
-
 
 
         operation.MachineCode =

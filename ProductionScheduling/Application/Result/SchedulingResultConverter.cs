@@ -1,4 +1,5 @@
 using ProductionScheduling.Algorithm;
+using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
 

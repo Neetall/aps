@@ -1,52 +1,45 @@
 namespace ProductionScheduling.Timeline;
 
 /// <summary>
-/// 全局排产时间轴
-/// 管理DateTime和Slot映射
+///     全局排产时间轴
+///     管理DateTime和Slot映射
 /// </summary>
 public class SchedulingTimeline
 {
-    private readonly Dictionary<DateTime,int> startIndexMap = new();
-
-    private readonly Dictionary<DateTime,int> endIndexMap = new();
+    private readonly Dictionary<DateTime, int> endIndexMap = new();
 
 
     private readonly List<TimeSlot> slots = [];
-
+    private readonly Dictionary<DateTime, int> startIndexMap = new();
 
 
     /// <summary>
-    /// 所有Slot
+    ///     所有Slot
     /// </summary>
     public IReadOnlyList<TimeSlot> Slots =>
         slots;
 
 
-
     /// <summary>
-    /// Slot数量
+    ///     Slot数量
     /// </summary>
     public int Count =>
         slots.Count;
-
 
 
     public TimeSlot this[int index]
         => slots[index];
 
 
-
     /// <summary>
-    /// 添加Slot
+    ///     添加Slot
     /// </summary>
     public void AddSlot(
         TimeSlot slot)
     {
-        if(slot.StartTime >= slot.EndTime)
-        {
+        if (slot.StartTime >= slot.EndTime)
             throw new ArgumentException(
                 "Slot时间错误");
-        }
 
 
         slot.Index =
@@ -57,61 +50,54 @@ public class SchedulingTimeline
 
 
         startIndexMap
-            [slot.StartTime]
+                [slot.StartTime]
             =
             slot.Index;
 
 
         endIndexMap
-            [slot.EndTime]
+                [slot.EndTime]
             =
             slot.Index + 1;
     }
 
 
-
     /// <summary>
-    /// 开始时间转Slot
+    ///     开始时间转Slot
     /// </summary>
     public int GetStartSlot(
         DateTime time)
     {
-        if(startIndexMap
+        if (startIndexMap
             .TryGetValue(
                 time,
                 out var index))
-        {
             return index;
-        }
 
 
         return FindSlot(time);
     }
 
 
-
     /// <summary>
-    /// 结束时间转Slot
+    ///     结束时间转Slot
     /// </summary>
     public int GetEndSlot(
         DateTime time)
     {
-        if(endIndexMap
+        if (endIndexMap
             .TryGetValue(
                 time,
                 out var index))
-        {
             return index;
-        }
 
 
         return FindSlot(time);
     }
 
 
-
     /// <summary>
-    /// Slot转开始时间
+    ///     Slot转开始时间
     /// </summary>
     public DateTime GetStartTime(
         int slot)
@@ -123,9 +109,8 @@ public class SchedulingTimeline
     }
 
 
-
     /// <summary>
-    /// Slot转结束时间
+    ///     Slot转结束时间
     /// </summary>
     public DateTime GetEndTime(
         int slot)
@@ -137,9 +122,8 @@ public class SchedulingTimeline
     }
 
 
-
     /// <summary>
-    /// Slot范围结束时间
+    ///     Slot范围结束时间
     /// </summary>
     public DateTime GetEndTime(
         int startSlot,
@@ -159,9 +143,8 @@ public class SchedulingTimeline
     }
 
 
-
     /// <summary>
-    /// 二分查找Slot
+    ///     二分查找Slot
     /// </summary>
     private int FindSlot(
         DateTime time)
@@ -172,32 +155,25 @@ public class SchedulingTimeline
             slots.Count - 1;
 
 
-
-        while(left <= right)
+        while (left <= right)
         {
             var mid =
                 left +
-                (right-left)/2;
+                (right - left) / 2;
 
 
             var slot =
                 slots[mid];
 
 
-            if(time < slot.StartTime)
-            {
+            if (time < slot.StartTime)
                 right =
                     mid - 1;
-            }
-            else if(time >= slot.EndTime)
-            {
+            else if (time >= slot.EndTime)
                 left =
                     mid + 1;
-            }
             else
-            {
                 return mid;
-            }
         }
 
 
@@ -205,15 +181,12 @@ public class SchedulingTimeline
     }
 
 
-
     private void ValidateSlot(
         int slot)
     {
-        if(slot < 0 ||
-           slot >= Count)
-        {
+        if (slot < 0 ||
+            slot >= Count)
             throw new ArgumentOutOfRangeException(
                 nameof(slot));
-        }
     }
 }

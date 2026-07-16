@@ -1,4 +1,4 @@
-namespace ProductionScheduling.Algorithm;
+namespace ProductionScheduling.Algorithm.Scheduling;
 
 public class ScheduledOperation
 {

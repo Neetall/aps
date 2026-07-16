@@ -1,4 +1,4 @@
-namespace ProductionScheduling.Algorithm;
+namespace ProductionScheduling.Algorithm.Scheduling;
 
 public class SchedulingSolution
 {
@@ -31,8 +31,8 @@ public class SchedulingSolution
 
 
     /// <summary>
-    /// 克隆方案
-    /// 给GA/SA/LNS使用
+    ///     克隆方案
+    ///     给GA/SA/LNS使用
     /// </summary>
     public SchedulingSolution Clone()
     {
@@ -41,8 +41,7 @@ public class SchedulingSolution
                 Operations.Count);
 
 
-        foreach(var x in Operations)
-        {
+        foreach (var x in Operations)
             operations.Add(
                 new ScheduledOperation
                 {
@@ -58,7 +57,6 @@ public class SchedulingSolution
                     DurationSlots =
                         x.DurationSlots
                 });
-        }
 
 
         return new SchedulingSolution

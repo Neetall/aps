@@ -1,8 +1,12 @@
 using ProductionScheduling.Algorithm;
+using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Index;
 using ProductionScheduling.Algorithm.Moves;
-using ProductionScheduling.Algorithm.Optimization;
+using ProductionScheduling.Algorithm.Optimization.Core;
+using ProductionScheduling.Algorithm.Optimization.LocalSearch;
+using ProductionScheduling.Algorithm.Optimization.Selection;
+using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Domain.Calendars;
 using ProductionScheduling.Domain.Orders;
 using ProductionScheduling.Domain.Resources;
@@ -40,14 +44,13 @@ public class LocalSearchOptimizerTests
         order.JobTickets.Add(ticket);
 
 
-
         /*
          * 2. 创建设备
          */
         var machines =
             new List<Machine>
             {
-                new Machine
+                new()
                 {
                     Code = "M001",
 
@@ -64,7 +67,7 @@ public class LocalSearchOptimizerTests
                 },
 
 
-                new Machine
+                new()
                 {
                     Code = "M002",
 
@@ -80,7 +83,6 @@ public class LocalSearchOptimizerTests
                     ]
                 }
             };
-
 
 
         /*
@@ -121,14 +123,12 @@ public class LocalSearchOptimizerTests
             });
 
 
-
         /*
          * 4. Timeline
          */
         var timeline =
             new TimelineBuilder()
                 .Build(context);
-
 
 
         /*
@@ -153,12 +153,10 @@ public class LocalSearchOptimizerTests
             });
 
 
-
         timeline.Machines["M001"]
             .Occupy(
                 0,
                 2);
-
 
 
         /*
@@ -169,11 +167,9 @@ public class LocalSearchOptimizerTests
                 .MachineCode;
 
 
-
         var originalDuration =
             solution.Operations[0]
                 .DurationSlots;
-
 
 
         /*
@@ -187,14 +183,12 @@ public class LocalSearchOptimizerTests
             machines);
 
 
-
         var ticketIndex =
             new JobTicketIndex();
 
 
         ticketIndex.Build(
             context.Orders);
-
 
 
         /*
@@ -208,7 +202,6 @@ public class LocalSearchOptimizerTests
         moveSelector.Register(
             new ChangeMachineMove(
                 new ScheduleDurationCalculator()));
-
 
 
         /*
@@ -225,10 +218,8 @@ public class LocalSearchOptimizerTests
                 10);
 
 
-
         var evaluator =
             new ScheduleEvaluator();
-
 
 
         var before =
@@ -236,7 +227,6 @@ public class LocalSearchOptimizerTests
                 solution,
                 timeline,
                 context);
-
 
 
         /*
@@ -250,10 +240,8 @@ public class LocalSearchOptimizerTests
                 evaluator);
 
 
-
         var after =
             result.Evaluation!;
-
 
 
         /*
@@ -267,7 +255,6 @@ public class LocalSearchOptimizerTests
                 .MachineCode);
 
 
-
         Assert.Equal(
             1,
             result.Solution
@@ -275,11 +262,9 @@ public class LocalSearchOptimizerTests
                 .DurationSlots);
 
 
-
         Assert.True(
             after.Score <
             before.Score);
-
 
 
         /*
@@ -291,12 +276,10 @@ public class LocalSearchOptimizerTests
                 .MachineCode);
 
 
-
         Assert.Equal(
             originalDuration,
             solution.Operations[0]
                 .DurationSlots);
-
 
 
         Assert.False(

@@ -1,27 +1,26 @@
 using ProductionScheduling.Domain.Orders;
 using ProductionScheduling.Domain.Resources;
 
-namespace ProductionScheduling.Timeline;
+namespace ProductionScheduling.Algorithm.Calculation;
 
 /// <summary>
-/// 派工单时间计算器
-/// 根据设备能力计算占用Slot数量
+///     派工单时间计算器
+///     根据设备能力计算占用Slot数量
 /// </summary>
 public class ScheduleDurationCalculator
 {
     /// <summary>
-    /// Slot粒度
-    /// 单位：分钟
-    /// 默认1小时
+    ///     Slot粒度
+    ///     单位：分钟
+    ///     默认1小时
     /// </summary>
     private readonly int granularityMinutes;
-
 
 
     public ScheduleDurationCalculator(
         int granularityMinutes = 60)
     {
-        if(granularityMinutes <= 0)
+        if (granularityMinutes <= 0)
             throw new ArgumentException(
                 "时间粒度必须大于0");
 
@@ -31,20 +30,16 @@ public class ScheduleDurationCalculator
     }
 
 
-
     /// <summary>
-    /// 计算需要占用多少Slot
+    ///     计算需要占用多少Slot
     /// </summary>
     public int Calculate(
         JobTicket ticket,
         MachineCapability capability)
     {
-        if(capability.HourlyCapacity <= 0)
-        {
+        if (capability.HourlyCapacity <= 0)
             throw new ArgumentException(
                 $"派工单{ticket.Code}产能必须大于0");
-        }
-
 
 
         /*
@@ -57,7 +52,6 @@ public class ScheduleDurationCalculator
             capability.HourlyCapacity;
 
 
-
         /*
          * 换型时间:
          *
@@ -68,11 +62,9 @@ public class ScheduleDurationCalculator
             60.0;
 
 
-
         var totalHours =
             productionHours +
             setupHours;
-
 
 
         return ConvertToSlot(
@@ -80,16 +72,14 @@ public class ScheduleDurationCalculator
     }
 
 
-
     /// <summary>
-    /// 小时转换Slot
+    ///     小时转换Slot
     /// </summary>
     private int ConvertToSlot(
         double hours)
     {
         var minutes =
             hours * 60;
-
 
 
         /*

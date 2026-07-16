@@ -1,8 +1,12 @@
 using ProductionScheduling.Algorithm;
+using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Index;
 using ProductionScheduling.Algorithm.Moves;
-using ProductionScheduling.Algorithm.Optimization;
+using ProductionScheduling.Algorithm.Optimization.Core;
+using ProductionScheduling.Algorithm.Optimization.Selection;
+using ProductionScheduling.Algorithm.Optimization.SimulatedAnnealing;
+using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Domain.Calendars;
 using ProductionScheduling.Domain.Orders;
 using ProductionScheduling.Domain.Resources;
@@ -44,7 +48,6 @@ public class SimulatedAnnealingOptimizerTests
             ticket);
 
 
-
         /*
          * =========================
          * 2. 创建设备
@@ -58,7 +61,7 @@ public class SimulatedAnnealingOptimizerTests
         var machines =
             new List<Machine>
             {
-                new Machine
+                new()
                 {
                     Code = "M001",
 
@@ -75,7 +78,7 @@ public class SimulatedAnnealingOptimizerTests
                 },
 
 
-                new Machine
+                new()
                 {
                     Code = "M002",
 
@@ -91,7 +94,6 @@ public class SimulatedAnnealingOptimizerTests
                     ]
                 }
             };
-
 
 
         /*
@@ -137,7 +139,6 @@ public class SimulatedAnnealingOptimizerTests
             });
 
 
-
         /*
          * =========================
          * 4. Timeline
@@ -148,7 +149,6 @@ public class SimulatedAnnealingOptimizerTests
             new TimelineInitializer()
                 .Initialize(
                     context);
-
 
 
         /*
@@ -185,7 +185,6 @@ public class SimulatedAnnealingOptimizerTests
                 2);
 
 
-
         /*
          * =========================
          * 6. Index
@@ -200,14 +199,12 @@ public class SimulatedAnnealingOptimizerTests
             machines);
 
 
-
         var ticketIndex =
             new JobTicketIndex();
 
 
         ticketIndex.Build(
             context.Orders);
-
 
 
         /*
@@ -232,7 +229,6 @@ public class SimulatedAnnealingOptimizerTests
             3);
 
 
-
         /*
          * =========================
          * 8. 创建SA
@@ -243,20 +239,16 @@ public class SimulatedAnnealingOptimizerTests
             new SimulatedAnnealingOptimizer(
                 resourceIndex,
                 ticketIndex,
-                new OperationSelector(
-                    new Random(1)),
+                new OperationSelector(new Random(1)),
                 moveSelector,
                 new SolutionCloner(),
-                iterations:100,
-                initialTemperature:100,
-                coolingRate:0.95,
-                random:new Random(1));
-
+                new AcceptanceCriteria(new Random(1)),
+                100,
+                100);
 
 
         var evaluator =
             new ScheduleEvaluator();
-
 
 
         var before =
@@ -264,7 +256,6 @@ public class SimulatedAnnealingOptimizerTests
                 solution,
                 timeline,
                 context);
-
 
 
         /*
@@ -281,7 +272,6 @@ public class SimulatedAnnealingOptimizerTests
                 evaluator);
 
 
-
         /*
          * =========================
          * 10. 验证结果
@@ -296,15 +286,12 @@ public class SimulatedAnnealingOptimizerTests
             result.Timeline);
 
 
-
         Assert.NotNull(
             result.Evaluation);
 
 
-
         Assert.True(
             result.Solution.IsFeasible);
-
 
 
         /*
@@ -314,7 +301,6 @@ public class SimulatedAnnealingOptimizerTests
             result.Evaluation.Score
             <=
             before.Score);
-
 
 
         /*
@@ -330,7 +316,6 @@ public class SimulatedAnnealingOptimizerTests
             operation.MachineCode);
 
 
-
         /*
          * M002:
          *
@@ -341,7 +326,6 @@ public class SimulatedAnnealingOptimizerTests
             operation.DurationSlots);
 
 
-
         /*
          * Timeline一致
          */
@@ -350,7 +334,6 @@ public class SimulatedAnnealingOptimizerTests
                 .Machines[operation.MachineCode]
                 .IsFree(
                     operation.StartSlot));
-
 
 
         /*

@@ -1,7 +1,8 @@
 using ProductionScheduling.Algorithm;
 using ProductionScheduling.Algorithm.Index;
 using ProductionScheduling.Algorithm.Moves;
-using ProductionScheduling.Algorithm.Optimization;
+using ProductionScheduling.Algorithm.Moves.Core;
+using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Domain.Calendars;
 using ProductionScheduling.Domain.Orders;
 using ProductionScheduling.Domain.Resources;
@@ -41,7 +42,6 @@ public class ShiftTimeMoveTests
             });
 
 
-
         /*
          * =========================
          * 2. 创建设备
@@ -51,7 +51,7 @@ public class ShiftTimeMoveTests
         var machines =
             new List<Machine>
             {
-                new Machine
+                new()
                 {
                     Code = "M001",
 
@@ -70,7 +70,6 @@ public class ShiftTimeMoveTests
                     ]
                 }
             };
-
 
 
         /*
@@ -116,7 +115,6 @@ public class ShiftTimeMoveTests
             });
 
 
-
         /*
          * =========================
          * 4. 初始化Timeline
@@ -126,7 +124,6 @@ public class ShiftTimeMoveTests
         var timeline =
             new TimelineBuilder()
                 .Build(context);
-
 
 
         /*
@@ -163,12 +160,10 @@ public class ShiftTimeMoveTests
             });
 
 
-
         timeline.Machines["M001"]
             .Occupy(
                 0,
                 2);
-
 
 
         /*
@@ -185,7 +180,6 @@ public class ShiftTimeMoveTests
             machines);
 
 
-
         /*
          * =========================
          * 7. 创建JobTicket索引
@@ -198,7 +192,6 @@ public class ShiftTimeMoveTests
 
         jobTicketIndex.Build(
             context.Orders);
-
 
 
 /*
@@ -240,11 +233,9 @@ public class ShiftTimeMoveTests
             new ShiftTimeMove();
 
 
-
         var result =
             move.Apply(
                 moveContext);
-
 
 
         /*
@@ -256,10 +247,8 @@ public class ShiftTimeMoveTests
         Assert.True(result);
 
 
-
         var operation =
             solution.Operations[0];
-
 
 
         /*
@@ -270,14 +259,12 @@ public class ShiftTimeMoveTests
             operation.JobTicketCode);
 
 
-
         /*
          * 设备没有变化
          */
         Assert.Equal(
             "M001",
             operation.MachineCode);
-
 
 
         /*
@@ -288,7 +275,6 @@ public class ShiftTimeMoveTests
             operation.StartSlot);
 
 
-
         /*
          * 新时间被占用
          */
@@ -296,7 +282,6 @@ public class ShiftTimeMoveTests
             timeline.Machines["M001"]
                 .IsFree(
                     operation.StartSlot));
-
 
 
         /*

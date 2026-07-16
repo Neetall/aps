@@ -1,7 +1,9 @@
 using ProductionScheduling.Algorithm;
+using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Index;
 using ProductionScheduling.Algorithm.Moves;
-using ProductionScheduling.Algorithm.Optimization;
+using ProductionScheduling.Algorithm.Moves.Core;
+using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Domain.Calendars;
 using ProductionScheduling.Domain.Orders;
 using ProductionScheduling.Domain.Resources;
@@ -42,7 +44,6 @@ public class ChangeMachineMoveTests
         order.JobTickets.Add(ticket);
 
 
-
         /*
          * =========================
          * 2. 创建设备
@@ -52,7 +53,7 @@ public class ChangeMachineMoveTests
         var machines =
             new List<Machine>
             {
-                new Machine
+                new()
                 {
                     Code = "M001",
 
@@ -69,7 +70,7 @@ public class ChangeMachineMoveTests
                 },
 
 
-                new Machine
+                new()
                 {
                     Code = "M002",
 
@@ -85,7 +86,6 @@ public class ChangeMachineMoveTests
                     ]
                 }
             };
-
 
 
         /*
@@ -131,7 +131,6 @@ public class ChangeMachineMoveTests
             });
 
 
-
         /*
          * =========================
          * 4. 初始化Timeline
@@ -141,7 +140,6 @@ public class ChangeMachineMoveTests
         var timeline =
             new TimelineBuilder()
                 .Build(context);
-
 
 
         /*
@@ -174,12 +172,10 @@ public class ChangeMachineMoveTests
             });
 
 
-
         timeline.Machines["M001"]
             .Occupy(
                 0,
                 2);
-
 
 
         /*
@@ -196,7 +192,6 @@ public class ChangeMachineMoveTests
             machines);
 
 
-
         /*
          * =========================
          * 7. 创建索引
@@ -209,7 +204,6 @@ public class ChangeMachineMoveTests
 
         jobTicketIndex.Build(
             context.Orders);
-
 
 
         var moveContext =
@@ -245,11 +239,9 @@ public class ChangeMachineMoveTests
                 new ScheduleDurationCalculator());
 
 
-
         var result =
             move.Apply(
                 moveContext);
-
 
 
         /*
@@ -262,10 +254,8 @@ public class ChangeMachineMoveTests
         Assert.True(result);
 
 
-
         var operation =
             solution.Operations[0];
-
 
 
         /*
@@ -274,7 +264,6 @@ public class ChangeMachineMoveTests
         Assert.Equal(
             "M002",
             operation.MachineCode);
-
 
 
         /*
@@ -289,15 +278,12 @@ public class ChangeMachineMoveTests
             operation.DurationSlots);
 
 
-
         /*
          * 新设备占用
          */
         Assert.True(
-            timeline.Machines["M002"]
-                .IsFree(0)
-                == false);
-
+            !timeline.Machines["M002"]
+                .IsFree(0));
 
 
         /*

@@ -1,17 +1,17 @@
 using ProductionScheduling.Algorithm.Evaluation;
+using ProductionScheduling.Algorithm.Moves.Core;
 using ProductionScheduling.Timeline;
 
-namespace ProductionScheduling.Algorithm.Optimization;
+namespace ProductionScheduling.Algorithm.Optimization.Core;
 
 /// <summary>
-/// 优化状态复制器
-///
-/// 用于LocalSearch、SimulatedAnnealing、TabuSearch、LNS
+///     优化状态复制器
+///     用于LocalSearch、SimulatedAnnealing、TabuSearch、LNS
 /// </summary>
 public class SolutionCloner
 {
     /// <summary>
-    /// 深复制优化状态
+    ///     深复制优化状态
     /// </summary>
     public ScheduleState Clone(
         ScheduleState source)
@@ -93,12 +93,10 @@ public class SolutionCloner
     }
 
 
-
     /// <summary>
-    /// 深复制时间轴状态
-    ///
-    /// SchedulingTimeline共享
-    /// MachineTimeline独立复制
+    ///     深复制时间轴状态
+    ///     SchedulingTimeline共享
+    ///     MachineTimeline独立复制
     /// </summary>
     private TimelineContext CloneTimeline(
         TimelineContext source)
@@ -108,25 +106,22 @@ public class SolutionCloner
                 source.Timeline);
 
 
-        foreach(var machine in source.Machines)
-        {
+        foreach (var machine in source.Machines)
             context.AddMachineTimeline(
                 machine.Value.Clone());
-        }
 
 
         return context;
     }
 
 
-
     /// <summary>
-    /// 复制评价结果
+    ///     复制评价结果
     /// </summary>
     private EvaluationResult? CloneEvaluation(
         EvaluationResult? source)
     {
-        if(source == null)
+        if (source == null)
             return null;
 
 

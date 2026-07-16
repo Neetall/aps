@@ -1,5 +1,7 @@
 using ProductionScheduling.Algorithm;
+using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Index;
+using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Application.Options;
 using ProductionScheduling.Domain.Calendars;
 using ProductionScheduling.Domain.Orders;
@@ -22,7 +24,6 @@ public class GreedySchedulerTests
         this.output =
             output;
     }
-
 
 
     [Fact]
@@ -68,7 +69,6 @@ public class GreedySchedulerTests
         ]);
 
 
-
         /*
          * =========================
          * 2. 创建设备
@@ -78,7 +78,7 @@ public class GreedySchedulerTests
         var machines =
             new List<Machine>
             {
-                new Machine
+                new()
                 {
                     Code = "M001",
 
@@ -109,7 +109,7 @@ public class GreedySchedulerTests
                 },
 
 
-                new Machine
+                new()
                 {
                     Code = "M002",
 
@@ -130,7 +130,6 @@ public class GreedySchedulerTests
             };
 
 
-
         /*
          * =========================
          * 3. 创建排产上下文
@@ -147,7 +146,6 @@ public class GreedySchedulerTests
 
         context.Machines.AddRange(
             machines);
-
 
 
         context.Options =
@@ -176,7 +174,6 @@ public class GreedySchedulerTests
             });
 
 
-
         /*
          * =========================
          * 4. 初始化时间轴
@@ -190,7 +187,6 @@ public class GreedySchedulerTests
         var timeline =
             builder.Build(
                 context);
-
 
 
         /*
@@ -207,7 +203,6 @@ public class GreedySchedulerTests
             machines);
 
 
-
         /*
          * =========================
          * 6. 创建Greedy算法
@@ -218,12 +213,10 @@ public class GreedySchedulerTests
             new ScheduleDurationCalculator();
 
 
-
         var scheduler =
             new GreedyScheduler(
                 calculator,
                 resourceIndex);
-
 
 
         /*
@@ -238,7 +231,6 @@ public class GreedySchedulerTests
                 timeline);
 
 
-
         /*
          * =========================
          * 输出排产结果
@@ -249,21 +241,20 @@ public class GreedySchedulerTests
             "========== 排产结果 ==========");
 
 
-        foreach(var operation in solution.Operations)
+        foreach (var operation in solution.Operations)
         {
             var start =
                 timeline.Timeline[
-                    operation.StartSlot]
+                        operation.StartSlot]
                     .StartTime;
 
 
             var end =
                 timeline.Timeline[
-                    operation.StartSlot +
-                    operation.DurationSlots -
-                    1]
+                        operation.StartSlot +
+                        operation.DurationSlots -
+                        1]
                     .EndTime;
-
 
 
             output.WriteLine(
@@ -279,7 +270,6 @@ public class GreedySchedulerTests
             "============================");
 
 
-
         /*
          * =========================
          * 8. 验证
@@ -290,11 +280,9 @@ public class GreedySchedulerTests
             solution.IsFeasible);
 
 
-
         Assert.Equal(
             2,
             solution.Operations.Count);
-
 
 
         var first =
@@ -305,14 +293,12 @@ public class GreedySchedulerTests
             solution.Operations[1];
 
 
-
         /*
          * JT001应该选择M002
          */
         Assert.Equal(
             "M002",
             first.MachineCode);
-
 
 
         /*

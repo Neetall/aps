@@ -1,6 +1,7 @@
 using ProductionScheduling.Algorithm;
 using ProductionScheduling.Algorithm.Evaluation;
-using ProductionScheduling.Algorithm.Optimization;
+using ProductionScheduling.Algorithm.Optimization.Core;
+using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Application.Result;
 using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
@@ -8,20 +9,18 @@ using ProductionScheduling.Timeline;
 namespace ProductionScheduling.Application;
 
 /// <summary>
-/// 排产引擎入口
+///     排产引擎入口
 /// </summary>
 public class SchedulingEngine
 {
-    private readonly TimelineInitializer timelineInitializer;
-
-    private readonly IScheduler scheduler;
+    private readonly ScheduleEvaluator evaluator;
 
     private readonly ISolutionOptimizer? optimizer;
 
-    private readonly ScheduleEvaluator evaluator;
-
     private readonly SchedulingResultConverter resultConverter;
 
+    private readonly IScheduler scheduler;
+    private readonly TimelineInitializer timelineInitializer;
 
 
     public SchedulingEngine(
@@ -48,9 +47,8 @@ public class SchedulingEngine
     }
 
 
-
     /// <summary>
-    /// 执行排产
+    ///     执行排产
     /// </summary>
     public SchedulingResult Execute(
         SchedulingContext context)
@@ -66,7 +64,6 @@ public class SchedulingEngine
                     .Initialize(context);
 
 
-
             /*
              * 2.
              * 生成初始方案
@@ -80,7 +77,6 @@ public class SchedulingEngine
                     timeline);
 
 
-
             /*
              * 3.
              * 优化方案
@@ -90,7 +86,7 @@ public class SchedulingEngine
              * GA
              * LNS
              */
-            if(optimizer != null)
+            if (optimizer != null)
             {
                 var optimizeResult =
                     optimizer.Optimize(
@@ -109,7 +105,6 @@ public class SchedulingEngine
             }
 
 
-
             /*
              * 4.
              * 评价最终方案
@@ -121,7 +116,6 @@ public class SchedulingEngine
                     context);
 
 
-
             /*
              * 5.
              * 转换业务结果
@@ -129,7 +123,6 @@ public class SchedulingEngine
             var result =
                 resultConverter.Convert(
                     solution);
-
 
 
             result.Message =
@@ -142,7 +135,7 @@ public class SchedulingEngine
 
             return result;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             return new SchedulingResult
             {

@@ -1,7 +1,8 @@
 using ProductionScheduling.Algorithm;
 using ProductionScheduling.Algorithm.Index;
 using ProductionScheduling.Algorithm.Moves;
-using ProductionScheduling.Algorithm.Optimization;
+using ProductionScheduling.Algorithm.Moves.Core;
+using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Domain.Calendars;
 using ProductionScheduling.Domain.Orders;
 using ProductionScheduling.Domain.Resources;
@@ -53,7 +54,6 @@ public class SwapOperationMoveTests
         order.JobTickets.Add(ticket2);
 
 
-
         /*
          * =========================
          * 2. 设备
@@ -91,7 +91,6 @@ public class SwapOperationMoveTests
             {
                 machine
             };
-
 
 
         /*
@@ -137,7 +136,6 @@ public class SwapOperationMoveTests
             });
 
 
-
         /*
          * =========================
          * 4. Timeline
@@ -148,7 +146,6 @@ public class SwapOperationMoveTests
             new TimelineInitializer()
                 .Initialize(
                     context);
-
 
 
         /*
@@ -199,7 +196,6 @@ public class SwapOperationMoveTests
         solution.Operations.Add(op2);
 
 
-
         timeline.Machines["M001"]
             .Occupy(
                 0,
@@ -210,7 +206,6 @@ public class SwapOperationMoveTests
             .Occupy(
                 2,
                 2);
-
 
 
         /*
@@ -227,14 +222,12 @@ public class SwapOperationMoveTests
             machines);
 
 
-
         var ticketIndex =
             new JobTicketIndex();
 
 
         ticketIndex.Build(
             context.Orders);
-
 
 
         /*
@@ -266,7 +259,6 @@ public class SwapOperationMoveTests
             };
 
 
-
         /*
          * =========================
          * 8. 执行Swap
@@ -277,11 +269,9 @@ public class SwapOperationMoveTests
             new SwapOperationMove();
 
 
-
         var result =
             move.Apply(
                 moveContext);
-
 
 
         /*
@@ -294,14 +284,12 @@ public class SwapOperationMoveTests
             result);
 
 
-
         var jt001 =
             solution.Operations[0];
 
 
         var jt002 =
             solution.Operations[1];
-
 
 
         Assert.Equal(
@@ -312,7 +300,6 @@ public class SwapOperationMoveTests
         Assert.Equal(
             "JT002",
             jt002.JobTicketCode);
-
 
 
 /*
@@ -329,7 +316,6 @@ public class SwapOperationMoveTests
             jt002.StartSlot);
 
 
-
 /*
  * Duration不变
  */
@@ -342,7 +328,6 @@ public class SwapOperationMoveTests
         Assert.Equal(
             2,
             jt002.DurationSlots);
-
 
 
 /*
@@ -359,7 +344,6 @@ public class SwapOperationMoveTests
                 .IsFree(2));
 
 
-
         /*
          * Timeline仍然占用
          */
@@ -373,7 +357,6 @@ public class SwapOperationMoveTests
             timeline.Machines["M001"]
                 .IsFree(2));
     }
-
 
 
     [Fact]

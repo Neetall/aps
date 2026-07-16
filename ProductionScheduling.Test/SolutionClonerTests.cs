@@ -1,5 +1,6 @@
 using ProductionScheduling.Algorithm;
-using ProductionScheduling.Algorithm.Optimization;
+using ProductionScheduling.Algorithm.Optimization.Core;
+using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Timeline;
 using Xunit;
 
@@ -39,11 +40,9 @@ public class SolutionClonerTests
                 .Clone(source);
 
 
-
         clone.Solution
             .Operations[0]
             .StartSlot = 100;
-
 
 
         Assert.Equal(

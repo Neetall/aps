@@ -1,3 +1,4 @@
+using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
 
@@ -14,15 +15,13 @@ public class ScheduleEvaluator
             new EvaluationResult();
 
 
-
-        if(solution.Operations.Count == 0)
+        if (solution.Operations.Count == 0)
         {
             result.Score =
                 double.MaxValue;
 
             return result;
         }
-
 
 
         /*
@@ -35,12 +34,10 @@ public class ScheduleEvaluator
                     x.DurationSlots);
 
 
-
         result.EndTime =
             timeline.Timeline[
-                endSlot - 1]
+                    endSlot - 1]
                 .EndTime;
-
 
 
         /*
@@ -52,13 +49,11 @@ public class ScheduleEvaluator
                     x.DurationSlots);
 
 
-
         result.ProductionHours =
             totalSlots *
             context.Options.TimeGranularityMinutes
             /
             60.0;
-
 
 
         /*
@@ -71,7 +66,6 @@ public class ScheduleEvaluator
                     x.UsedSlotCount);
 
 
-
         var total =
             timeline.Machines
                 .Values
@@ -79,12 +73,10 @@ public class ScheduleEvaluator
                     x.SlotCount);
 
 
-
         result.MachineUtilization =
             total == 0
                 ? 0
                 : (double)used / total;
-
 
 
         /*
@@ -97,10 +89,8 @@ public class ScheduleEvaluator
                 result);
 
 
-
         return result;
     }
-
 
 
     private double CalculateScore(
@@ -112,23 +102,20 @@ public class ScheduleEvaluator
         var makespan =
             result.EndTime
                 .Ticks
-                /
-                TimeSpan.TicksPerHour;
-
+            /
+            TimeSpan.TicksPerHour;
 
 
         var utilizationPenalty =
             (1 -
              result.MachineUtilization)
-             *
-             100;
-
+            *
+            100;
 
 
         var delayPenalty =
             result.DelayCount *
             1000;
-
 
 
         return

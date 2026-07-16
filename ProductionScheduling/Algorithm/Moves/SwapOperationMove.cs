@@ -1,20 +1,19 @@
-using ProductionScheduling.Algorithm.Optimization;
+using ProductionScheduling.Algorithm.Moves.Core;
+using ProductionScheduling.Algorithm.Scheduling;
 
 namespace ProductionScheduling.Algorithm.Moves;
 
 /// <summary>
-/// 交换两个派工单时间顺序
-///
-/// 条件:
-/// 1. 同设备
-/// 2. 整体交换
-/// 3. 不拆分
+///     交换两个派工单时间顺序
+///     条件:
+///     1. 同设备
+///     2. 整体交换
+///     3. 不拆分
 /// </summary>
 public class SwapOperationMove : IMove
 {
     public string Name =>
         "SwapOperation";
-
 
 
     public bool Apply(
@@ -24,7 +23,7 @@ public class SwapOperationMove : IMove
             context.CurrentOperation;
 
 
-        if(first == null)
+        if (first == null)
         {
             context.ExecutionRecord =
                 new MoveExecutionRecord
@@ -35,7 +34,6 @@ public class SwapOperationMove : IMove
 
             return false;
         }
-
 
 
         var second =
@@ -43,8 +41,7 @@ public class SwapOperationMove : IMove
                 context);
 
 
-
-        if(second == null)
+        if (second == null)
         {
             context.ExecutionRecord =
                 new MoveExecutionRecord
@@ -57,9 +54,8 @@ public class SwapOperationMove : IMove
         }
 
 
-
-        if(first.MachineCode !=
-           second.MachineCode)
+        if (first.MachineCode !=
+            second.MachineCode)
         {
             context.ExecutionRecord =
                 new MoveExecutionRecord
@@ -70,13 +66,11 @@ public class SwapOperationMove : IMove
 
             return false;
         }
-
 
 
         var timeline =
             context.Timeline
                 .Machines[first.MachineCode];
-
 
 
         var firstOldStart =
@@ -87,14 +81,12 @@ public class SwapOperationMove : IMove
             second.StartSlot;
 
 
-
         var firstDuration =
             first.DurationSlots;
 
 
         var secondDuration =
             second.DurationSlots;
-
 
 
         /*
@@ -110,7 +102,6 @@ public class SwapOperationMove : IMove
             secondDuration);
 
 
-
         var firstNewStart =
             secondOldStart;
 
@@ -119,14 +110,13 @@ public class SwapOperationMove : IMove
             firstOldStart;
 
 
-
-        if(!timeline.CanOccupy(
-               firstNewStart,
-               firstDuration)
-           ||
-           !timeline.CanOccupy(
-               secondNewStart,
-               secondDuration))
+        if (!timeline.CanOccupy(
+                firstNewStart,
+                firstDuration)
+            ||
+            !timeline.CanOccupy(
+                secondNewStart,
+                secondDuration))
         {
             timeline.Occupy(
                 firstOldStart,
@@ -136,7 +126,6 @@ public class SwapOperationMove : IMove
             timeline.Occupy(
                 secondOldStart,
                 secondDuration);
-
 
 
             context.ExecutionRecord =
@@ -151,7 +140,6 @@ public class SwapOperationMove : IMove
         }
 
 
-
         timeline.Occupy(
             firstNewStart,
             firstDuration);
@@ -162,14 +150,12 @@ public class SwapOperationMove : IMove
             secondDuration);
 
 
-
         first.StartSlot =
             firstNewStart;
 
 
         second.StartSlot =
             secondNewStart;
-
 
 
         context.ExecutionRecord =
@@ -194,7 +180,7 @@ public class SwapOperationMove : IMove
                     first.MachineCode,
 
 
-                SecondOldMachineCode = 
+                SecondOldMachineCode =
                     second.MachineCode,
 
 
@@ -231,7 +217,6 @@ public class SwapOperationMove : IMove
     }
 
 
-
     public void Undo(
         MoveContext context)
     {
@@ -239,47 +224,36 @@ public class SwapOperationMove : IMove
             context.ExecutionRecord;
 
 
-        if(record == null ||
-           !record.Success)
-        {
+        if (record == null ||
+            !record.Success)
             return;
-        }
-
 
 
         var first =
             context.Solution
                 .Operations
-                .FirstOrDefault(
-                    x =>
-                        x.JobTicketCode ==
-                        record.JobTicketCode);
-
+                .FirstOrDefault(x =>
+                    x.JobTicketCode ==
+                    record.JobTicketCode);
 
 
         var second =
             context.Solution
                 .Operations
-                .FirstOrDefault(
-                    x =>
-                        x.JobTicketCode ==
-                        record.SecondJobTicketCode);
+                .FirstOrDefault(x =>
+                    x.JobTicketCode ==
+                    record.SecondJobTicketCode);
 
 
-
-        if(first == null ||
-           second == null)
-        {
+        if (first == null ||
+            second == null)
             return;
-        }
-
 
 
         var timeline =
             context.Timeline
                 .Machines[
                     record.OldMachineCode!];
-
 
 
         timeline.Release(
@@ -292,7 +266,6 @@ public class SwapOperationMove : IMove
             second.DurationSlots);
 
 
-
         timeline.Occupy(
             record.OldStartSlot,
             record.OldDurationSlots);
@@ -303,7 +276,6 @@ public class SwapOperationMove : IMove
             record.SecondDurationSlots);
 
 
-
         first.StartSlot =
             record.OldStartSlot;
 
@@ -312,33 +284,26 @@ public class SwapOperationMove : IMove
             record.SecondOldStartSlot;
 
 
-
         context.ExecutionRecord =
             null;
     }
 
 
-
     private ScheduledOperation? FindTarget(
         MoveContext context)
     {
-        foreach(var operation in
-                context.Solution.Operations)
+        foreach (var operation in
+                 context.Solution.Operations)
         {
-            if(operation ==
-               context.CurrentOperation)
-            {
+            if (operation ==
+                context.CurrentOperation)
                 continue;
-            }
 
 
-
-            if(operation.MachineCode ==
-               context.CurrentOperation!
-                   .MachineCode)
-            {
+            if (operation.MachineCode ==
+                context.CurrentOperation!
+                    .MachineCode)
                 return operation;
-            }
         }
 
 

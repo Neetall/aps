@@ -1,7 +1,7 @@
 using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
 
-namespace ProductionScheduling.Algorithm;
+namespace ProductionScheduling.Algorithm.Scheduling;
 
 /// <summary>
 ///     排产算法接口
