@@ -4,9 +4,11 @@ using ProductionScheduling.Timeline;
 namespace ProductionScheduling.Algorithm.Optimization;
 
 /// <summary>
-/// 优化过程中的排产状态
+/// 优化结果
+///
+/// 包含排产方案和资源状态
 /// </summary>
-public class ScheduleState
+public class OptimizationResult
 {
     /// <summary>
     /// 排产方案
@@ -14,25 +16,16 @@ public class ScheduleState
     public SchedulingSolution Solution { get; set; } = null!;
 
 
+
     /// <summary>
-    /// 时间轴状态
+    /// 时间资源状态
     /// </summary>
     public TimelineContext Timeline { get; set; } = null!;
+
 
 
     /// <summary>
     /// 评价结果
     /// </summary>
     public EvaluationResult? Evaluation { get; set; }
-    
-    public void ApplyTo(
-        SchedulingSolution solution,
-        TimelineContext timeline)
-    {
-        solution =
-            Solution;
-
-        timeline =
-            Timeline;
-    }
 }

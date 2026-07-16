@@ -9,8 +9,7 @@ namespace ProductionScheduling.Algorithm.Optimization;
 /// <summary>
 /// 局部搜索优化器
 ///
-/// 不断尝试邻域移动
-/// 保留评分更优的方案
+/// 基于邻域移动不断寻找更优排产方案
 /// </summary>
 public class LocalSearchOptimizer : ISolutionOptimizer
 {
@@ -36,17 +35,23 @@ public class LocalSearchOptimizer : ISolutionOptimizer
         SolutionCloner cloner,
         int iterations = 1000)
     {
-        this.resourceIndex = resourceIndex;
+        this.resourceIndex =
+            resourceIndex;
 
-        this.jobTicketIndex = jobTicketIndex;
+        this.jobTicketIndex =
+            jobTicketIndex;
 
-        this.operationSelector = operationSelector;
+        this.operationSelector =
+            operationSelector;
 
-        this.moveSelector = moveSelector;
+        this.moveSelector =
+            moveSelector;
 
-        this.cloner = cloner;
+        this.cloner =
+            cloner;
 
-        this.iterations = iterations;
+        this.iterations =
+            iterations;
     }
 
 
@@ -54,48 +59,68 @@ public class LocalSearchOptimizer : ISolutionOptimizer
     /// <summary>
     /// 执行局部搜索
     /// </summary>
-    public SchedulingSolution Optimize(
+    public OptimizationResult Optimize(
         SchedulingSolution solution,
         SchedulingContext context,
         TimelineContext timeline,
         ScheduleEvaluator evaluator)
     {
+        /*
+         * 初始状态复制
+         *
+         * 防止修改外部传入对象
+         */
         var current =
-            new ScheduleState
-            {
-                Solution =
-                    solution,
-
-                Timeline =
-                    timeline,
-
-                Evaluation =
-                    evaluator.Evaluate(
+            cloner.Clone(
+                new ScheduleState
+                {
+                    Solution =
                         solution,
-                        timeline,
-                        context)
-            };
+
+                    Timeline =
+                        timeline
+                });
+
+
+
+        current.Evaluation =
+            evaluator.Evaluate(
+                current.Solution,
+                current.Timeline,
+                context);
 
 
 
         for(var i = 0; i < iterations; i++)
         {
+            /*
+             * 创建候选方案
+             */
             var candidate =
                 cloner.Clone(
                     current);
 
 
 
+            /*
+             * 选择优化目标
+             */
             var operation =
                 operationSelector.Select(
                     candidate.Solution);
 
 
+
             if(operation == null)
+            {
                 continue;
+            }
 
 
 
+            /*
+             * 选择邻域Move
+             */
             var move =
                 moveSelector.Select();
 
@@ -125,6 +150,9 @@ public class LocalSearchOptimizer : ISolutionOptimizer
 
 
 
+            /*
+             * 执行移动
+             */
             var success =
                 move.Apply(
                     moveContext);
@@ -132,10 +160,15 @@ public class LocalSearchOptimizer : ISolutionOptimizer
 
 
             if(!success)
+            {
                 continue;
+            }
 
 
 
+            /*
+             * 重新评价
+             */
             candidate.Evaluation =
                 evaluator.Evaluate(
                     candidate.Solution,
@@ -144,8 +177,11 @@ public class LocalSearchOptimizer : ISolutionOptimizer
 
 
 
+            /*
+             * 只接受更优方案
+             */
             if(candidate.Evaluation.Score <
-               current.Evaluation.Score)
+               current.Evaluation!.Score)
             {
                 current =
                     candidate;
@@ -153,6 +189,17 @@ public class LocalSearchOptimizer : ISolutionOptimizer
         }
 
 
-        return current.Solution;
+
+        return new OptimizationResult
+        {
+            Solution =
+                current.Solution,
+
+            Timeline =
+                current.Timeline,
+
+            Evaluation =
+                current.Evaluation
+        };
     }
 }

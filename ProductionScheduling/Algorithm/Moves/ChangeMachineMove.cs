@@ -180,7 +180,6 @@ public class ChangeMachineMove : IMove
                 newDuration);
 
 
-
             /*
              * 更新排产结果
              */

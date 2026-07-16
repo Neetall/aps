@@ -92,12 +92,20 @@ public class SchedulingEngine
              */
             if(optimizer != null)
             {
-                solution =
+                var optimizeResult =
                     optimizer.Optimize(
                         solution,
                         context,
                         timeline,
                         evaluator);
+
+
+                solution =
+                    optimizeResult.Solution;
+
+
+                timeline =
+                    optimizeResult.Timeline;
             }
 
 
