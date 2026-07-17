@@ -8,7 +8,7 @@ public class ScheduleEvaluator
 {
     public EvaluationResult Evaluate(
         SchedulingSolution solution,
-        TimelineContext timeline,
+        TimelineContextGroup timelines,
         SchedulingContext context)
     {
         var result =
@@ -25,36 +25,61 @@ public class ScheduleEvaluator
 
 
 
-        var endSlot =
-            solution.Operations
-                .Max(x =>
-                    x.StartSlot +
-                    x.DurationSlots);
+        DateTime? maxEndTime =
+            null;
+
+
+        var maxMakespanSlot =
+            0;
+
+
+
+        foreach(var operation in solution.Operations)
+        {
+            var factory =
+                timelines.Get(
+                    operation.FactoryCode);
+
+
+
+            if(operation.EndSlot >
+               maxMakespanSlot)
+            {
+                maxMakespanSlot =
+                    operation.EndSlot;
+            }
+
+
+
+            var endTime =
+                factory.TimeModel
+                    .GetSlotEnd(
+                        operation.EndSlot - 1);
+
+
+
+            if(maxEndTime == null ||
+               endTime > maxEndTime)
+            {
+                maxEndTime =
+                    endTime;
+            }
+        }
 
 
 
         result.MakespanSlots =
-            endSlot;
+            maxMakespanSlot;
+
+
+        result.EndTime =
+            maxEndTime;
 
 
 
-        if(endSlot > 0 &&
-           endSlot <= timeline.TimeModel.SlotCount)
-        {
-            result.EndTime =
-                timeline.TimeModel.GetSlotEnd(
-                    endSlot - 1);
-        }
-        else
-        {
-            result.Score =
-                double.MaxValue;
-
-            return result;
-        }
-
-
-
+        /*
+         * 总生产小时
+         */
         var totalSlots =
             solution.Operations
                 .Sum(x =>
@@ -70,26 +95,40 @@ public class ScheduleEvaluator
 
 
 
-        var used =
-            timeline.Machines
-                .Values
-                .Sum(x =>
-                    x.UsedSlotCount);
+        /*
+         * 设备利用率
+         *
+         * 多工厂分别统计
+         */
+        var usedSlots =
+            0;
+
+
+        var totalSlotsCapacity =
+            0;
 
 
 
-        var total =
-            timeline.Machines
-                .Values
-                .Sum(x =>
-                    x.SlotCount);
+        foreach(var factory in timelines.Factories.Values)
+        {
+            foreach(var machine in factory.Machines.Values)
+            {
+                usedSlots +=
+                    machine.UsedSlotCount;
+
+
+                totalSlotsCapacity +=
+                    machine.SlotCount;
+            }
+        }
 
 
 
         result.MachineUtilization =
-            total == 0
+            totalSlotsCapacity == 0
                 ? 0
-                : (double)used / total;
+                : (double)usedSlots /
+                  totalSlotsCapacity;
 
 
 
@@ -124,7 +163,9 @@ public class ScheduleEvaluator
 
         return
             makespan * 10000
-            + delayPenalty
-            + utilizationPenalty;
+            +
+            delayPenalty
+            +
+            utilizationPenalty;
     }
 }

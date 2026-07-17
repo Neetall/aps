@@ -8,13 +8,15 @@ namespace ProductionScheduling.Algorithm.Optimization.Core;
 
 /// <summary>
 ///     优化状态复制器
-///     用于LocalSearch、SimulatedAnnealing、TabuSearch、LNS
+///
+///     用于:
+///     LocalSearch
+///     SimulatedAnnealing
+///     TabuSearch
+///     LNS
 /// </summary>
 public class SolutionCloner
 {
-    /// <summary>
-    ///     深复制优化状态
-    /// </summary>
     public ScheduleState Clone(
         ScheduleState source)
     {
@@ -23,105 +25,139 @@ public class SolutionCloner
             Solution =
                 source.Solution.Clone(),
 
-            Timeline =
-                CloneTimeline(
-                    source.Timeline),
+
+            Timelines =
+                CloneTimelines(
+                    source.Timelines),
+
 
             Evaluation =
                 CloneEvaluation(
                     source.Evaluation),
+
+
             History =
                 source.History
-                    .Select(x => new MoveExecutionRecord
-                    {
-                        MoveName =
-                            x.MoveName,
-
-                        Success =
-                            x.Success,
-
-
-                        JobTicketCode =
-                            x.JobTicketCode,
-
-                        SecondJobTicketCode =
-                            x.SecondJobTicketCode,
-
-
-                        OldMachineCode =
-                            x.OldMachineCode,
-
-                        SecondOldMachineCode =
-                            x.SecondOldMachineCode,
-
-
-                        OldStartSlot =
-                            x.OldStartSlot,
-
-                        NewStartSlot =
-                            x.NewStartSlot,
-
-
-                        SecondOldStartSlot =
-                            x.SecondOldStartSlot,
-
-                        SecondNewStartSlot =
-                            x.SecondNewStartSlot,
-
-
-                        OldDurationSlots =
-                            x.OldDurationSlots,
-
-                        NewDurationSlots =
-                            x.NewDurationSlots,
-
-
-                        SecondDurationSlots =
-                            x.SecondDurationSlots,
-
-
-                        OldScore =
-                            x.OldScore,
-
-                        NewScore =
-                            x.NewScore,
-
-
-                        Accepted =
-                            x.Accepted
-                    })
+                    .Select(x =>
+                        CloneRecord(x))
                     .ToList()
         };
     }
 
 
+
     /// <summary>
-    ///     深复制时间轴状态
-    ///     SchedulingTimeline共享
-    ///     MachineTimeline独立复制
+    /// 复制多工厂时间轴
     /// </summary>
-    private TimelineContext CloneTimeline(
-        TimelineContext source)
+    private TimelineContextGroup CloneTimelines(
+        TimelineContextGroup source)
     {
-        var context =
-            new TimelineContext(
-                source.TimeModel);
+        var result =
+            new TimelineContextGroup();
 
 
-        foreach(var machine in source.Machines)
+
+        foreach(var factory in
+                source.Factories.Values)
         {
-            context.AddMachineTimeline(
-                machine.Value.Clone());
+            var factoryClone =
+                new FactoryTimeline(
+                    factory.FactoryCode,
+                    factory.TimeModel);
+
+
+
+            foreach(var machine in
+                    factory.Machines.Values)
+            {
+                factoryClone.AddMachine(
+                    machine.Clone());
+            }
+
+
+
+            result.AddFactory(
+                factoryClone);
         }
 
 
-        return context;
+
+        return result;
     }
 
 
-    /// <summary>
-    ///     复制评价结果
-    /// </summary>
+
+    private MoveExecutionRecord CloneRecord(
+        MoveExecutionRecord x)
+    {
+        return new MoveExecutionRecord
+        {
+            MoveName =
+                x.MoveName,
+
+            Success =
+                x.Success,
+
+
+            JobTicketCode =
+                x.JobTicketCode,
+
+
+            SecondJobTicketCode =
+                x.SecondJobTicketCode,
+
+
+            OldMachineCode =
+                x.OldMachineCode,
+
+
+            SecondOldMachineCode =
+                x.SecondOldMachineCode,
+
+
+            OldStartSlot =
+                x.OldStartSlot,
+
+
+            NewStartSlot =
+                x.NewStartSlot,
+
+
+            SecondOldStartSlot =
+                x.SecondOldStartSlot,
+
+
+            SecondNewStartSlot =
+                x.SecondNewStartSlot,
+
+
+            OldDurationSlots =
+                x.OldDurationSlots,
+
+
+            NewDurationSlots =
+                x.NewDurationSlots,
+
+
+            SecondDurationSlots =
+                x.SecondDurationSlots,
+
+
+            OldScore =
+                x.OldScore,
+
+
+            NewScore =
+                x.NewScore,
+
+
+            Accepted =
+                x.Accepted
+        };
+    }
+
+
+
     private EvaluationResult? CloneEvaluation(
         EvaluationResult? source)
     {
@@ -134,30 +170,36 @@ public class SolutionCloner
             Score =
                 source.Score,
 
+
             EndTime =
                 source.EndTime,
+
 
             MakespanSlots =
                 source.MakespanSlots,
 
+
             ProductionHours =
                 source.ProductionHours,
 
+
             MachineUtilization =
                 source.MachineUtilization,
+
 
             DelayCount =
                 source.DelayCount
         };
     }
-    
 
-    
+
+
     public SchedulingSolution CloneSolution(
         SchedulingSolution solution)
     {
         var result =
             new SchedulingSolution();
+
 
 
         foreach(var operation in
@@ -166,14 +208,21 @@ public class SolutionCloner
             result.Operations.Add(
                 new ScheduledOperation
                 {
+                    FactoryCode =
+                        operation.FactoryCode,
+
+
                     JobTicketCode =
                         operation.JobTicketCode,
+
 
                     MachineCode =
                         operation.MachineCode,
 
+
                     StartSlot =
                         operation.StartSlot,
+
 
                     DurationSlots =
                         operation.DurationSlots
@@ -181,9 +230,12 @@ public class SolutionCloner
         }
 
 
+
         return result;
     }
-    
+
+
+
     public LnsState Clone(
         LnsState source)
     {
@@ -192,14 +244,15 @@ public class SolutionCloner
             Solution =
                 source.Solution.Clone(),
 
-            Timeline =
-                CloneTimeline(
-                    source.Timeline),
+
+            Timelines =
+                CloneTimelines(
+                    source.Timelines),
+
 
             Evaluation =
                 CloneEvaluation(
                     source.Evaluation)
         };
     }
-    
 }

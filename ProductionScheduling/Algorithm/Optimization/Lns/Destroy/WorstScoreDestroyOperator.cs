@@ -5,13 +5,11 @@ using ProductionScheduling.Timeline;
 
 namespace ProductionScheduling.Algorithm.Optimization.Lns.Destroy;
 
-
 public class WorstScoreDestroyOperator : IDestroyOperator
 {
     private readonly ScheduleEvaluator evaluator;
 
     private readonly SchedulingContext context;
-
 
 
     public WorstScoreDestroyOperator(
@@ -29,7 +27,7 @@ public class WorstScoreDestroyOperator : IDestroyOperator
 
     public List<ScheduledOperation> Destroy(
         SchedulingSolution solution,
-        TimelineContext timeline,
+        TimelineContextGroup timelines,
         double rate)
     {
         if(solution.Operations.Count == 0)
@@ -49,7 +47,7 @@ public class WorstScoreDestroyOperator : IDestroyOperator
         var baseEvaluation =
             evaluator.Evaluate(
                 solution,
-                timeline,
+                timelines,
                 context);
 
 
@@ -59,11 +57,7 @@ public class WorstScoreDestroyOperator : IDestroyOperator
 
 
 
-        /*
-         * 计算每个任务影响
-         */
-        foreach(var operation in
-                solution.Operations.ToList())
+        foreach(var operation in solution.Operations.ToList())
         {
             solution.Operations.Remove(
                 operation);
@@ -73,7 +67,7 @@ public class WorstScoreDestroyOperator : IDestroyOperator
             var evaluation =
                 evaluator.Evaluate(
                     solution,
-                    timeline,
+                    timelines,
                     context);
 
 
@@ -108,12 +102,6 @@ public class WorstScoreDestroyOperator : IDestroyOperator
 
 
 
-        /*
-         * 真正Destroy
-         *
-         * 1. Solution删除
-         * 2. Timeline释放
-         */
         foreach(var operation in removed)
         {
             solution.Operations.Remove(
@@ -121,7 +109,13 @@ public class WorstScoreDestroyOperator : IDestroyOperator
 
 
 
-            if(timeline.Machines
+            var factory =
+                timelines.Get(
+                    operation.FactoryCode);
+
+
+
+            if(factory.Machines
                     .TryGetValue(
                         operation.MachineCode,
                         out var machineTimeline))

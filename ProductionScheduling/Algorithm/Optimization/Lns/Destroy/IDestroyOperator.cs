@@ -3,11 +3,10 @@ using ProductionScheduling.Timeline;
 
 namespace ProductionScheduling.Algorithm.Optimization.Lns.Destroy;
 
-
 public interface IDestroyOperator
 {
     List<ScheduledOperation> Destroy(
         SchedulingSolution solution,
-        TimelineContext timeline,
+        TimelineContextGroup timelines,
         double rate);
 }

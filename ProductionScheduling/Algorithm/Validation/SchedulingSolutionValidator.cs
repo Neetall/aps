@@ -7,7 +7,7 @@ public class SchedulingSolutionValidator
 {
     public void Validate(
         SchedulingSolution solution,
-        TimelineContext timeline)
+        TimelineContextGroup timelines)
     {
         ValidateDuplicateJobTicket(
             solution);
@@ -15,12 +15,12 @@ public class SchedulingSolutionValidator
 
         ValidateMachineExist(
             solution,
-            timeline);
+            timelines);
 
 
         ValidateOperationRange(
             solution,
-            timeline);
+            timelines);
 
 
         ValidateMachineConflict(
@@ -30,7 +30,7 @@ public class SchedulingSolutionValidator
 
 
     /// <summary>
-    ///     一个JobTicket只能存在一个排产结果
+    /// 一个JobTicket只能存在一个排产结果
     /// </summary>
     private void ValidateDuplicateJobTicket(
         SchedulingSolution solution)
@@ -54,20 +54,28 @@ public class SchedulingSolutionValidator
 
 
     /// <summary>
-    ///     检查设备是否存在
+    /// 检查设备是否存在
     /// </summary>
     private void ValidateMachineExist(
         SchedulingSolution solution,
-        TimelineContext timeline)
+        TimelineContextGroup timelines)
     {
         foreach(var operation in solution.Operations)
         {
-            if(!timeline.Machines
-                .ContainsKey(
-                    operation.MachineCode))
+            var factory =
+                timelines.Get(
+                    operation.FactoryCode);
+
+
+
+            if(!factory.Machines
+                    .ContainsKey(
+                        operation.MachineCode))
             {
                 throw new InvalidOperationException(
-                    $"设备不存在:{operation.MachineCode}");
+                    $"设备不存在:" +
+                    $"{operation.FactoryCode}/" +
+                    $"{operation.MachineCode}");
             }
         }
     }
@@ -75,11 +83,11 @@ public class SchedulingSolutionValidator
 
 
     /// <summary>
-    ///     检查时间范围
+    /// 检查时间范围
     /// </summary>
     private void ValidateOperationRange(
         SchedulingSolution solution,
-        TimelineContext timeline)
+        TimelineContextGroup timelines)
     {
         foreach(var operation in solution.Operations)
         {
@@ -101,9 +109,15 @@ public class SchedulingSolutionValidator
 
 
 
+            var factory =
+                timelines.Get(
+                    operation.FactoryCode);
+
+
+
             if(operation.StartSlot +
                operation.DurationSlots >
-               timeline.TimeModel.SlotCount)
+               factory.TimeModel.SlotCount)
             {
                 throw new InvalidOperationException(
                     $"超出时间轴范围:" +
@@ -115,17 +129,20 @@ public class SchedulingSolutionValidator
 
 
     /// <summary>
-    ///     检查同设备任务冲突
+    /// 检查同设备任务冲突
     ///
-    ///     不检查MachineTimeline
-    ///     避免维护时间影响验证
+    /// 同一个工厂内同设备不能重叠
     /// </summary>
     private void ValidateMachineConflict(
         SchedulingSolution solution)
     {
         foreach(var group in solution.Operations
                     .GroupBy(x =>
-                        x.MachineCode))
+                        new
+                        {
+                            x.FactoryCode,
+                            x.MachineCode
+                        }))
         {
             var operations =
                 group
@@ -159,7 +176,8 @@ public class SchedulingSolutionValidator
                 {
                     throw new InvalidOperationException(
                         $"设备任务时间冲突:" +
-                        $"Machine={group.Key}," +
+                        $"Factory={group.Key.FactoryCode}," +
+                        $"Machine={group.Key.MachineCode}," +
                         $"Job1={previous.JobTicketCode}," +
                         $"Job2={current.JobTicketCode}");
                 }

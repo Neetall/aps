@@ -29,8 +29,15 @@ public class ChangeMachineMove : IMove
             context.CurrentOperation;
 
 
-        if (operation == null)
+        if(operation == null)
             return false;
+
+
+
+        var factory =
+            context.Timelines.Get(
+                operation.FactoryCode);
+
 
 
         var oldMachine =
@@ -45,13 +52,16 @@ public class ChangeMachineMove : IMove
             operation.DurationSlots;
 
 
+
         var ticket =
             context.JobTicketIndex.Get(
                 operation.JobTicketCode);
 
 
-        if (ticket == null)
+
+        if(ticket == null)
             return false;
+
 
 
         var capabilities =
@@ -59,18 +69,24 @@ public class ChangeMachineMove : IMove
                 operation.JobTicketCode);
 
 
-        foreach (var capability in capabilities)
+
+        foreach(var capability in capabilities)
         {
-            if (capability.MachineCode ==
-                oldMachine)
+            if(capability.MachineCode ==
+               oldMachine)
                 continue;
 
 
-            if (!context.Timeline.Machines
+
+            /*
+             * 设备必须属于当前工厂
+             */
+            if(!factory.Machines
                     .TryGetValue(
                         capability.MachineCode,
                         out var newTimeline))
                 continue;
+
 
 
             var duration =
@@ -79,34 +95,46 @@ public class ChangeMachineMove : IMove
                     capability);
 
 
+
             var start =
-                context.Timeline.TimeModel
+                factory.TimeModel
                     .FindEarliestAvailable(
                         newTimeline,
                         duration);
+
 
 
             if(start < 0)
                 continue;
 
 
-            if(!context.Timeline.Machines
-                   .TryGetValue(
-                       oldMachine,
-                       out var oldTimeline))
+
+            if(!factory.Machines
+                    .TryGetValue(
+                        oldMachine,
+                        out var oldTimeline))
             {
                 return false;
             }
 
 
+
+            /*
+             * 释放旧设备
+             */
             oldTimeline.Release(
                 oldStart,
                 oldDuration);
 
 
+
+            /*
+             * 占用新设备
+             */
             newTimeline.Occupy(
                 start,
                 duration);
+
 
 
             operation.MachineCode =
@@ -121,33 +149,46 @@ public class ChangeMachineMove : IMove
                 duration;
 
 
+
             context.ExecutionRecord =
                 new MoveExecutionRecord
                 {
-                    MoveName = Name,
+                    MoveName =
+                        Name,
 
-                    Success = true,
+
+                    Success =
+                        true,
+
 
                     JobTicketCode =
                         operation.JobTicketCode,
 
+
                     OldMachineCode =
                         oldMachine,
+
 
                     NewMachineCode =
                         capability.MachineCode,
 
+
                     OldStartSlot =
                         oldStart,
+
 
                     NewStartSlot =
                         start,
 
+
                     OldDurationSlots =
                         oldDuration,
 
+
                     NewDurationSlots =
                         duration,
+
+
                     TabuKey =
                         TabuKeyGenerator.ChangeMachine(
                             operation.JobTicketCode,
@@ -160,16 +201,21 @@ public class ChangeMachineMove : IMove
         }
 
 
+
         context.ExecutionRecord =
             new MoveExecutionRecord
             {
-                MoveName = Name,
-                Success = false
+                MoveName =
+                    Name,
+
+                Success =
+                    false
             };
 
 
         return false;
     }
+
 
 
     public void Undo(
@@ -183,14 +229,22 @@ public class ChangeMachineMove : IMove
             context.CurrentOperation;
 
 
-        if (record == null ||
-            !record.Success ||
-            operation == null)
+
+        if(record == null ||
+           !record.Success ||
+           operation == null)
             return;
 
 
+
+        var factory =
+            context.Timelines.Get(
+                operation.FactoryCode);
+
+
+
         var newTimeline =
-            context.Timeline.Machines
+            factory.Machines
                 [record.NewMachineCode!];
 
 
@@ -199,14 +253,16 @@ public class ChangeMachineMove : IMove
             record.NewDurationSlots);
 
 
+
         var oldTimeline =
-            context.Timeline.Machines
+            factory.Machines
                 [record.OldMachineCode!];
 
 
         oldTimeline.Occupy(
             record.OldStartSlot,
             record.OldDurationSlots);
+
 
 
         operation.MachineCode =
@@ -221,6 +277,8 @@ public class ChangeMachineMove : IMove
             record.OldDurationSlots;
 
 
-        context.ExecutionRecord = null;
+
+        context.ExecutionRecord =
+            null;
     }
 }

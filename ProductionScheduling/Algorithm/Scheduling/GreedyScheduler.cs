@@ -8,12 +8,13 @@ using ProductionScheduling.Timeline;
 namespace ProductionScheduling.Algorithm.Scheduling;
 
 /// <summary>
-///     最早完工时间贪心排产
-///     策略:
-///     1. 按订单优先级排序
-///     2. 按派工单Sequence顺序排产
-///     3. 每个派工单选择最早完成设备
-///     4. 排产后立即占用设备时间
+/// 最早完工时间贪心排产
+///
+/// 策略:
+/// 1. 按订单优先级排序
+/// 2. 按派工单Sequence顺序排产
+/// 3. 每个派工单选择最早完成设备
+/// 4. 排产后立即占用设备时间
 /// </summary>
 public class GreedyScheduler : IScheduler
 {
@@ -34,9 +35,10 @@ public class GreedyScheduler : IScheduler
     }
 
 
+
     public SchedulingSolution Schedule(
         SchedulingContext context,
-        TimelineContext timeline)
+        TimelineContextGroup timelines)
     {
         var solution =
             new SchedulingSolution();
@@ -44,23 +46,29 @@ public class GreedyScheduler : IScheduler
 
         var orders =
             context.Orders
-                .OrderBy(x => x.Priority)
+                .OrderBy(x =>
+                    x.Priority)
                 .ToList();
 
 
-        foreach (var order in orders)
+
+        foreach(var order in orders)
         {
-            var previousEndSlot = 0;
+            var previousEndSlot =
+                0;
 
 
-            foreach (var ticket in order.JobTickets
-                         .OrderBy(x => x.Sequence))
+
+            foreach(var ticket in order.JobTickets
+                         .OrderBy(x =>
+                             x.Sequence))
             {
                 var candidate =
                     FindBestMachine(
                         ticket,
-                        timeline,
+                        timelines,
                         previousEndSlot);
+
 
 
                 if(candidate == null)
@@ -72,8 +80,10 @@ public class GreedyScheduler : IScheduler
                 }
 
 
+
                 solution.Operations.Add(
                     candidate.Operation);
+
 
 
                 candidate.MachineTimeline.Occupy(
@@ -81,10 +91,12 @@ public class GreedyScheduler : IScheduler
                     candidate.Operation.DurationSlots);
 
 
+
                 previousEndSlot =
                     candidate.EndSlot;
             }
         }
+
 
 
         return solution;
@@ -94,11 +106,18 @@ public class GreedyScheduler : IScheduler
 
     private MachineScheduleCandidate? FindBestMachine(
         JobTicket ticket,
-        TimelineContext timeline,
+        TimelineContextGroup timelines,
         int earliestStartSlot)
     {
         MachineScheduleCandidate? best =
             null;
+
+
+
+        var factoryTimeline =
+            timelines.Get(
+                ticket.FactoryCode);
+
 
 
         var capabilities =
@@ -107,13 +126,15 @@ public class GreedyScheduler : IScheduler
                     ticket.Code);
 
 
+
         foreach(var capability in capabilities)
         {
             var machineCode =
                 capability.MachineCode;
 
 
-            if(!timeline.Machines
+
+            if(!factoryTimeline.Machines
                     .TryGetValue(
                         machineCode,
                         out var machineTimeline))
@@ -128,14 +149,8 @@ public class GreedyScheduler : IScheduler
 
 
 
-            /*
-             * 通过TimeModel寻找最早可用时间
-             *
-             * 时间连续性由TimeModel决定
-             * 设备占用由MachineTimeline决定
-             */
             var startSlot =
-                timeline.TimeModel
+                factoryTimeline.TimeModel
                     .FindEarliestAvailable(
                         machineTimeline,
                         duration,
@@ -149,7 +164,8 @@ public class GreedyScheduler : IScheduler
 
 
             var endSlot =
-                startSlot + duration;
+                startSlot +
+                duration;
 
 
 
@@ -170,6 +186,10 @@ public class GreedyScheduler : IScheduler
                         Operation =
                             new ScheduledOperation
                             {
+                                FactoryCode =
+                                    ticket.FactoryCode,
+
+
                                 JobTicketCode =
                                     ticket.Code,
 
@@ -188,6 +208,7 @@ public class GreedyScheduler : IScheduler
                     };
             }
         }
+
 
 
         return best;

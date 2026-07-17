@@ -14,13 +14,13 @@ public interface IScheduler
     /// <param name="context">
     ///     排产输入数据
     /// </param>
-    /// <param name="timeline">
-    ///     时间资源模型
+    /// <param name="timelines">
+    ///     多工厂时间资源模型
     /// </param>
     /// <returns>
     ///     排产结果
     /// </returns>
     SchedulingSolution Schedule(
         SchedulingContext context,
-        TimelineContext timeline);
+        TimelineContextGroup timelines);
 }

@@ -17,9 +17,9 @@ public class OptimizationResult
 
 
     /// <summary>
-    ///     时间资源状态
+    ///     多工厂时间资源状态
     /// </summary>
-    public TimelineContext Timeline { get; set; } = null!;
+    public TimelineContextGroup Timelines { get; set; } = null!;
 
 
     /// <summary>

@@ -6,10 +6,12 @@ namespace ProductionScheduling.Algorithm.Moves.Implementations;
 
 /// <summary>
 ///     交换两个派工单时间顺序
+///
 ///     条件:
-///     1. 同设备
-///     2. 整体交换
-///     3. 不拆分
+///     1. 同工厂
+///     2. 同设备
+///     3. 整体交换
+///     4. 不拆分
 /// </summary>
 public class SwapOperationMove : IMove
 {
@@ -24,17 +26,12 @@ public class SwapOperationMove : IMove
             context.CurrentOperation;
 
 
-        if (first == null)
+        if(first == null)
         {
-            context.ExecutionRecord =
-                new MoveExecutionRecord
-                {
-                    MoveName = Name,
-                    Success = false
-                };
-
+            Fail(context);
             return false;
         }
+
 
 
         var second =
@@ -42,40 +39,47 @@ public class SwapOperationMove : IMove
                 context);
 
 
-        if (second == null)
-        {
-            context.ExecutionRecord =
-                new MoveExecutionRecord
-                {
-                    MoveName = Name,
-                    Success = false
-                };
 
+        if(second == null)
+        {
+            Fail(context);
             return false;
         }
 
 
-        if (first.MachineCode !=
-            second.MachineCode)
-        {
-            context.ExecutionRecord =
-                new MoveExecutionRecord
-                {
-                    MoveName = Name,
-                    Success = false
-                };
 
+        if(first.FactoryCode !=
+           second.FactoryCode)
+        {
+            Fail(context);
             return false;
         }
 
 
-        if(!context.Timeline.Machines
-               .TryGetValue(
-                   first.MachineCode,
-                   out var timeline))
+
+        if(first.MachineCode !=
+           second.MachineCode)
         {
+            Fail(context);
             return false;
         }
+
+
+
+        var factory =
+            context.Timelines.Get(
+                first.FactoryCode);
+
+
+
+        if(!factory.TryGetMachine(
+               first.MachineCode,
+               out var timeline))
+        {
+            Fail(context);
+            return false;
+        }
+
 
 
         var firstOldStart =
@@ -94,8 +98,9 @@ public class SwapOperationMove : IMove
             second.DurationSlots;
 
 
+
         /*
-         * 释放原位置
+         * 释放旧位置
          */
         timeline.Release(
             firstOldStart,
@@ -107,6 +112,7 @@ public class SwapOperationMove : IMove
             secondDuration);
 
 
+
         var firstNewStart =
             secondOldStart;
 
@@ -115,11 +121,15 @@ public class SwapOperationMove : IMove
             firstOldStart;
 
 
-        if (!timeline.CanOccupy(
+
+        /*
+         * 检查交换后是否可用
+         */
+        if(!timeline.CanOccupy(
                 firstNewStart,
                 firstDuration)
             ||
-            !timeline.CanOccupy(
+           !timeline.CanOccupy(
                 secondNewStart,
                 secondDuration))
         {
@@ -133,16 +143,11 @@ public class SwapOperationMove : IMove
                 secondDuration);
 
 
-            context.ExecutionRecord =
-                new MoveExecutionRecord
-                {
-                    MoveName = Name,
-                    Success = false
-                };
-
+            Fail(context);
 
             return false;
         }
+
 
 
         timeline.Occupy(
@@ -155,12 +160,14 @@ public class SwapOperationMove : IMove
             secondDuration);
 
 
+
         first.StartSlot =
             firstNewStart;
 
 
         second.StartSlot =
             secondNewStart;
+
 
 
         context.ExecutionRecord =
@@ -216,6 +223,7 @@ public class SwapOperationMove : IMove
                 SecondDurationSlots =
                     secondDuration,
 
+
                 TabuKey =
                     TabuKeyGenerator.SwapOperation(
                         first.JobTicketCode,
@@ -228,6 +236,7 @@ public class SwapOperationMove : IMove
     }
 
 
+
     public void Undo(
         MoveContext context)
     {
@@ -235,9 +244,10 @@ public class SwapOperationMove : IMove
             context.ExecutionRecord;
 
 
-        if (record == null ||
-            !record.Success)
+        if(record == null ||
+           !record.Success)
             return;
+
 
 
         var first =
@@ -248,6 +258,7 @@ public class SwapOperationMove : IMove
                     record.JobTicketCode);
 
 
+
         var second =
             context.Solution
                 .Operations
@@ -256,17 +267,29 @@ public class SwapOperationMove : IMove
                     record.SecondJobTicketCode);
 
 
-        if (first == null ||
-            second == null)
+
+        if(first == null ||
+           second == null)
             return;
 
 
-        var timeline =
-            context.Timeline
-                .Machines[
-                    record.OldMachineCode!];
+
+        var factory =
+            context.Timelines.Get(
+                first.FactoryCode);
 
 
+
+        if(!factory.TryGetMachine(
+               first.MachineCode,
+               out var timeline))
+            return;
+
+
+
+        /*
+         * 删除交换后位置
+         */
         timeline.Release(
             first.StartSlot,
             first.DurationSlots);
@@ -277,6 +300,10 @@ public class SwapOperationMove : IMove
             second.DurationSlots);
 
 
+
+        /*
+         * 恢复原位置
+         */
         timeline.Occupy(
             record.OldStartSlot,
             record.OldDurationSlots);
@@ -287,6 +314,7 @@ public class SwapOperationMove : IMove
             record.SecondDurationSlots);
 
 
+
         first.StartSlot =
             record.OldStartSlot;
 
@@ -295,29 +323,55 @@ public class SwapOperationMove : IMove
             record.SecondOldStartSlot;
 
 
+
         context.ExecutionRecord =
             null;
     }
 
 
+
     private ScheduledOperation? FindTarget(
         MoveContext context)
     {
-        foreach (var operation in
-                 context.Solution.Operations)
+        var current =
+            context.CurrentOperation;
+
+
+        foreach(var operation in
+                context.Solution.Operations)
         {
-            if (operation ==
-                context.CurrentOperation)
+            if(operation ==
+               current)
                 continue;
 
 
-            if (operation.MachineCode ==
-                context.CurrentOperation!
-                    .MachineCode)
+            if(operation.FactoryCode ==
+               current!.FactoryCode
+               &&
+               operation.MachineCode ==
+               current.MachineCode)
+            {
                 return operation;
+            }
         }
 
 
         return null;
+    }
+
+
+
+    private void Fail(
+        MoveContext context)
+    {
+        context.ExecutionRecord =
+            new MoveExecutionRecord
+            {
+                MoveName =
+                    Name,
+
+                Success =
+                    false
+            };
     }
 }

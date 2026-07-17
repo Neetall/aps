@@ -3,7 +3,6 @@ using ProductionScheduling.Timeline;
 
 namespace ProductionScheduling.Algorithm.Optimization.Lns.Destroy;
 
-
 public class RandomDestroyOperator : IDestroyOperator
 {
     private readonly Random random;
@@ -21,15 +20,14 @@ public class RandomDestroyOperator : IDestroyOperator
 
     public List<ScheduledOperation> Destroy(
         SchedulingSolution solution,
-        TimelineContext timeline,
+        TimelineContextGroup timelines,
         double rate)
     {
         var count =
             Math.Max(
                 1,
                 (int)(
-                    solution.Operations.Count
-                    *
+                    solution.Operations.Count *
                     rate));
 
 
@@ -45,8 +43,13 @@ public class RandomDestroyOperator : IDestroyOperator
 
         foreach(var operation in removed)
         {
-            if(timeline.Machines
-               .TryGetValue(
+            var factory =
+                timelines.Get(
+                    operation.FactoryCode);
+
+
+
+            if(factory.TryGetMachine(
                    operation.MachineCode,
                    out var machine))
             {
@@ -54,6 +57,7 @@ public class RandomDestroyOperator : IDestroyOperator
                     operation.StartSlot,
                     operation.DurationSlots);
             }
+
 
 
             solution.Operations.Remove(

@@ -4,9 +4,7 @@ using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Algorithm.Time;
 using ProductionScheduling.Timeline;
 
-
 namespace ProductionScheduling.Algorithm.Optimization.Lns.Repair;
-
 
 public class GreedyRepairOperator : IRepairOperator
 {
@@ -15,7 +13,6 @@ public class GreedyRepairOperator : IRepairOperator
     private readonly JobTicketIndex jobTicketIndex;
 
     private readonly ScheduleDurationCalculator durationCalculator;
-
 
 
     public GreedyRepairOperator(
@@ -34,10 +31,9 @@ public class GreedyRepairOperator : IRepairOperator
     }
 
 
-
     public void Repair(
         SchedulingSolution solution,
-        TimelineContext timeline,
+        TimelineContextGroup timelines,
         List<ScheduledOperation> removed)
     {
         foreach(var operation in removed)
@@ -47,9 +43,14 @@ public class GreedyRepairOperator : IRepairOperator
                     operation.JobTicketCode);
 
 
-
             if(ticket == null)
                 continue;
+
+
+
+            var factory =
+                timelines.Get(
+                    ticket.FactoryCode);
 
 
 
@@ -66,8 +67,7 @@ public class GreedyRepairOperator : IRepairOperator
 
             foreach(var capability in capabilities)
             {
-                if(!timeline.Machines
-                    .TryGetValue(
+                if(!factory.TryGetMachine(
                         capability.MachineCode,
                         out var machine))
                     continue;
@@ -80,11 +80,13 @@ public class GreedyRepairOperator : IRepairOperator
                         capability);
 
 
+
                 var start =
-                    timeline.TimeModel
+                    factory.TimeModel
                         .FindEarliestAvailable(
                             machine,
                             duration);
+
 
 
                 if(start < 0)
@@ -126,20 +128,19 @@ public class GreedyRepairOperator : IRepairOperator
 
 
 
-            /*
-             * 占用新的时间
-             */
             var machineTimeline =
-                timeline.Machines[
+                factory.Machines[
                     best.MachineCode];
 
 
+
             if(!machineTimeline.CanOccupy(
-                   best.Start,
-                   best.Duration))
+                    best.Start,
+                    best.Duration))
             {
                 continue;
             }
+
 
 
             machineTimeline.Occupy(
@@ -148,11 +149,10 @@ public class GreedyRepairOperator : IRepairOperator
 
 
 
-            /*
-             * 更新原Operation
-             *
-             * 不创建新的
-             */
+            operation.FactoryCode =
+                ticket.FactoryCode;
+
+
             operation.MachineCode =
                 best.MachineCode;
 
@@ -166,9 +166,6 @@ public class GreedyRepairOperator : IRepairOperator
 
 
 
-            /*
-             * 放回Solution
-             */
             solution.Operations.Add(
                 operation);
         }

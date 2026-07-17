@@ -1,14 +1,12 @@
 namespace ProductionScheduling.Timeline;
 
-public class TimelineContext
+public class TimelineContextGroup
 {
     private readonly Dictionary<string, FactoryTimeline> factories = [];
 
 
-
     public IReadOnlyDictionary<string, FactoryTimeline> Factories =>
         factories;
-
 
 
     public void AddFactory(
@@ -17,7 +15,6 @@ public class TimelineContext
         factories[factory.FactoryCode] =
             factory;
     }
-
 
 
     public bool TryGetFactory(
@@ -30,18 +27,16 @@ public class TimelineContext
     }
 
 
-
-    public FactoryTimeline GetFactory(
+    public FactoryTimeline Get(
         string factoryCode)
     {
         if(!factories.TryGetValue(
                factoryCode,
                out var factory))
         {
-            throw new TimelineBuildException(
+            throw new Exception(
                 $"工厂时间轴不存在:{factoryCode}");
         }
-
 
         return factory;
     }

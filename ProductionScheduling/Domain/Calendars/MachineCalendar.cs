@@ -3,6 +3,11 @@ namespace ProductionScheduling.Domain.Calendars;
 public class MachineCalendar
 {
     /// <summary>
+    /// 工厂编码
+    /// </summary>
+    public string FactoryCode { get; set; } = string.Empty;
+    
+    /// <summary>
     ///     设备编码
     /// </summary>
     public string MachineCode { get; set; }

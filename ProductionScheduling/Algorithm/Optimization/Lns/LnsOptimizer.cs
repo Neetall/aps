@@ -11,7 +11,6 @@ using ProductionScheduling.Algorithm.Validation;
 using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
 
-
 namespace ProductionScheduling.Algorithm.Optimization.Lns;
 
 public class LnsOptimizer : ISolutionOptimizer
@@ -27,7 +26,6 @@ public class LnsOptimizer : ISolutionOptimizer
     private readonly SchedulingSolutionValidator validator;
 
     private readonly LnsOptions options;
-
 
 
     public LnsOptimizer(
@@ -58,11 +56,10 @@ public class LnsOptimizer : ISolutionOptimizer
     }
 
 
-
     public OptimizationResult Optimize(
         SchedulingSolution solution,
         SchedulingContext context,
-        TimelineContext timeline,
+        TimelineContextGroup timelines,
         ScheduleEvaluator evaluator)
     {
         var current =
@@ -72,13 +69,13 @@ public class LnsOptimizer : ISolutionOptimizer
                     cloner.CloneSolution(
                         solution),
 
-                Timeline =
-                    timeline,
+                Timelines =
+                    timelines,
 
                 Evaluation =
                     evaluator.Evaluate(
                         solution,
-                        timeline,
+                        timelines,
                         context)
             };
 
@@ -100,16 +97,10 @@ public class LnsOptimizer : ISolutionOptimizer
 
 
 
-            /*
-             * Destroy
-             *
-             * 删除部分工单
-             * 同时释放设备资源
-             */
             var removed =
                 destroyOperator.Destroy(
                     candidate.Solution,
-                    candidate.Timeline,
+                    candidate.Timelines,
                     options.DestroyRate);
 
 
@@ -119,47 +110,27 @@ public class LnsOptimizer : ISolutionOptimizer
 
 
 
-            /*
-             * Repair
-             *
-             * 重新插入工单
-             */
             repairOperator.Repair(
                 candidate.Solution,
-                candidate.Timeline,
+                candidate.Timelines,
                 removed);
 
 
 
-            /*
-             * 验证Solution合法性
-             *
-             * 检查:
-             * 1. JobTicket重复
-             * 2. 设备存在
-             * 3. 时间范围
-             * 4. 设备任务冲突
-             */
             validator.Validate(
                 candidate.Solution,
-                candidate.Timeline);
+                candidate.Timelines);
 
 
 
-            /*
-             * 重新评价
-             */
             candidate.Evaluation =
                 evaluator.Evaluate(
                     candidate.Solution,
-                    candidate.Timeline,
+                    candidate.Timelines,
                     context);
 
 
 
-            /*
-             * 接受策略
-             */
             if(!acceptance.Accept(
                     current.Evaluation!,
                     candidate.Evaluation))
@@ -174,9 +145,6 @@ public class LnsOptimizer : ISolutionOptimizer
 
 
 
-            /*
-             * 更新最优
-             */
             if(current.Evaluation!.Score <
                best.Evaluation!.Score)
             {
@@ -193,10 +161,8 @@ public class LnsOptimizer : ISolutionOptimizer
             Solution =
                 best.Solution,
 
-
-            Timeline =
-                best.Timeline,
-
+            Timelines =
+                best.Timelines,
 
             Evaluation =
                 best.Evaluation

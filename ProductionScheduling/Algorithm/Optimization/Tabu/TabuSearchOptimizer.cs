@@ -13,15 +13,10 @@ namespace ProductionScheduling.Algorithm.Optimization.Tabu;
 public class TabuSearchOptimizer : ISolutionOptimizer
 {
     private readonly SchedulingResourceIndex resourceIndex;
-
     private readonly JobTicketIndex jobTicketIndex;
-
     private readonly MoveNeighborhoodGenerator neighborhoodGenerator;
-
     private readonly SolutionCloner cloner;
-
     private readonly TabuSearchOptions options;
-
 
 
     public TabuSearchOptimizer(
@@ -48,11 +43,10 @@ public class TabuSearchOptimizer : ISolutionOptimizer
     }
 
 
-
     public OptimizationResult Optimize(
         SchedulingSolution solution,
         SchedulingContext context,
-        TimelineContext timeline,
+        TimelineContextGroup timelines,
         ScheduleEvaluator evaluator)
     {
         var current =
@@ -62,8 +56,8 @@ public class TabuSearchOptimizer : ISolutionOptimizer
                     Solution =
                         solution,
 
-                    Timeline =
-                        timeline
+                    Timelines =
+                        timelines
                 });
 
 
@@ -71,7 +65,7 @@ public class TabuSearchOptimizer : ISolutionOptimizer
         current.Evaluation =
             evaluator.Evaluate(
                 current.Solution,
-                current.Timeline,
+                current.Timelines,
                 context);
 
 
@@ -134,8 +128,8 @@ public class TabuSearchOptimizer : ISolutionOptimizer
                         Solution =
                             candidate.Solution,
 
-                        Timeline =
-                            candidate.Timeline,
+                        Timelines =
+                            candidate.Timelines,
 
                         ResourceIndex =
                             resourceIndex,
@@ -158,7 +152,7 @@ public class TabuSearchOptimizer : ISolutionOptimizer
                 candidate.Evaluation =
                     evaluator.Evaluate(
                         candidate.Solution,
-                        candidate.Timeline,
+                        candidate.Timelines,
                         context);
 
 
@@ -180,20 +174,13 @@ public class TabuSearchOptimizer : ISolutionOptimizer
 
 
                 var isTabu =
-                    tabuKey != null
-                    &&
+                    tabuKey != null &&
                     tabu.IsTabu(
                         tabuKey,
                         iteration);
 
 
 
-                /*
-                 * 破禁:
-                 *
-                 * 优于历史最好
-                 * 即使Tabu也允许
-                 */
                 var aspiration =
                     candidate.Evaluation.Score <
                     best.Evaluation!.Score;
@@ -206,9 +193,6 @@ public class TabuSearchOptimizer : ISolutionOptimizer
 
 
 
-                /*
-                 * 是否允许接受差解
-                 */
                 if(!options.AllowWorseMoves &&
                    candidate.Evaluation.Score >=
                    current.Evaluation!.Score)
@@ -216,9 +200,6 @@ public class TabuSearchOptimizer : ISolutionOptimizer
 
 
 
-                /*
-                 * 当前邻域里面选择最优
-                 */
                 if(bestNeighbor == null ||
                    candidate.Evaluation.Score <
                    bestNeighbor.Score)
@@ -246,25 +227,16 @@ public class TabuSearchOptimizer : ISolutionOptimizer
 
 
 
-            /*
-             * 没有合法邻居
-             */
             if(bestNeighbor == null)
                 continue;
 
 
 
-            /*
-             * 移动到最佳邻居
-             */
             current =
                 bestNeighbor.State!;
 
 
 
-            /*
-             * 当前移动加入Tabu
-             */
             if(bestNeighbor.Record?.TabuKey != null)
             {
                 tabu.Add(
@@ -274,9 +246,6 @@ public class TabuSearchOptimizer : ISolutionOptimizer
 
 
 
-            /*
-             * 更新全局最好
-             */
             if(current.Evaluation!.Score <
                best.Evaluation!.Score)
             {
@@ -293,8 +262,8 @@ public class TabuSearchOptimizer : ISolutionOptimizer
             Solution =
                 best.Solution,
 
-            Timeline =
-                best.Timeline,
+            Timelines =
+                best.Timelines,
 
             Evaluation =
                 best.Evaluation

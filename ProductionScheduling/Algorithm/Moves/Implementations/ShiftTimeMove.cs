@@ -22,7 +22,7 @@ public class ShiftTimeMove : IMove
             context.CurrentOperation;
 
 
-        if (operation == null)
+        if(operation == null)
         {
             context.ExecutionRecord =
                 new MoveExecutionRecord
@@ -35,7 +35,14 @@ public class ShiftTimeMove : IMove
         }
 
 
-        if (!context.Timeline.Machines
+
+        var factory =
+            context.Timelines.Get(
+                operation.FactoryCode);
+
+
+
+        if(!factory.Machines
                 .TryGetValue(
                     operation.MachineCode,
                     out var timeline))
@@ -51,6 +58,7 @@ public class ShiftTimeMove : IMove
         }
 
 
+
         var oldStart =
             operation.StartSlot;
 
@@ -59,21 +67,31 @@ public class ShiftTimeMove : IMove
             operation.DurationSlots;
 
 
+
+        /*
+         * 临时释放当前占用
+         */
         timeline.Release(
             oldStart,
             duration);
 
 
+
         var newStart =
-            context.Timeline.TimeModel
+            factory.TimeModel
                 .FindEarliestAvailable(
                     timeline,
                     duration,
                     oldStart + 1);
 
 
-        if (newStart < 0)
+
+        if(newStart < 0)
         {
+            /*
+             * 找不到新位置
+             * 恢复原排产
+             */
             timeline.Occupy(
                 oldStart,
                 duration);
@@ -91,13 +109,16 @@ public class ShiftTimeMove : IMove
         }
 
 
+
         timeline.Occupy(
             newStart,
             duration);
 
 
+
         operation.StartSlot =
             newStart;
+
 
 
         context.ExecutionRecord =
@@ -105,6 +126,7 @@ public class ShiftTimeMove : IMove
             {
                 MoveName =
                     Name,
+
 
                 Success =
                     true,
@@ -115,6 +137,10 @@ public class ShiftTimeMove : IMove
 
 
                 OldMachineCode =
+                    operation.MachineCode,
+
+
+                NewMachineCode =
                     operation.MachineCode,
 
 
@@ -147,6 +173,7 @@ public class ShiftTimeMove : IMove
     }
 
 
+
     public void Undo(
         MoveContext context)
     {
@@ -158,17 +185,28 @@ public class ShiftTimeMove : IMove
             context.CurrentOperation;
 
 
-        if (record == null ||
-            !record.Success ||
-            operation == null)
+
+        if(record == null ||
+           !record.Success ||
+           operation == null)
             return;
 
 
-        if (!context.Timeline.Machines
+
+        var factory =
+            context.Timelines.Get(
+                operation.FactoryCode);
+
+
+
+        if(!factory.Machines
                 .TryGetValue(
                     record.OldMachineCode!,
                     out var timeline))
+        {
             return;
+        }
+
 
 
         timeline.Release(
@@ -176,9 +214,11 @@ public class ShiftTimeMove : IMove
             record.NewDurationSlots);
 
 
+
         timeline.Occupy(
             record.OldStartSlot,
             record.OldDurationSlots);
+
 
 
         operation.StartSlot =
@@ -187,6 +227,7 @@ public class ShiftTimeMove : IMove
 
         operation.DurationSlots =
             record.OldDurationSlots;
+
 
 
         context.ExecutionRecord =

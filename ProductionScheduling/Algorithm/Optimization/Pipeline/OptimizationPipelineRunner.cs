@@ -41,7 +41,7 @@ public class OptimizationPipelineRunner
     public OptimizationResult Run(
         SchedulingSolution solution,
         SchedulingContext context,
-        TimelineContext timeline,
+        TimelineContextGroup timelines,
         ScheduleEvaluator evaluator)
     {
         var current =
@@ -50,36 +50,40 @@ public class OptimizationPipelineRunner
                 Solution =
                     solution,
 
-                Timeline =
-                    timeline,
+                Timelines =
+                    timelines,
 
                 Evaluation =
                     evaluator.Evaluate(
                         solution,
-                        timeline,
+                        timelines,
                         context)
             };
 
 
         var steps =
             options.Pipeline
-                .Where(x => x.Enabled)
-                .OrderBy(x => x.Order)
+                .Where(x =>
+                    x.Enabled)
+                .OrderBy(x =>
+                    x.Order)
                 .ToList();
 
 
-        foreach (var step in steps)
+
+        foreach(var step in steps)
         {
             var optimizer =
                 optimizerFactory(
                     step.Algorithm);
 
 
+
             current =
                 optimizer.Optimize(
                     current.Solution,
                     context,
-                    current.Timeline,
+                    current.Timelines,
                     evaluator);
         }
 

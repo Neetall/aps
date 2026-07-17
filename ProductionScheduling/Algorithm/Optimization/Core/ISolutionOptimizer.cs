@@ -13,6 +13,6 @@ public interface ISolutionOptimizer
     OptimizationResult Optimize(
         SchedulingSolution solution,
         SchedulingContext context,
-        TimelineContext timeline,
+        TimelineContextGroup timelines,
         ScheduleEvaluator evaluator);
 }

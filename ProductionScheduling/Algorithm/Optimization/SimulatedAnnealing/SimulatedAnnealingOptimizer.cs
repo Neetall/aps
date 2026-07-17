@@ -19,17 +19,11 @@ namespace ProductionScheduling.Algorithm.Optimization.SimulatedAnnealing;
 public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 {
     private readonly AcceptanceCriteria acceptanceCriteria;
-
     private readonly SolutionCloner cloner;
-
     private readonly SimulatedAnnealingOptions options;
-
     private readonly JobTicketIndex jobTicketIndex;
-
     private readonly MoveSelector moveSelector;
-
     private readonly OperationSelector operationSelector;
-
     private readonly SchedulingResourceIndex resourceIndex;
 
 
@@ -65,13 +59,10 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
     }
 
 
-    /// <summary>
-    /// 执行模拟退火
-    /// </summary>
     public OptimizationResult Optimize(
         SchedulingSolution solution,
         SchedulingContext context,
-        TimelineContext timeline,
+        TimelineContextGroup timelines,
         ScheduleEvaluator evaluator)
     {
         var current =
@@ -81,16 +72,18 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                     Solution =
                         solution,
 
-                    Timeline =
-                        timeline
+                    Timelines =
+                        timelines
                 });
+
 
 
         current.Evaluation =
             evaluator.Evaluate(
                 current.Solution,
-                current.Timeline,
+                current.Timelines,
                 context);
+
 
 
         var best =
@@ -98,15 +91,20 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                 current);
 
 
+
         var temperature =
             options.InitialTemperature;
 
 
-        for (var i = 0; i < options.Iterations; i++)
+
+        for(var i = 0;
+            i < options.Iterations;
+            i++)
         {
             var candidate =
                 cloner.Clone(
                     current);
+
 
 
             var operation =
@@ -114,11 +112,15 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                     candidate.Solution);
 
 
-            if (operation == null) continue;
+
+            if(operation == null)
+                continue;
+
 
 
             var move =
                 moveSelector.Select();
+
 
 
             var moveContext =
@@ -130,8 +132,8 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                     Solution =
                         candidate.Solution,
 
-                    Timeline =
-                        candidate.Timeline,
+                    Timelines =
+                        candidate.Timelines,
 
                     ResourceIndex =
                         resourceIndex,
@@ -147,8 +149,10 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                 };
 
 
+
             var oldScore =
                 current.Evaluation!.Score;
+
 
 
             var success =
@@ -156,7 +160,8 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                     moveContext);
 
 
-            if (!success)
+
+            if(!success)
             {
                 candidate.History.Add(
                     new MoveExecutionRecord
@@ -181,15 +186,18 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
             }
 
 
+
             candidate.Evaluation =
                 evaluator.Evaluate(
                     candidate.Solution,
-                    candidate.Timeline,
+                    candidate.Timelines,
                     context);
+
 
 
             var newScore =
                 candidate.Evaluation.Score;
+
 
 
             var accepted =
@@ -199,8 +207,10 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                     temperature);
 
 
+
             var execution =
                 moveContext.ExecutionRecord;
+
 
 
             candidate.History.Add(
@@ -254,16 +264,23 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                 });
 
 
-            if (accepted)
+
+            if(accepted)
+            {
                 current =
                     candidate;
+            }
 
 
-            if (current.Evaluation!.Score <
-                best.Evaluation!.Score)
+
+            if(current.Evaluation!.Score <
+               best.Evaluation!.Score)
+            {
                 best =
                     cloner.Clone(
                         current);
+            }
+
 
 
             temperature =
@@ -271,10 +288,14 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                     temperature);
 
 
-            if (temperature <
-                options.MinimumTemperature)
+
+            if(temperature <
+               options.MinimumTemperature)
+            {
                 break;
+            }
         }
+
 
 
         return new OptimizationResult
@@ -282,8 +303,8 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
             Solution =
                 best.Solution,
 
-            Timeline =
-                best.Timeline,
+            Timelines =
+                best.Timelines,
 
             Evaluation =
                 best.Evaluation

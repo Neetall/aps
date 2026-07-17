@@ -13,13 +13,9 @@ namespace ProductionScheduling.Application;
 public class SchedulingEngine
 {
     private readonly ScheduleEvaluator evaluator;
-
     private readonly OptimizationPipelineRunner pipelineRunner;
-
     private readonly SchedulingResultConverter resultConverter;
-
     private readonly IScheduler scheduler;
-
     private readonly TimelineInitializer timelineInitializer;
 
 
@@ -57,51 +53,45 @@ public class SchedulingEngine
         {
             /*
              * 1.
-             * 初始化时间资源
+             * 初始化多工厂时间资源
              */
-            var timeline =
-                timelineInitializer
-                    .Initialize(context);
+            var timelines =
+                timelineInitializer.Initialize(
+                    context);
+
 
 
             /*
              * 2.
-             * 生成初始方案
-             *
-             * 当前:
-             * Greedy
+             * 初始排产
              */
             var solution =
                 scheduler.Schedule(
                     context,
-                    timeline);
+                    timelines);
+
 
 
             /*
              * 3.
-             * 执行优化流水线
-             *
-             * 根据 SchedulingAlgorithmOptions:
-             *
-             * LocalSearch
-             * SimulatedAnnealing
-             * Tabu
-             * LNS
+             * 优化
              */
             var optimizeResult =
                 pipelineRunner.Run(
                     solution,
                     context,
-                    timeline,
+                    timelines,
                     evaluator);
+
 
 
             solution =
                 optimizeResult.Solution;
 
 
-            timeline =
-                optimizeResult.Timeline;
+            timelines =
+                optimizeResult.Timelines;
+
 
 
             /*
@@ -111,18 +101,25 @@ public class SchedulingEngine
             var evaluation =
                 evaluator.Evaluate(
                     solution,
-                    timeline,
+                    timelines,
                     context);
+
 
 
             /*
              * 5.
-             * 转换业务结果
+             * 转业务结果
              */
             var result =
                 resultConverter.Convert(
                     solution,
-                    timeline);
+                    timelines,
+                    context);
+
+
+
+            result.Evaluation =
+                evaluation;
 
 
             result.Message =
@@ -135,14 +132,12 @@ public class SchedulingEngine
 
             return result;
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             return new SchedulingResult
             {
                 Success = false,
-
-                Message =
-                    ex.Message
+                Message = ex.Message
             };
         }
     }

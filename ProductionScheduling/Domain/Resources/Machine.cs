@@ -9,6 +9,11 @@ public class Machine
 
 
     /// <summary>
+    /// 工厂编码
+    /// </summary>
+    public string FactoryCode { get; set; }
+    
+    /// <summary>
     ///     设备加工能力
     /// </summary>
     public List<MachineCapability> Capabilities { get; set; } = [];

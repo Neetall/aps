@@ -6,64 +6,69 @@ namespace ProductionScheduling.Timeline;
 
 public class TimelineBuilder
 {
-    public TimelineContext Build(
+    public TimelineContextGroup Build(
         SchedulingContext context)
     {
-        var timeModel =
-            BuildTimeModel(
-                context);
+        var timelines =
+            new TimelineContextGroup();
 
 
-
-        var result =
-            new TimelineContext(
-                timeModel);
-
-
-
-        foreach(var machine in context.Machines)
+        foreach(var factoryCalendar in context.FactoryCalendars)
         {
-            result.AddMachineTimeline(
-                new MachineTimeline(
-                    machine.Code,
-                    timeModel.SlotCount));
+            var timeModel =
+                BuildTimeModel(
+                    factoryCalendar,
+                    context.Options.TimeGranularityMinutes);
+
+
+
+            var factoryTimeline =
+                new FactoryTimeline(
+                    factoryCalendar.FactoryCode,
+                    timeModel);
+
+
+
+            foreach(var machine in context.Machines
+                        .Where(x =>
+                            x.FactoryCode ==
+                            factoryCalendar.FactoryCode))
+            {
+                factoryTimeline.AddMachine(
+                    new MachineTimeline(
+                        machine.Code,
+                        timeModel.SlotCount));
+            }
+
+
+
+            timelines.AddFactory(
+                factoryTimeline);
         }
 
 
-
-        ApplyMachineCalendars(
-            result,
-            context);
-
-
-
-        return result;
+        return timelines;
     }
 
 
-
+    /// <summary>
+    /// 创建工厂时间模型
+    /// 每个工厂独立时间轴
+    /// </summary>
     private ITimeModel BuildTimeModel(
-        SchedulingContext context)
+        FactoryCalendar calendar,
+        int granularity)
     {
         var slots =
             new List<TimeSlot>();
 
 
-        var granularity =
-            context.Options
-                .TimeGranularityMinutes;
-
-
-
-        foreach(var calendar in context.FactoryCalendars)
+        foreach(var period in calendar.Periods)
         {
-            foreach(var period in calendar.Periods)
-            {
-                AddPeriod(
-                    slots,
-                    period,
-                    granularity);
-            }
+            AddPeriod(
+                slots,
+                period,
+                granularity);
         }
 
 
@@ -84,6 +89,9 @@ public class TimelineBuilder
 
 
 
+    /// <summary>
+    /// 根据班次生成Slot
+    /// </summary>
     private void AddPeriod(
         List<TimeSlot> slots,
         ShiftPeriod period,
@@ -103,8 +111,10 @@ public class TimelineBuilder
 
 
             if(end > period.EndTime)
+            {
                 end =
                     period.EndTime;
+            }
 
 
 
@@ -123,80 +133,5 @@ public class TimelineBuilder
             current =
                 end;
         }
-    }
-
-
-
-    private void ApplyMachineCalendars(
-        TimelineContext timeline,
-        SchedulingContext context)
-    {
-        foreach(var calendar in context.MachineCalendars)
-        {
-            if(!timeline.TryGetMachine(
-                    calendar.MachineCode,
-                    out var machine))
-                continue;
-
-
-
-            foreach(var block in calendar.Blocks)
-            {
-                ApplyBlock(
-                    timeline.TimeModel,
-                    machine,
-                    block);
-            }
-        }
-    }
-
-
-
-    private void ApplyBlock(
-        ITimeModel timeModel,
-        MachineTimeline machine,
-        MachineCalendarBlock block)
-    {
-        var start =
-            timeModel.GetSlotIndex(
-                block.StartTime);
-
-
-        var end =
-            timeModel.GetSlotIndex(
-                block.EndTime);
-
-
-
-        if(start < 0 &&
-           end < 0)
-            return;
-
-
-
-        if(start < 0)
-            start = 0;
-
-
-
-        if(end < 0)
-            end =
-                timeModel.SlotCount;
-
-
-
-        var duration =
-            end - start;
-
-
-
-        if(duration <= 0)
-            return;
-
-
-
-        machine.ForceOccupy(
-            start,
-            duration);
     }
 }
