@@ -25,22 +25,21 @@ public class SolutionCloner
             Solution =
                 source.Solution.Clone(),
 
-
             Timelines =
                 CloneTimelines(
                     source.Timelines),
-
 
             Evaluation =
                 CloneEvaluation(
                     source.Evaluation),
 
-
             History =
-                source.History
+                source.History?
                     .Select(x =>
                         CloneRecord(x))
                     .ToList()
+                ??
+                []
         };
     }
 
