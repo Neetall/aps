@@ -11,7 +11,6 @@ public sealed class LnsOptions
     public int Iterations { get; init; } = 1000;
 
 
-
     /// <summary>
     /// 每次破坏比例
     /// </summary>

@@ -28,7 +28,6 @@ public class OptimizerFactory
     private readonly SchedulingAlgorithmOptions options;
 
 
-
     public OptimizerFactory(
         SchedulingResourceIndex resourceIndex,
         JobTicketIndex jobTicketIndex,
@@ -55,7 +54,6 @@ public class OptimizerFactory
         this.options =
             options;
     }
-
 
 
     /// <summary>
@@ -96,7 +94,6 @@ public class OptimizerFactory
     }
 
 
-
     private ISolutionOptimizer CreateLocalSearch()
     {
         return new LocalSearchOptimizer(
@@ -107,7 +104,6 @@ public class OptimizerFactory
             cloner,
             options.LocalSearch);
     }
-
 
 
     private ISolutionOptimizer CreateSimulatedAnnealing()

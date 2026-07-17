@@ -1,5 +1,6 @@
 using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Moves.Core;
+using ProductionScheduling.Algorithm.Optimization.Tabu;
 
 namespace ProductionScheduling.Algorithm.Moves.Implementations;
 
@@ -141,7 +142,10 @@ public class ChangeMachineMove : IMove
                     NewDurationSlots =
                         duration,
                     TabuKey =
-                        $"ChangeMachine:{operation.JobTicketCode}:{oldMachine}->{capability.MachineCode}",
+                        TabuKeyGenerator.ChangeMachine(
+                            operation.JobTicketCode,
+                            oldMachine,
+                            capability.MachineCode)
                 };
 
 

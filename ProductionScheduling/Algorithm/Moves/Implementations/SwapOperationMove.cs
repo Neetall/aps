@@ -1,4 +1,5 @@
 using ProductionScheduling.Algorithm.Moves.Core;
+using ProductionScheduling.Algorithm.Optimization.Tabu;
 using ProductionScheduling.Algorithm.Scheduling;
 
 namespace ProductionScheduling.Algorithm.Moves.Implementations;
@@ -212,7 +213,10 @@ public class SwapOperationMove : IMove
                     secondDuration,
 
                 TabuKey =
-                    $"Swap:{first.JobTicketCode}:{second.JobTicketCode}",
+                    TabuKeyGenerator.SwapOperation(
+                        first.JobTicketCode,
+                        second.JobTicketCode,
+                        first.MachineCode)
             };
 
 

@@ -115,7 +115,6 @@ public class MoveExecutionRecordTests
     }
 
 
-
     [Fact]
     public void MoveExecutionRecord_Should_Default_State()
     {

@@ -20,7 +20,6 @@ public static class TestTimelineFactory
     }
 
 
-
     /// <summary>
     /// 创建空时间轴
     /// 用于Pipeline、Optimizer单元测试

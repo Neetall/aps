@@ -20,17 +20,14 @@ public class MoveContextTests
                 .CreateSimpleContext();
 
 
-
         var timeline =
             TestTimelineFactory
                 .Create(
                     context);
 
 
-
         var solution =
             new SchedulingSolution();
-
 
 
         var operation =
@@ -54,19 +51,16 @@ public class MoveContextTests
             operation);
 
 
-
         var resourceIndex =
             TestAlgorithmFactory
                 .CreateResourceIndex(
                     context);
 
 
-
         var ticketIndex =
             TestAlgorithmFactory
                 .CreateJobTicketIndex(
                     context);
-
 
 
         /*
@@ -96,7 +90,6 @@ public class MoveContextTests
             };
 
 
-
         /*
          * Assert
          */
@@ -107,11 +100,9 @@ public class MoveContextTests
             moveContext.SchedulingContext);
 
 
-
         Assert.Same(
             solution,
             moveContext.Solution);
-
 
 
         Assert.Same(
@@ -119,11 +110,9 @@ public class MoveContextTests
             moveContext.Timeline);
 
 
-
         Assert.Same(
             resourceIndex,
             moveContext.ResourceIndex);
-
 
 
         Assert.Same(
@@ -131,12 +120,10 @@ public class MoveContextTests
             moveContext.JobTicketIndex);
 
 
-
         Assert.Same(
             operation,
             moveContext.CurrentOperation);
     }
-
 
 
     [Fact]
@@ -147,10 +134,8 @@ public class MoveContextTests
                 .CreateSimpleContext();
 
 
-
         var solution =
             new SchedulingSolution();
-
 
 
         var operation1 =
@@ -176,7 +161,6 @@ public class MoveContextTests
             operation2);
 
 
-
         var moveContext =
             new MoveContext
             {
@@ -191,10 +175,8 @@ public class MoveContextTests
             };
 
 
-
         moveContext.CurrentOperation =
             operation2;
-
 
 
         Assert.Same(

@@ -20,11 +20,9 @@ public class SchedulingEngineTests
                     context);
 
 
-
         var result =
             engine.Execute(
                 context);
-
 
 
         Assert.NotNull(

@@ -20,13 +20,11 @@ public static class TestEngineFactory
             new SchedulingAlgorithmOptions();
 
 
-
         /*
          * 时间轴
          */
         var timelineInitializer =
             new TimelineInitializer();
-
 
 
         /*
@@ -38,7 +36,6 @@ public static class TestEngineFactory
                     context);
 
 
-
         /*
          * 评价器
          */
@@ -46,13 +43,11 @@ public static class TestEngineFactory
             new ScheduleEvaluator();
 
 
-
         /*
          * 结果转换
          */
         var resultConverter =
             new SchedulingResultConverter();
-
 
 
         /*
@@ -63,7 +58,6 @@ public static class TestEngineFactory
                 .CreatePipelineRunner(
                     context,
                     options);
-
 
 
         return new SchedulingEngine(

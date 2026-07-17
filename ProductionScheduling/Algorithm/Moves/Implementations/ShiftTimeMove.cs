@@ -1,4 +1,5 @@
 using ProductionScheduling.Algorithm.Moves.Core;
+using ProductionScheduling.Algorithm.Optimization.Tabu;
 
 namespace ProductionScheduling.Algorithm.Moves.Implementations;
 
@@ -20,7 +21,7 @@ public class ShiftTimeMove : IMove
             context.CurrentOperation;
 
 
-        if(operation == null)
+        if (operation == null)
         {
             context.ExecutionRecord =
                 new MoveExecutionRecord
@@ -33,7 +34,7 @@ public class ShiftTimeMove : IMove
         }
 
 
-        if(!context.Timeline.Machines
+        if (!context.Timeline.Machines
                 .TryGetValue(
                     operation.MachineCode,
                     out var timeline))
@@ -57,11 +58,9 @@ public class ShiftTimeMove : IMove
             operation.DurationSlots;
 
 
-
         timeline.Release(
             oldStart,
             duration);
-
 
 
         var newStart =
@@ -70,8 +69,7 @@ public class ShiftTimeMove : IMove
                 oldStart + 1);
 
 
-
-        if(newStart < 0)
+        if (newStart < 0)
         {
             timeline.Occupy(
                 oldStart,
@@ -90,16 +88,13 @@ public class ShiftTimeMove : IMove
         }
 
 
-
         timeline.Occupy(
             newStart,
             duration);
 
 
-
         operation.StartSlot =
             newStart;
-
 
 
         context.ExecutionRecord =
@@ -137,13 +132,16 @@ public class ShiftTimeMove : IMove
 
 
                 TabuKey =
-                    $"ShiftTime:{operation.JobTicketCode}:{oldStart}->{newStart}"
+                    TabuKeyGenerator.ShiftTime(
+                        operation.JobTicketCode,
+                        operation.MachineCode,
+                        oldStart,
+                        newStart)
             };
 
 
         return true;
     }
-
 
 
     public void Undo(
@@ -157,18 +155,17 @@ public class ShiftTimeMove : IMove
             context.CurrentOperation;
 
 
-        if(record == null ||
-           !record.Success ||
-           operation == null)
+        if (record == null ||
+            !record.Success ||
+            operation == null)
             return;
 
 
-        if(!context.Timeline.Machines
+        if (!context.Timeline.Machines
                 .TryGetValue(
                     record.OldMachineCode!,
                     out var timeline))
             return;
-
 
 
         timeline.Release(
@@ -176,11 +173,9 @@ public class ShiftTimeMove : IMove
             record.NewDurationSlots);
 
 
-
         timeline.Occupy(
             record.OldStartSlot,
             record.OldDurationSlots);
-
 
 
         operation.StartSlot =

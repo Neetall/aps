@@ -25,10 +25,8 @@ public class ScheduleEvaluatorTests
                     context);
 
 
-
         var evaluator =
             new ScheduleEvaluator();
-
 
 
         /*
@@ -63,13 +61,11 @@ public class ScheduleEvaluatorTests
                 2);
 
 
-
         var slowResult =
             evaluator.Evaluate(
                 slowSolution,
                 timeline,
                 context);
-
 
 
         /*
@@ -81,7 +77,6 @@ public class ScheduleEvaluatorTests
             TestTimelineFactory
                 .Create(
                     context);
-
 
 
         /*
@@ -116,13 +111,11 @@ public class ScheduleEvaluatorTests
                 1);
 
 
-
         var fastResult =
             evaluator.Evaluate(
                 fastSolution,
                 fastTimeline,
                 context);
-
 
 
         /*

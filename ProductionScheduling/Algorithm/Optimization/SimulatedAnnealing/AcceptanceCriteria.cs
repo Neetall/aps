@@ -12,7 +12,6 @@ public class AcceptanceCriteria
     private readonly AcceptanceOptions options;
 
 
-
     public AcceptanceCriteria(
         AcceptanceOptions options,
         Random? random = null)
@@ -28,7 +27,6 @@ public class AcceptanceCriteria
     }
 
 
-
     /// <summary>
     ///     判断是否接受新方案
     /// </summary>
@@ -40,21 +38,13 @@ public class AcceptanceCriteria
         /*
          * 更优直接接受
          */
-        if(newScore < currentScore)
-        {
-            return true;
-        }
-
+        if (newScore < currentScore) return true;
 
 
         /*
          * 温度过低
          */
-        if(temperature <= 0)
-        {
-            return false;
-        }
-
+        if (temperature <= 0) return false;
 
 
         var delta =
@@ -63,12 +53,10 @@ public class AcceptanceCriteria
             options.ScoreScale;
 
 
-
         var probability =
             Math.Exp(
                 -delta /
                 temperature);
-
 
 
         /*
@@ -78,7 +66,6 @@ public class AcceptanceCriteria
             Math.Min(
                 probability,
                 options.MaximumProbability);
-
 
 
         return random.NextDouble()

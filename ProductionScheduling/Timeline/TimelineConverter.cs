@@ -17,7 +17,6 @@ public class TimelineConverter
     }
 
 
-
     public DateTime GetEndTime(
         SchedulingTimeline timeline,
         int slot)
@@ -29,7 +28,6 @@ public class TimelineConverter
         return timeline[slot]
             .EndTime;
     }
-
 
 
     public ShiftPeriod ToPeriod(
@@ -50,13 +48,12 @@ public class TimelineConverter
     }
 
 
-
     private void Validate(
         SchedulingTimeline timeline,
         int slot)
     {
-        if(slot < 0 ||
-           slot >= timeline.Count)
+        if (slot < 0 ||
+            slot >= timeline.Count)
             throw new ArgumentOutOfRangeException(
                 nameof(slot));
     }

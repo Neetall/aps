@@ -16,7 +16,6 @@ public class SchedulingResultConverter
     }
 
 
-
     public SchedulingResult Convert(
         SchedulingSolution solution,
         TimelineContext timeline)
@@ -29,7 +28,7 @@ public class SchedulingResultConverter
             };
 
 
-        foreach(var operation in solution.Operations)
+        foreach (var operation in solution.Operations)
         {
             var period =
                 converter.ToPeriod(

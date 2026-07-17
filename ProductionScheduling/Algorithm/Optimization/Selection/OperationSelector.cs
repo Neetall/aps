@@ -12,7 +12,7 @@ public class OperationSelector
 
 
     public OperationSelector(Random? random = null)
-    { 
+    {
         this.random = random ?? new Random();
     }
 

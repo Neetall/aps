@@ -17,11 +17,9 @@ public class TabuMemoryTests
                 5);
 
 
-
         memory.Add(
             "ChangeMachine:JT001:M001->M002",
             1);
-
 
 
         /*
@@ -32,7 +30,6 @@ public class TabuMemoryTests
             memory.IsTabu(
                 "ChangeMachine:JT001:M001->M002",
                 2);
-
 
 
         /*
@@ -49,7 +46,6 @@ public class TabuMemoryTests
     }
 
 
-
     [Fact]
     public void TabuMemory_Should_Expire_Entry()
     {
@@ -62,11 +58,9 @@ public class TabuMemoryTests
                 3);
 
 
-
         memory.Add(
             "ShiftTime:JT001:0->5",
             1);
-
 
 
         /*
@@ -85,7 +79,6 @@ public class TabuMemoryTests
                 4);
 
 
-
         /*
          * Assert
          */
@@ -100,7 +93,6 @@ public class TabuMemoryTests
     }
 
 
-
     [Fact]
     public void TabuMemory_Should_Not_Match_Other_Key()
     {
@@ -113,11 +105,9 @@ public class TabuMemoryTests
                 10);
 
 
-
         memory.Add(
             "ChangeMachine:JT001:M001->M002",
             1);
-
 
 
         /*
@@ -128,7 +118,6 @@ public class TabuMemoryTests
             memory.IsTabu(
                 "ChangeMachine:JT001:M001->M003",
                 2);
-
 
 
         /*

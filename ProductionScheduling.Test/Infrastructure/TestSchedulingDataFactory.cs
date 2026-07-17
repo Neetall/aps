@@ -39,7 +39,6 @@ public static class TestSchedulingDataFactory
             });
 
 
-
         var machines =
             new List<Machine>
             {
@@ -78,7 +77,6 @@ public static class TestSchedulingDataFactory
             };
 
 
-
         var context =
             new SchedulingContext
             {
@@ -95,7 +93,6 @@ public static class TestSchedulingDataFactory
                     TimeGranularityMinutes = 60
                 }
             };
-
 
 
         context.FactoryCalendars.Add(
@@ -117,245 +114,236 @@ public static class TestSchedulingDataFactory
             });
 
 
-
         return context;
     }
-    
+
     public static SchedulingContext CreateGreedySchedulerContext()
-{
-    var order =
-        new Order
-        {
-            Code = "ORD001",
-            Priority = 1,
-            DueDate =
-                DateTime.Today.AddDays(1)
-        };
-
-
-    order.JobTickets.AddRange(
-    [
-        new JobTicket
-        {
-            Code = "JT001",
-            Sequence = 1,
-            Length = 100
-        },
-
-
-        new JobTicket
-        {
-            Code = "JT002",
-            Sequence = 2,
-            Length = 200
-        }
-    ]);
-
-
-
-    var machines =
-        new List<Machine>
-        {
-            new()
+    {
+        var order =
+            new Order
             {
-                Code = "M001",
+                Code = "ORD001",
+                Priority = 1,
+                DueDate =
+                    DateTime.Today.AddDays(1)
+            };
 
-                Capabilities =
-                [
-                    new MachineCapability
-                    {
-                        MachineCode = "M001",
-                        JobTicketCode = "JT001",
-                        HourlyCapacity = 50,
-                        SetupMinutes = 0
-                    },
 
-                    new MachineCapability
-                    {
-                        MachineCode = "M001",
-                        JobTicketCode = "JT002",
-                        HourlyCapacity = 50,
-                        SetupMinutes = 0
-                    }
-                ]
+        order.JobTickets.AddRange(
+        [
+            new JobTicket
+            {
+                Code = "JT001",
+                Sequence = 1,
+                Length = 100
             },
 
 
-            new()
+            new JobTicket
             {
-                Code = "M002",
+                Code = "JT002",
+                Sequence = 2,
+                Length = 200
+            }
+        ]);
 
-                Capabilities =
+
+        var machines =
+            new List<Machine>
+            {
+                new()
+                {
+                    Code = "M001",
+
+                    Capabilities =
+                    [
+                        new MachineCapability
+                        {
+                            MachineCode = "M001",
+                            JobTicketCode = "JT001",
+                            HourlyCapacity = 50,
+                            SetupMinutes = 0
+                        },
+
+                        new MachineCapability
+                        {
+                            MachineCode = "M001",
+                            JobTicketCode = "JT002",
+                            HourlyCapacity = 50,
+                            SetupMinutes = 0
+                        }
+                    ]
+                },
+
+
+                new()
+                {
+                    Code = "M002",
+
+                    Capabilities =
+                    [
+                        new MachineCapability
+                        {
+                            MachineCode = "M002",
+                            JobTicketCode = "JT001",
+                            HourlyCapacity = 100,
+                            SetupMinutes = 0
+                        }
+                    ]
+                }
+            };
+
+
+        var context =
+            new SchedulingContext
+            {
+                Orders =
                 [
-                    new MachineCapability
+                    order
+                ],
+
+                Machines =
+                    machines,
+
+                Options =
+                {
+                    TimeGranularityMinutes = 60
+                }
+            };
+
+
+        context.FactoryCalendars.Add(
+            new FactoryCalendar
+            {
+                FactoryCode = "F001",
+
+                Periods =
+                [
+                    new ShiftPeriod
                     {
-                        MachineCode = "M002",
-                        JobTicketCode = "JT001",
-                        HourlyCapacity = 100,
-                        SetupMinutes = 0
+                        StartTime =
+                            DateTime.Today.AddHours(8),
+
+                        EndTime =
+                            DateTime.Today.AddHours(18)
                     }
                 ]
-            }
-        };
+            });
 
 
+        return context;
+    }
 
-    var context =
-        new SchedulingContext
-        {
-            Orders =
-            [
-                order
-            ],
-
-            Machines =
-                machines,
-
-            Options =
-            {
-                TimeGranularityMinutes = 60
-            }
-        };
-
-
-
-    context.FactoryCalendars.Add(
-        new FactoryCalendar
-        {
-            FactoryCode = "F001",
-
-            Periods =
-            [
-                new ShiftPeriod
-                {
-                    StartTime =
-                        DateTime.Today.AddHours(8),
-
-                    EndTime =
-                        DateTime.Today.AddHours(18)
-                }
-            ]
-        });
-
-
-    return context;
-}
-    
     public static SchedulingContext CreateMultiOrderContext()
-{
-    var order1 =
-        new Order
-        {
-            Code = "ORD001",
-            Priority = 1,
-            DueDate =
-                DateTime.Today.AddDays(1)
-        };
-
-
-    order1.JobTickets.Add(
-        new JobTicket
-        {
-            Code = "JT001",
-            Sequence = 1,
-            Length = 100
-        });
-
-
-
-    var order2 =
-        new Order
-        {
-            Code = "ORD002",
-            Priority = 2,
-            DueDate =
-                DateTime.Today.AddDays(1)
-        };
-
-
-    order2.JobTickets.Add(
-        new JobTicket
-        {
-            Code = "JT002",
-            Sequence = 1,
-            Length = 100
-        });
-
-
-
-    var machines =
-        new List<Machine>
-        {
-            new()
+    {
+        var order1 =
+            new Order
             {
-                Code = "M001",
+                Code = "ORD001",
+                Priority = 1,
+                DueDate =
+                    DateTime.Today.AddDays(1)
+            };
 
-                Capabilities =
+
+        order1.JobTickets.Add(
+            new JobTicket
+            {
+                Code = "JT001",
+                Sequence = 1,
+                Length = 100
+            });
+
+
+        var order2 =
+            new Order
+            {
+                Code = "ORD002",
+                Priority = 2,
+                DueDate =
+                    DateTime.Today.AddDays(1)
+            };
+
+
+        order2.JobTickets.Add(
+            new JobTicket
+            {
+                Code = "JT002",
+                Sequence = 1,
+                Length = 100
+            });
+
+
+        var machines =
+            new List<Machine>
+            {
+                new()
+                {
+                    Code = "M001",
+
+                    Capabilities =
+                    [
+                        new MachineCapability
+                        {
+                            MachineCode = "M001",
+                            JobTicketCode = "JT001",
+                            HourlyCapacity = 100,
+                            SetupMinutes = 0
+                        },
+
+                        new MachineCapability
+                        {
+                            MachineCode = "M001",
+                            JobTicketCode = "JT002",
+                            HourlyCapacity = 100,
+                            SetupMinutes = 0
+                        }
+                    ]
+                }
+            };
+
+
+        var context =
+            new SchedulingContext
+            {
+                Orders =
                 [
-                    new MachineCapability
-                    {
-                        MachineCode = "M001",
-                        JobTicketCode = "JT001",
-                        HourlyCapacity = 100,
-                        SetupMinutes = 0
-                    },
+                    order1,
+                    order2
+                ],
 
-                    new MachineCapability
+                Machines =
+                    machines,
+
+                Options =
+                {
+                    TimeGranularityMinutes = 60
+                }
+            };
+
+
+        context.FactoryCalendars.Add(
+            new FactoryCalendar
+            {
+                FactoryCode = "F001",
+
+                Periods =
+                [
+                    new ShiftPeriod
                     {
-                        MachineCode = "M001",
-                        JobTicketCode = "JT002",
-                        HourlyCapacity = 100,
-                        SetupMinutes = 0
+                        StartTime =
+                            DateTime.Today.AddHours(8),
+
+                        EndTime =
+                            DateTime.Today.AddHours(18)
                     }
                 ]
-            }
-        };
+            });
 
 
+        return context;
+    }
 
-    var context =
-        new SchedulingContext
-        {
-            Orders =
-            [
-                order1,
-                order2
-            ],
-
-            Machines =
-                machines,
-
-            Options =
-            {
-                TimeGranularityMinutes = 60
-            }
-        };
-
-
-
-    context.FactoryCalendars.Add(
-        new FactoryCalendar
-        {
-            FactoryCode = "F001",
-
-            Periods =
-            [
-                new ShiftPeriod
-                {
-                    StartTime =
-                        DateTime.Today.AddHours(8),
-
-                    EndTime =
-                        DateTime.Today.AddHours(18)
-                }
-            ]
-        });
-
-
-
-    return context;
-}
-    
     public static SchedulingContext CreateMachineConflictContext()
     {
         var order =
@@ -385,7 +373,6 @@ public static class TestSchedulingDataFactory
         ]);
 
 
-
         var machines =
             new List<Machine>
             {
@@ -416,7 +403,6 @@ public static class TestSchedulingDataFactory
             };
 
 
-
         var context =
             new SchedulingContext
             {
@@ -433,7 +419,6 @@ public static class TestSchedulingDataFactory
                     TimeGranularityMinutes = 60
                 }
             };
-
 
 
         context.FactoryCalendars.Add(
@@ -455,10 +440,9 @@ public static class TestSchedulingDataFactory
             });
 
 
-
         return context;
     }
-    
+
     public static SchedulingContext CreateSwapContext()
     {
         var order =
@@ -488,7 +472,6 @@ public static class TestSchedulingDataFactory
         ]);
 
 
-
         var machines =
             new List<Machine>
             {
@@ -519,7 +502,6 @@ public static class TestSchedulingDataFactory
             };
 
 
-
         var context =
             new SchedulingContext
             {
@@ -536,7 +518,6 @@ public static class TestSchedulingDataFactory
                     TimeGranularityMinutes = 60
                 }
             };
-
 
 
         context.FactoryCalendars.Add(
@@ -556,7 +537,6 @@ public static class TestSchedulingDataFactory
                     }
                 ]
             });
-
 
 
         return context;

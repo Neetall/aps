@@ -41,7 +41,6 @@ public class OptimizationPipelineTests
             new ScheduleEvaluator();
 
 
-
         var options =
             new SchedulingAlgorithmOptions();
 
@@ -74,10 +73,8 @@ public class OptimizationPipelineTests
             });
 
 
-
         var executeOrder =
             new List<OptimizationAlgorithmType>();
-
 
 
         var runner =
@@ -93,7 +90,6 @@ public class OptimizationPipelineTests
                 });
 
 
-
         /*
          * Act
          */
@@ -104,7 +100,6 @@ public class OptimizationPipelineTests
                 context,
                 timeline,
                 evaluator);
-
 
 
         /*
@@ -129,7 +124,6 @@ public class OptimizationPipelineTests
             OptimizationAlgorithmType.SimulatedAnnealing,
             executeOrder[1]);
     }
-
 
 
     private class FakeOptimizer : ISolutionOptimizer

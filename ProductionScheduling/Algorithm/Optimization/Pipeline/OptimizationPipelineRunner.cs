@@ -21,7 +21,6 @@ public class OptimizationPipelineRunner
         ISolutionOptimizer> optimizerFactory;
 
 
-
     public OptimizationPipelineRunner(
         SchedulingAlgorithmOptions options,
         Func<
@@ -34,7 +33,6 @@ public class OptimizationPipelineRunner
         this.optimizerFactory =
             optimizerFactory;
     }
-
 
 
     /// <summary>
@@ -63,7 +61,6 @@ public class OptimizationPipelineRunner
             };
 
 
-
         var steps =
             options.Pipeline
                 .Where(x => x.Enabled)
@@ -71,13 +68,11 @@ public class OptimizationPipelineRunner
                 .ToList();
 
 
-
-        foreach(var step in steps)
+        foreach (var step in steps)
         {
             var optimizer =
                 optimizerFactory(
                     step.Algorithm);
-
 
 
             current =
@@ -87,7 +82,6 @@ public class OptimizationPipelineRunner
                     current.Timeline,
                     evaluator);
         }
-
 
 
         return current;

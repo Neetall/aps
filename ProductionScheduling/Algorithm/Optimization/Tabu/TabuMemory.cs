@@ -7,14 +7,12 @@ public class TabuMemory
     private readonly int tenure;
 
 
-
     public TabuMemory(
         int tenure)
     {
         this.tenure =
             tenure;
     }
-
 
 
     public void Add(
@@ -33,7 +31,6 @@ public class TabuMemory
     }
 
 
-
     public bool IsTabu(
         string key,
         int iteration)
@@ -48,22 +45,18 @@ public class TabuMemory
     }
 
 
-
     public int Count =>
         entries.Count;
-
 
 
     public IReadOnlyList<TabuEntry> Entries =>
         entries;
 
 
-
     private void RemoveExpired(
         int iteration)
     {
-        entries.RemoveAll(
-            x =>
-                x.ExpireIteration <= iteration);
+        entries.RemoveAll(x =>
+            x.ExpireIteration <= iteration);
     }
 }

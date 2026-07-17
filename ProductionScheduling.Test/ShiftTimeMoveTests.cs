@@ -21,12 +21,10 @@ public class ShiftTimeMoveTests
                 .CreateSimpleContext();
 
 
-
         var timeline =
             TestTimelineFactory
                 .Create(
                     context);
-
 
 
         /*
@@ -59,12 +57,10 @@ public class ShiftTimeMoveTests
             });
 
 
-
         timeline.Machines["M001"]
             .Occupy(
                 0,
                 2);
-
 
 
         var resourceIndex =
@@ -73,12 +69,10 @@ public class ShiftTimeMoveTests
                     context);
 
 
-
         var jobTicketIndex =
             TestAlgorithmFactory
                 .CreateJobTicketIndex(
                     context);
-
 
 
         var moveContext =
@@ -104,10 +98,8 @@ public class ShiftTimeMoveTests
             };
 
 
-
         var move =
             new ShiftTimeMove();
-
 
 
         /*
@@ -119,7 +111,6 @@ public class ShiftTimeMoveTests
                 moveContext);
 
 
-
         /*
          * Assert
          */
@@ -128,10 +119,8 @@ public class ShiftTimeMoveTests
             result);
 
 
-
         var operation =
             solution.Operations[0];
-
 
 
         Assert.Equal(
@@ -139,11 +128,9 @@ public class ShiftTimeMoveTests
             operation.JobTicketCode);
 
 
-
         Assert.Equal(
             "M001",
             operation.MachineCode);
-
 
 
         Assert.NotEqual(
@@ -151,12 +138,10 @@ public class ShiftTimeMoveTests
             operation.StartSlot);
 
 
-
         Assert.False(
             timeline.Machines["M001"]
                 .IsFree(
                     operation.StartSlot));
-
 
 
         Assert.True(

@@ -22,12 +22,10 @@ public class ChangeMachineMoveTests
                 .CreateSimpleContext();
 
 
-
         var timeline =
             TestTimelineFactory
                 .Create(
                     context);
-
 
 
         /*
@@ -63,12 +61,10 @@ public class ChangeMachineMoveTests
             });
 
 
-
         timeline.Machines["M001"]
             .Occupy(
                 0,
                 2);
-
 
 
         var resourceIndex =
@@ -77,12 +73,10 @@ public class ChangeMachineMoveTests
                     context);
 
 
-
         var ticketIndex =
             TestAlgorithmFactory
                 .CreateJobTicketIndex(
                     context);
-
 
 
         var moveContext =
@@ -108,11 +102,9 @@ public class ChangeMachineMoveTests
             };
 
 
-
         var move =
             new ChangeMachineMove(
                 new ScheduleDurationCalculator());
-
 
 
         /*
@@ -124,14 +116,12 @@ public class ChangeMachineMoveTests
                 moveContext);
 
 
-
         /*
          * Assert
          */
 
         Assert.True(
             result);
-
 
 
         var operation =
@@ -143,18 +133,15 @@ public class ChangeMachineMoveTests
             operation.MachineCode);
 
 
-
         Assert.Equal(
             1,
             operation.DurationSlots);
-
 
 
         Assert.False(
             timeline.Machines["M002"]
                 .IsFree(
                     0));
-
 
 
         Assert.True(

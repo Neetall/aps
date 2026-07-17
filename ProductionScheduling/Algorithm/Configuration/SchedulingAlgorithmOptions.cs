@@ -15,13 +15,11 @@ public sealed class SchedulingAlgorithmOptions
     public List<OptimizationStepOptions> Pipeline { get; } = [];
 
 
-
     /// <summary>
     /// 局部搜索配置
     /// </summary>
     public LocalSearchOptions LocalSearch { get; init; }
         = new();
-
 
 
     /// <summary>
@@ -31,13 +29,11 @@ public sealed class SchedulingAlgorithmOptions
         = new();
 
 
-
     /// <summary>
     /// 接受准则配置
     /// </summary>
     public AcceptanceOptions Acceptance { get; init; }
         = new();
-
 
 
     /// <summary>
@@ -47,13 +43,11 @@ public sealed class SchedulingAlgorithmOptions
         = new();
 
 
-
     /// <summary>
     /// LNS配置
     /// </summary>
     public LnsOptions Lns { get; init; }
         = new();
-
 
 
     /// <summary>

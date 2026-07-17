@@ -23,7 +23,6 @@ public class SchedulingEngine
     private readonly TimelineInitializer timelineInitializer;
 
 
-
     public SchedulingEngine(
         TimelineInitializer timelineInitializer,
         IScheduler scheduler,
@@ -48,7 +47,6 @@ public class SchedulingEngine
     }
 
 
-
     /// <summary>
     /// 执行排产
     /// </summary>
@@ -66,7 +64,6 @@ public class SchedulingEngine
                     .Initialize(context);
 
 
-
             /*
              * 2.
              * 生成初始方案
@@ -78,7 +75,6 @@ public class SchedulingEngine
                 scheduler.Schedule(
                     context,
                     timeline);
-
 
 
             /*
@@ -100,14 +96,12 @@ public class SchedulingEngine
                     evaluator);
 
 
-
             solution =
                 optimizeResult.Solution;
 
 
             timeline =
                 optimizeResult.Timeline;
-
 
 
             /*
@@ -121,7 +115,6 @@ public class SchedulingEngine
                     context);
 
 
-
             /*
              * 5.
              * 转换业务结果
@@ -130,7 +123,6 @@ public class SchedulingEngine
                 resultConverter.Convert(
                     solution,
                     timeline);
-
 
 
             result.Message =
@@ -143,7 +135,7 @@ public class SchedulingEngine
 
             return result;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             return new SchedulingResult
             {

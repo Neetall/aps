@@ -13,12 +13,10 @@ public sealed class OptimizationStepOptions
     public OptimizationAlgorithmType Algorithm { get; init; }
 
 
-
     /// <summary>
     /// 是否启用
     /// </summary>
     public bool Enabled { get; init; } = true;
-
 
 
     /// <summary>

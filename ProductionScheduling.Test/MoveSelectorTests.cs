@@ -37,7 +37,6 @@ public class MoveSelectorTests
     }
 
 
-
     [Fact]
     public void MoveSelector_Should_Select_From_Multiple_Moves()
     {
@@ -64,10 +63,8 @@ public class MoveSelectorTests
             1);
 
 
-
         var result =
             selector.Select();
-
 
 
         Assert.NotNull(
@@ -80,7 +77,6 @@ public class MoveSelectorTests
     }
 
 
-
     [Fact]
     public void MoveSelector_Should_Throw_When_No_Move()
     {
@@ -89,11 +85,9 @@ public class MoveSelectorTests
                 new Random(1));
 
 
-        Assert.Throws<InvalidOperationException>(
-            () =>
-                selector.Select());
+        Assert.Throws<InvalidOperationException>(() =>
+            selector.Select());
     }
-
 
 
     private class FakeMove : IMove

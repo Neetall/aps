@@ -17,7 +17,6 @@ public class GreedySchedulerTests
     }
 
 
-
     [Fact]
     public void GreedyScheduler_Should_Create_Valid_Schedule()
     {
@@ -30,19 +29,16 @@ public class GreedySchedulerTests
                 .CreateGreedySchedulerContext();
 
 
-
         var scheduler =
             TestAlgorithmFactory
                 .CreateGreedyScheduler(
                     context);
 
 
-
         var timeline =
             TestTimelineFactory
                 .Create(
                     context);
-
 
 
         /*
@@ -55,7 +51,6 @@ public class GreedySchedulerTests
                 timeline);
 
 
-
         /*
          * 输出排产结果
          */
@@ -64,22 +59,20 @@ public class GreedySchedulerTests
             "========== 排产结果 ==========");
 
 
-
-        foreach(var operation in solution.Operations)
+        foreach (var operation in solution.Operations)
         {
             var start =
                 timeline.Timeline[
-                    operation.StartSlot]
+                        operation.StartSlot]
                     .StartTime;
 
 
             var end =
                 timeline.Timeline[
-                    operation.StartSlot +
-                    operation.DurationSlots -
-                    1]
+                        operation.StartSlot +
+                        operation.DurationSlots -
+                        1]
                     .EndTime;
-
 
 
             output.WriteLine(
@@ -91,10 +84,8 @@ public class GreedySchedulerTests
         }
 
 
-
         output.WriteLine(
             "============================");
-
 
 
         /*
@@ -105,11 +96,9 @@ public class GreedySchedulerTests
             solution.IsFeasible);
 
 
-
         Assert.Equal(
             2,
             solution.Operations.Count);
-
 
 
         var first =
@@ -118,7 +107,6 @@ public class GreedySchedulerTests
 
         var second =
             solution.Operations[1];
-
 
 
         /*
@@ -138,7 +126,6 @@ public class GreedySchedulerTests
             first.MachineCode);
 
 
-
         /*
          * JT002只有M001
          *
@@ -149,7 +136,6 @@ public class GreedySchedulerTests
             second.StartSlot >=
             first.StartSlot +
             first.DurationSlots);
-
 
 
         /*

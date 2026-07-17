@@ -16,14 +16,12 @@ public class OptimizationReport
     public List<MachineReport> Machines { get; set; } = [];
 }
 
-
 public class MachineReport
 {
     public string MachineCode { get; set; } = null!;
 
     public List<OperationReport> Operations { get; set; } = [];
 }
-
 
 public class OperationReport
 {

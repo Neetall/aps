@@ -22,19 +22,16 @@ public class LocalSearchOptimizerTests
                 .CreateSimpleContext();
 
 
-
         var timeline =
             TestTimelineFactory
                 .Create(
                     context);
 
 
-
         var solution =
             TestSolutionFactory
                 .CreateSlowMachineSolution(
                     timeline);
-
 
 
         var beforeMachine =
@@ -45,7 +42,6 @@ public class LocalSearchOptimizerTests
         var beforeDuration =
             solution.Operations[0]
                 .DurationSlots;
-
 
 
         /*
@@ -63,7 +59,6 @@ public class LocalSearchOptimizerTests
             };
 
 
-
         /*
          * 创建优化器依赖
          */
@@ -74,19 +69,16 @@ public class LocalSearchOptimizerTests
                     context);
 
 
-
         var ticketIndex =
             TestAlgorithmFactory
                 .CreateJobTicketIndex(
                     context);
 
 
-
         var moveSelector =
             new MoveSelectorFactory(
                     options.Moves)
                 .Create();
-
 
 
         var optimizer =
@@ -100,10 +92,8 @@ public class LocalSearchOptimizerTests
                 options.LocalSearch);
 
 
-
         var evaluator =
             new ScheduleEvaluator();
-
 
 
         var before =
@@ -111,7 +101,6 @@ public class LocalSearchOptimizerTests
                 solution,
                 timeline,
                 context);
-
 
 
         /*
@@ -126,10 +115,8 @@ public class LocalSearchOptimizerTests
                 evaluator);
 
 
-
         var after =
             result.Evaluation!;
-
 
 
         /*
@@ -148,7 +135,6 @@ public class LocalSearchOptimizerTests
             result.Evaluation);
 
 
-
         /*
          * 应移动到快设备
          */
@@ -158,7 +144,6 @@ public class LocalSearchOptimizerTests
             result.Solution
                 .Operations[0]
                 .MachineCode);
-
 
 
         /*
@@ -172,7 +157,6 @@ public class LocalSearchOptimizerTests
                 .DurationSlots);
 
 
-
         /*
          * 评价改善
          */
@@ -180,7 +164,6 @@ public class LocalSearchOptimizerTests
         Assert.True(
             after.Score <
             before.Score);
-
 
 
         /*
@@ -193,12 +176,10 @@ public class LocalSearchOptimizerTests
                 .MachineCode);
 
 
-
         Assert.Equal(
             beforeDuration,
             solution.Operations[0]
                 .DurationSlots);
-
 
 
         /*
@@ -212,7 +193,6 @@ public class LocalSearchOptimizerTests
                     result.Solution
                         .Operations[0]
                         .StartSlot));
-
 
 
         /*

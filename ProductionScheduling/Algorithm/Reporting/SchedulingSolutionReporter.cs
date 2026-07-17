@@ -31,7 +31,7 @@ public class SchedulingSolutionReporter
                     x.MachineCode);
 
 
-        foreach(var group in groups)
+        foreach (var group in groups)
         {
             var machine =
                 new MachineReport
@@ -41,8 +41,7 @@ public class SchedulingSolutionReporter
                 };
 
 
-            foreach(var operation in group.OrderBy(x=>x.StartSlot))
-            {
+            foreach (var operation in group.OrderBy(x => x.StartSlot))
                 machine.Operations.Add(
                     new OperationReport
                     {
@@ -55,7 +54,6 @@ public class SchedulingSolutionReporter
                         DurationSlots =
                             operation.DurationSlots
                     });
-            }
 
 
             report.Machines.Add(

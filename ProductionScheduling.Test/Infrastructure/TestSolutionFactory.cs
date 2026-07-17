@@ -39,12 +39,10 @@ public static class TestSolutionFactory
             });
 
 
-
         timeline.Machines["M001"]
             .Occupy(
                 0,
                 2);
-
 
 
         return solution;

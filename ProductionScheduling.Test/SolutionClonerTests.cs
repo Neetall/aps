@@ -77,10 +77,8 @@ public class SolutionClonerTests
             };
 
 
-
         var cloner =
             new SolutionCloner();
-
 
 
         /*
@@ -90,7 +88,6 @@ public class SolutionClonerTests
         var clone =
             cloner.Clone(
                 source);
-
 
 
         /*
@@ -106,9 +103,8 @@ public class SolutionClonerTests
 
 
         clone.History[0]
-            .MoveName =
-                "ShiftTime";
-
+                .MoveName =
+            "ShiftTime";
 
 
         /*
@@ -125,11 +121,9 @@ public class SolutionClonerTests
                 .StartSlot);
 
 
-
         Assert.Equal(
             100,
             source.Evaluation!.Score);
-
 
 
         Assert.Equal(
@@ -137,7 +131,6 @@ public class SolutionClonerTests
             source.History[0]
                 .MoveName);
     }
-
 
 
     [Fact]
@@ -168,23 +161,19 @@ public class SolutionClonerTests
             };
 
 
-
         var clone =
             new SolutionCloner()
                 .Clone(source);
-
 
 
         Assert.Single(
             clone.History);
 
 
-
         Assert.Equal(
             "SwapOperation",
             clone.History[0]
                 .MoveName);
-
 
 
         Assert.NotSame(

@@ -29,7 +29,6 @@ public class LocalSearchOptimizer : ISolutionOptimizer
     private readonly SchedulingResourceIndex resourceIndex;
 
 
-
     public LocalSearchOptimizer(
         SchedulingResourceIndex resourceIndex,
         JobTicketIndex jobTicketIndex,
@@ -58,7 +57,6 @@ public class LocalSearchOptimizer : ISolutionOptimizer
     }
 
 
-
     /// <summary>
     ///     执行局部搜索
     /// </summary>
@@ -85,7 +83,6 @@ public class LocalSearchOptimizer : ISolutionOptimizer
                 });
 
 
-
         current.Evaluation =
             evaluator.Evaluate(
                 current.Solution,
@@ -93,8 +90,7 @@ public class LocalSearchOptimizer : ISolutionOptimizer
                 context);
 
 
-
-        for(var i = 0; i < options.Iterations; i++)
+        for (var i = 0; i < options.Iterations; i++)
         {
             /*
              * 创建候选方案
@@ -102,7 +98,6 @@ public class LocalSearchOptimizer : ISolutionOptimizer
             var candidate =
                 cloner.Clone(
                     current);
-
 
 
             /*
@@ -113,12 +108,7 @@ public class LocalSearchOptimizer : ISolutionOptimizer
                     candidate.Solution);
 
 
-
-            if(operation == null)
-            {
-                continue;
-            }
-
+            if (operation == null) continue;
 
 
             /*
@@ -126,7 +116,6 @@ public class LocalSearchOptimizer : ISolutionOptimizer
              */
             var move =
                 moveSelector.Select();
-
 
 
             var moveContext =
@@ -152,7 +141,6 @@ public class LocalSearchOptimizer : ISolutionOptimizer
                 };
 
 
-
             /*
              * 执行移动
              */
@@ -161,12 +149,7 @@ public class LocalSearchOptimizer : ISolutionOptimizer
                     moveContext);
 
 
-
-            if(!success)
-            {
-                continue;
-            }
-
+            if (!success) continue;
 
 
             /*
@@ -179,18 +162,14 @@ public class LocalSearchOptimizer : ISolutionOptimizer
                     context);
 
 
-
             /*
              * 只接受更优方案
              */
-            if(candidate.Evaluation.Score <
-               current.Evaluation!.Score)
-            {
+            if (candidate.Evaluation.Score <
+                current.Evaluation!.Score)
                 current =
                     candidate;
-            }
         }
-
 
 
         return new OptimizationResult

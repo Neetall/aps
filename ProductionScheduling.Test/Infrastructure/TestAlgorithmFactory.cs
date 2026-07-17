@@ -26,7 +26,6 @@ public static class TestAlgorithmFactory
                 context);
 
 
-
         return new GreedyScheduler(
             new ScheduleDurationCalculator(),
             resourceIndex);
@@ -49,11 +48,9 @@ public static class TestAlgorithmFactory
                 context);
 
 
-
         var moveSelector =
             new MoveSelector(
                 new Random(1));
-
 
 
         moveSelector.Register(
@@ -62,17 +59,14 @@ public static class TestAlgorithmFactory
             options.Moves.ChangeMachineWeight);
 
 
-
         moveSelector.Register(
             new ShiftTimeMove(),
             options.Moves.ShiftTimeWeight);
 
 
-
         moveSelector.Register(
             new SwapOperationMove(),
             options.Moves.SwapOperationWeight);
-
 
 
         return new LocalSearchOptimizer(
@@ -103,7 +97,6 @@ public static class TestAlgorithmFactory
     }
 
 
-
     /// <summary>
     /// 创建工单索引
     /// </summary>
@@ -120,7 +113,6 @@ public static class TestAlgorithmFactory
 
         return index;
     }
-
 
 
     /// <summary>
@@ -140,11 +132,9 @@ public static class TestAlgorithmFactory
                 context);
 
 
-
         var moveSelectorFactory =
             new MoveSelectorFactory(
                 options.Moves);
-
 
 
         var optimizerFactory =
@@ -158,27 +148,23 @@ public static class TestAlgorithmFactory
                 options);
 
 
-
         return new OptimizationPipelineRunner(
             options,
             optimizerFactory.Create);
     }
-    
+
     public static SimulatedAnnealingOptimizer CreateSimulatedAnnealing(
         SchedulingContext context,
         SchedulingAlgorithmOptions options)
     {
         var resourceIndex =
-            TestAlgorithmFactory
-                .CreateResourceIndex(
-                    context);
+            CreateResourceIndex(
+                context);
 
 
         var ticketIndex =
-            TestAlgorithmFactory
-                .CreateJobTicketIndex(
-                    context);
-
+            CreateJobTicketIndex(
+                context);
 
 
         return new SimulatedAnnealingOptimizer(

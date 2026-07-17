@@ -25,7 +25,7 @@ public static class SchedulingReportPrinter
             $"Machines: {report.MachineCount}");
 
 
-        foreach(var machine in report.Machines)
+        foreach (var machine in report.Machines)
         {
             Console.WriteLine();
 
@@ -33,13 +33,11 @@ public static class SchedulingReportPrinter
                 $"Machine {machine.MachineCode}");
 
 
-            foreach(var op in machine.Operations)
-            {
+            foreach (var op in machine.Operations)
                 Console.WriteLine(
                     $"  {op.JobTicketCode} " +
                     $"Start:{op.StartSlot} " +
                     $"Duration:{op.DurationSlots}");
-            }
         }
     }
 }

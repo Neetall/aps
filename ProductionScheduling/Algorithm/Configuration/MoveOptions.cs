@@ -11,12 +11,10 @@ public sealed class MoveOptions
     public int ChangeMachineWeight { get; init; } = 10;
 
 
-
     /// <summary>
     /// 时间移动权重
     /// </summary>
     public int ShiftTimeWeight { get; init; } = 3;
-
 
 
     /// <summary>

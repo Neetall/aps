@@ -13,7 +13,6 @@ public sealed class AcceptanceOptions
     public double MaximumProbability { get; init; } = 1.0;
 
 
-
     /// <summary>
     /// 能量差缩放比例
     ///

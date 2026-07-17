@@ -11,19 +11,16 @@ public sealed class SimulatedAnnealingOptions
     public int Iterations { get; init; } = 10000;
 
 
-
     /// <summary>
     /// 初始温度
     /// </summary>
     public double InitialTemperature { get; init; } = 1000;
 
 
-
     /// <summary>
     /// 降温比例
     /// </summary>
     public double CoolingRate { get; init; } = 0.95;
-
 
 
     /// <summary>

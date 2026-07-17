@@ -16,21 +16,17 @@ public class TabuSearchOptimizer : ISolutionOptimizer
 
     private readonly JobTicketIndex jobTicketIndex;
 
-    private readonly OperationSelector operationSelector;
-
-    private readonly MoveSelector moveSelector;
+    private readonly MoveNeighborhoodGenerator neighborhoodGenerator;
 
     private readonly SolutionCloner cloner;
 
     private readonly TabuSearchOptions options;
 
 
-
     public TabuSearchOptimizer(
         SchedulingResourceIndex resourceIndex,
         JobTicketIndex jobTicketIndex,
-        OperationSelector operationSelector,
-        MoveSelector moveSelector,
+        MoveNeighborhoodGenerator neighborhoodGenerator,
         SolutionCloner cloner,
         TabuSearchOptions options)
     {
@@ -40,11 +36,8 @@ public class TabuSearchOptimizer : ISolutionOptimizer
         this.jobTicketIndex =
             jobTicketIndex;
 
-        this.operationSelector =
-            operationSelector;
-
-        this.moveSelector =
-            moveSelector;
+        this.neighborhoodGenerator =
+            neighborhoodGenerator;
 
         this.cloner =
             cloner;
@@ -52,7 +45,6 @@ public class TabuSearchOptimizer : ISolutionOptimizer
         this.options =
             options;
     }
-
 
 
     public OptimizationResult Optimize(
@@ -73,7 +65,6 @@ public class TabuSearchOptimizer : ISolutionOptimizer
                 });
 
 
-
         current.Evaluation =
             evaluator.Evaluate(
                 current.Solution,
@@ -81,11 +72,9 @@ public class TabuSearchOptimizer : ISolutionOptimizer
                 context);
 
 
-
         var best =
             cloner.Clone(
                 current);
-
 
 
         var tabu =
@@ -93,158 +82,167 @@ public class TabuSearchOptimizer : ISolutionOptimizer
                 options.TabuTenure);
 
 
-
-        for(var i = 0;
-            i < options.Iterations;
-            i++)
+        for (var iteration = 0;
+             iteration < options.Iterations;
+             iteration++)
         {
-            var candidate =
-                cloner.Clone(
-                    current);
+            var neighbors =
+                neighborhoodGenerator.Generate(
+                    current.Solution);
 
 
-
-            var operation =
-                operationSelector.Select(
-                    candidate.Solution);
+            MoveCandidate? bestCandidate =
+                null;
 
 
-
-            if(operation == null)
-                continue;
-
-
-
-            var move =
-                moveSelector.Select();
+            foreach (var neighbor in neighbors)
+            {
+                var candidate =
+                    cloner.Clone(
+                        current);
 
 
-            if(move == null)
-                continue;
+                var operation =
+                    candidate.Solution
+                        .Operations
+                        .First(x =>
+                            x.JobTicketCode ==
+                            neighbor.Operation.JobTicketCode);
 
 
+                var moveContext =
+                    new MoveContext
+                    {
+                        SchedulingContext =
+                            context,
 
-            var moveContext =
-                new MoveContext
-                {
-                    SchedulingContext =
-                        context,
+                        Solution =
+                            candidate.Solution,
 
-                    Solution =
+                        Timeline =
+                            candidate.Timeline,
+
+                        ResourceIndex =
+                            resourceIndex,
+
+                        JobTicketIndex =
+                            jobTicketIndex,
+
+                        CurrentOperation =
+                            operation
+                    };
+
+
+                if (!neighbor.Move.Apply(
+                        moveContext))
+                    continue;
+
+
+                candidate.Evaluation =
+                    evaluator.Evaluate(
                         candidate.Solution,
-
-                    Timeline =
                         candidate.Timeline,
-
-                    ResourceIndex =
-                        resourceIndex,
-
-                    JobTicketIndex =
-                        jobTicketIndex,
-
-                    CurrentOperation =
-                        operation
-                };
+                        context);
 
 
-
-            var success =
-                move.Apply(
-                    moveContext);
+                var record =
+                    moveContext.ExecutionRecord;
 
 
-
-            if(!success)
-                continue;
-
-
-
-            candidate.Evaluation =
-                evaluator.Evaluate(
-                    candidate.Solution,
-                    candidate.Timeline,
-                    context);
+                if (record == null ||
+                    !record.Success)
+                    continue;
 
 
-
-            var record =
-                moveContext.ExecutionRecord;
-
+                var tabuKey =
+                    record.TabuKey;
 
 
-            if(record == null)
-                continue;
+                var isTabu =
+                    tabuKey != null &&
+                    tabu.IsTabu(
+                        tabuKey,
+                        iteration);
 
 
-
-            var tabuKey =
-                record.TabuKey;
-
-            if(tabuKey == null)
-                continue;
-
-            var isTabu =
-                tabu.IsTabu(
-                    tabuKey,
-                    i);
+                /*
+                 * Aspiration:
+                 *
+                 * 如果超过历史最好
+                 * 忽略Tabu
+                 */
+                var aspiration =
+                    candidate.Evaluation.Score <
+                    best.Evaluation!.Score;
 
 
-
-            /*
-             * 破禁规则:
-             *
-             * 如果产生全局最好解
-             * 即使Tabu也接受
-             */
-            var aspiration =
-                candidate.Evaluation.Score <
-                best.Evaluation!.Score;
+                if (isTabu &&
+                    !aspiration)
+                    continue;
 
 
+                /*
+                 * 如果不允许接受差解
+                 */
+                if (!options.AllowWorseMoves &&
+                    candidate.Evaluation.Score >=
+                    current.Evaluation!.Score)
+                    continue;
 
-            if(isTabu &&
-               !aspiration)
-            {
-                continue;
+
+                if (bestCandidate == null ||
+                    candidate.Evaluation.Score <
+                    bestCandidate.Score)
+                    bestCandidate =
+                        new MoveCandidate
+                        {
+                            Operation =
+                                neighbor.Operation,
+
+                            Move =
+                                neighbor.Move,
+
+                            State =
+                                candidate,
+
+                            Record =
+                                record,
+
+                            Score =
+                                candidate.Evaluation.Score
+                        };
             }
 
 
-
             /*
-             * Tabu Search允许接受变差解
-             *
-             * 目的是跳出局部最优
+             * 没有可接受邻居
              */
-            if(!options.AllowWorseMoves
-               &&
-               candidate.Evaluation.Score >=
-               current.Evaluation!.Score)
-            {
+            if (bestCandidate == null)
                 continue;
-            }
-
 
 
             current =
-                candidate;
+                bestCandidate.State!;
 
 
+            /*
+             * 加入Tabu
+             */
+            if (bestCandidate.Record?.TabuKey != null)
+                tabu.Add(
+                    bestCandidate.Record.TabuKey,
+                    iteration);
 
-            tabu.Add(
-                tabuKey,
-                i);
 
-
-
-            if(current.Evaluation.Score <
-               best.Evaluation!.Score)
-            {
+            /*
+             * 更新全局最优
+             */
+            if (current.Evaluation!.Score <
+                best.Evaluation!.Score)
                 best =
                     cloner.Clone(
                         current);
-            }
         }
-
 
 
         return new OptimizationResult
@@ -259,5 +257,4 @@ public class TabuSearchOptimizer : ISolutionOptimizer
                 best.Evaluation
         };
     }
-
 }

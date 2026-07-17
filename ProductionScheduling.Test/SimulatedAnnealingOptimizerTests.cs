@@ -19,12 +19,10 @@ public class SimulatedAnnealingOptimizerTests
                 .CreateSimpleContext();
 
 
-
         var timeline =
             TestTimelineFactory
                 .Create(
                     context);
-
 
 
         /*
@@ -44,7 +42,6 @@ public class SimulatedAnnealingOptimizerTests
                     timeline);
 
 
-
         var options =
             new SchedulingAlgorithmOptions
             {
@@ -60,7 +57,6 @@ public class SimulatedAnnealingOptimizerTests
             };
 
 
-
         var optimizer =
             TestAlgorithmFactory
                 .CreateSimulatedAnnealing(
@@ -68,10 +64,8 @@ public class SimulatedAnnealingOptimizerTests
                     options);
 
 
-
         var evaluator =
             new ScheduleEvaluator();
-
 
 
         var before =
@@ -79,7 +73,6 @@ public class SimulatedAnnealingOptimizerTests
                 solution,
                 timeline,
                 context);
-
 
 
         /*
@@ -92,7 +85,6 @@ public class SimulatedAnnealingOptimizerTests
                 context,
                 timeline,
                 evaluator);
-
 
 
         /*
@@ -111,10 +103,8 @@ public class SimulatedAnnealingOptimizerTests
             result.Evaluation);
 
 
-
         Assert.True(
             result.Solution.IsFeasible);
-
 
 
         Assert.True(
@@ -122,11 +112,9 @@ public class SimulatedAnnealingOptimizerTests
             before.Score);
 
 
-
         var operation =
             result.Solution
                 .Operations[0];
-
 
 
         /*
@@ -137,14 +125,12 @@ public class SimulatedAnnealingOptimizerTests
             operation.MachineCode);
 
 
-
         /*
          * 加工时间降低
          */
         Assert.Equal(
             1,
             operation.DurationSlots);
-
 
 
         /*
@@ -155,7 +141,6 @@ public class SimulatedAnnealingOptimizerTests
                 .Machines["M002"]
                 .IsFree(
                     operation.StartSlot));
-
 
 
         /*

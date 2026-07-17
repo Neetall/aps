@@ -10,7 +10,6 @@ public class MoveSelectorFactory
     private readonly MoveOptions options;
 
 
-
     public MoveSelectorFactory(
         MoveOptions options)
     {
@@ -19,12 +18,10 @@ public class MoveSelectorFactory
     }
 
 
-
     public MoveSelector Create()
     {
         var selector =
             new MoveSelector();
-
 
 
         selector.Register(
@@ -33,17 +30,14 @@ public class MoveSelectorFactory
             options.ChangeMachineWeight);
 
 
-
         selector.Register(
             new ShiftTimeMove(),
             options.ShiftTimeWeight);
 
 
-
         selector.Register(
             new SwapOperationMove(),
             options.SwapOperationWeight);
-
 
 
         return selector;

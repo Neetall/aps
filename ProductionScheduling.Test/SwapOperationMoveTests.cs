@@ -21,12 +21,10 @@ public class SwapOperationMoveTests
                 .CreateSwapContext();
 
 
-
         var timeline =
             TestTimelineFactory
                 .Create(
                     context);
-
 
 
         /*
@@ -85,7 +83,6 @@ public class SwapOperationMoveTests
             op2);
 
 
-
         timeline.Machines["M001"]
             .Occupy(
                 0,
@@ -98,19 +95,16 @@ public class SwapOperationMoveTests
                 2);
 
 
-
         var resourceIndex =
             TestAlgorithmFactory
                 .CreateResourceIndex(
                     context);
 
 
-
         var ticketIndex =
             TestAlgorithmFactory
                 .CreateJobTicketIndex(
                     context);
-
 
 
         var moveContext =
@@ -136,10 +130,8 @@ public class SwapOperationMoveTests
             };
 
 
-
         var move =
             new SwapOperationMove();
-
 
 
         /*
@@ -151,14 +143,12 @@ public class SwapOperationMoveTests
                 moveContext);
 
 
-
         /*
          * Assert
          */
 
         Assert.True(
             result);
-
 
 
         var jt001 =
@@ -169,7 +159,6 @@ public class SwapOperationMoveTests
             solution.Operations[1];
 
 
-
         Assert.Equal(
             "JT001",
             jt001.JobTicketCode);
@@ -178,7 +167,6 @@ public class SwapOperationMoveTests
         Assert.Equal(
             "JT002",
             jt002.JobTicketCode);
-
 
 
         /*
@@ -195,7 +183,6 @@ public class SwapOperationMoveTests
             jt002.StartSlot);
 
 
-
         /*
          * Duration保持
          */
@@ -208,7 +195,6 @@ public class SwapOperationMoveTests
         Assert.Equal(
             2,
             jt002.DurationSlots);
-
 
 
         /*
@@ -226,7 +212,6 @@ public class SwapOperationMoveTests
                 .IsFree(
                     2));
     }
-
 
 
     [Fact]
