@@ -139,7 +139,9 @@ public class ChangeMachineMove : IMove
                         oldDuration,
 
                     NewDurationSlots =
-                        duration
+                        duration,
+                    TabuKey =
+                        $"ChangeMachine:{operation.JobTicketCode}:{oldMachine}->{capability.MachineCode}",
                 };
 
 

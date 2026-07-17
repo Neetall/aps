@@ -209,7 +209,10 @@ public class SwapOperationMove : IMove
 
 
                 SecondDurationSlots =
-                    secondDuration
+                    secondDuration,
+
+                TabuKey =
+                    $"Swap:{first.JobTicketCode}:{second.JobTicketCode}",
             };
 
 

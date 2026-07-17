@@ -18,6 +18,13 @@ public class MoveExecutionRecord
 
 
     /// <summary>
+    ///     Tabu唯一标识
+    ///     用于TabuSearch判断禁忌
+    /// </summary>
+    public string? TabuKey { get; set; }
+
+
+    /// <summary>
     ///     是否执行成功
     /// </summary>
     public bool Success { get; set; }
@@ -48,45 +55,24 @@ public class MoveExecutionRecord
      */
 
 
-    /// <summary>
-    ///     第一个任务编码
-    /// </summary>
     public string? JobTicketCode { get; set; }
 
 
-    /// <summary>
-    ///     原设备
-    /// </summary>
     public string? OldMachineCode { get; set; }
 
 
-    /// <summary>
-    ///     新设备
-    /// </summary>
     public string? NewMachineCode { get; set; }
 
 
-    /// <summary>
-    ///     原开始Slot
-    /// </summary>
     public int OldStartSlot { get; set; }
 
 
-    /// <summary>
-    ///     新开始Slot
-    /// </summary>
     public int NewStartSlot { get; set; }
 
 
-    /// <summary>
-    ///     原持续Slot数量
-    /// </summary>
     public int OldDurationSlots { get; set; }
 
 
-    /// <summary>
-    ///     新持续Slot数量
-    /// </summary>
     public int NewDurationSlots { get; set; }
 
 
@@ -98,38 +84,20 @@ public class MoveExecutionRecord
      */
 
 
-    /// <summary>
-    ///     第二个任务编码
-    /// </summary>
     public string? SecondJobTicketCode { get; set; }
 
 
-    /// <summary>
-    ///     第二个任务原设备
-    /// </summary>
     public string? SecondOldMachineCode { get; set; }
 
 
-    /// <summary>
-    ///     第二个任务新设备
-    /// </summary>
     public string? SecondNewMachineCode { get; set; }
 
 
-    /// <summary>
-    ///     第二个任务原开始Slot
-    /// </summary>
     public int SecondOldStartSlot { get; set; }
 
 
-    /// <summary>
-    ///     第二个任务新开始Slot
-    /// </summary>
     public int SecondNewStartSlot { get; set; }
 
 
-    /// <summary>
-    ///     第二个任务持续Slot数量
-    /// </summary>
     public int SecondDurationSlots { get; set; }
 }

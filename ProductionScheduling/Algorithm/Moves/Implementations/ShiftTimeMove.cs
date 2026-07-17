@@ -20,7 +20,7 @@ public class ShiftTimeMove : IMove
             context.CurrentOperation;
 
 
-        if (operation == null)
+        if(operation == null)
         {
             context.ExecutionRecord =
                 new MoveExecutionRecord
@@ -33,7 +33,7 @@ public class ShiftTimeMove : IMove
         }
 
 
-        if (!context.Timeline.Machines
+        if(!context.Timeline.Machines
                 .TryGetValue(
                     operation.MachineCode,
                     out var timeline))
@@ -57,31 +57,22 @@ public class ShiftTimeMove : IMove
             operation.DurationSlots;
 
 
-        /*
-         * 释放旧位置
-         */
+
         timeline.Release(
             oldStart,
             duration);
 
 
-        /*
-         * 查找新的时间
-         *
-         * 当前策略:
-         * 向后移动
-         */
+
         var newStart =
             timeline.FindEarliest(
                 duration,
                 oldStart + 1);
 
 
-        if (newStart < 0)
+
+        if(newStart < 0)
         {
-            /*
-             * 恢复
-             */
             timeline.Occupy(
                 oldStart,
                 duration);
@@ -99,16 +90,16 @@ public class ShiftTimeMove : IMove
         }
 
 
-        /*
-         * 占用新位置
-         */
+
         timeline.Occupy(
             newStart,
             duration);
 
 
+
         operation.StartSlot =
             newStart;
+
 
 
         context.ExecutionRecord =
@@ -119,6 +110,7 @@ public class ShiftTimeMove : IMove
 
                 Success =
                     true,
+
 
                 JobTicketCode =
                     operation.JobTicketCode,
@@ -141,7 +133,11 @@ public class ShiftTimeMove : IMove
 
 
                 NewDurationSlots =
-                    duration
+                    duration,
+
+
+                TabuKey =
+                    $"ShiftTime:{operation.JobTicketCode}:{oldStart}->{newStart}"
             };
 
 
@@ -149,9 +145,7 @@ public class ShiftTimeMove : IMove
     }
 
 
-    /// <summary>
-    ///     撤销移动
-    /// </summary>
+
     public void Undo(
         MoveContext context)
     {
@@ -163,33 +157,30 @@ public class ShiftTimeMove : IMove
             context.CurrentOperation;
 
 
-        if (record == null ||
-            !record.Success ||
-            operation == null)
+        if(record == null ||
+           !record.Success ||
+           operation == null)
             return;
 
 
-        if (!context.Timeline.Machines
+        if(!context.Timeline.Machines
                 .TryGetValue(
                     record.OldMachineCode!,
                     out var timeline))
             return;
 
 
-        /*
-         * 删除新位置
-         */
+
         timeline.Release(
             record.NewStartSlot,
             record.NewDurationSlots);
 
 
-        /*
-         * 恢复旧位置
-         */
+
         timeline.Occupy(
             record.OldStartSlot,
             record.OldDurationSlots);
+
 
 
         operation.StartSlot =
