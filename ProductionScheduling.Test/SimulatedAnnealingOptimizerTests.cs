@@ -10,36 +10,23 @@ public class SimulatedAnnealingOptimizerTests
     [Fact]
     public void SimulatedAnnealing_Should_Return_Better_Or_Equal_Solution()
     {
-        /*
-         * Arrange
-         */
-
         var context =
             TestSchedulingDataFactory
                 .CreateSimpleContext();
 
 
-        var timeline =
+        var timelines =
             TestTimelineFactory
                 .Create(
                     context);
 
 
-        /*
-         * 创建较差初始方案
-         *
-         * JT001 -> M001
-         *
-         * M001:
-         * 50/h
-         *
-         * M002:
-         * 100/h
-         */
+
         var solution =
             TestSolutionFactory
                 .CreateSlowMachineSolution(
-                    timeline);
+                    timelines);
+
 
 
         var options =
@@ -48,13 +35,17 @@ public class SimulatedAnnealingOptimizerTests
                 SimulatedAnnealing =
                     new SimulatedAnnealingOptions
                     {
-                        Iterations = 100,
+                        Iterations =
+                            100,
 
-                        InitialTemperature = 100,
+                        InitialTemperature =
+                            100,
 
-                        CoolingRate = 0.95
+                        CoolingRate =
+                            0.95
                     }
             };
+
 
 
         var optimizer =
@@ -64,47 +55,45 @@ public class SimulatedAnnealingOptimizerTests
                     options);
 
 
+
         var evaluator =
             new ScheduleEvaluator();
+
 
 
         var before =
             evaluator.Evaluate(
                 solution,
-                timeline,
+                timelines,
                 context);
 
 
-        /*
-         * Act
-         */
 
         var result =
             optimizer.Optimize(
                 solution,
                 context,
-                timeline,
+                timelines,
                 evaluator);
 
 
-        /*
-         * Assert
-         */
 
         Assert.NotNull(
             result.Solution);
 
 
         Assert.NotNull(
-            result.Timeline);
+            result.Timelines);
 
 
         Assert.NotNull(
             result.Evaluation);
 
 
+
         Assert.True(
             result.Solution.IsFeasible);
+
 
 
         Assert.True(
@@ -112,42 +101,41 @@ public class SimulatedAnnealingOptimizerTests
             before.Score);
 
 
+
         var operation =
             result.Solution
                 .Operations[0];
 
 
-        /*
-         * 应迁移到快设备
-         */
+
         Assert.Equal(
             "M002",
             operation.MachineCode);
 
 
-        /*
-         * 加工时间降低
-         */
+
         Assert.Equal(
             1,
             operation.DurationSlots);
 
 
-        /*
-         * 新设备占用
-         */
+
+        var factoryTimeline =
+            result.Timelines
+                .Factories["F001"];
+
+
+
         Assert.False(
-            result.Timeline
+            factoryTimeline
                 .Machines["M002"]
                 .IsFree(
                     operation.StartSlot));
 
 
-        /*
-         * 原设备释放
-         */
+
         Assert.True(
-            result.Timeline
+            factoryTimeline
                 .Machines["M001"]
                 .IsFree(
                     0));

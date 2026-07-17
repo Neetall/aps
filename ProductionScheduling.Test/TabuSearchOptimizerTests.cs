@@ -25,19 +25,16 @@ public class TabuSearchOptimizerTests
     }
 
 
+
     [Fact]
     public void TabuSearch_Should_Move_To_Better_Machine()
     {
-        /*
-         * Arrange
-         */
-
         var context =
             TestSchedulingDataFactory
                 .CreateSimpleContext();
 
 
-        var timeline =
+        var timelines =
             TestTimelineFactory
                 .Create(
                     context);
@@ -64,10 +61,15 @@ public class TabuSearchOptimizerTests
             });
 
 
-        timeline.Machines["M001"]
+        var factoryTimeline =
+            timelines.Factories["F001"];
+
+
+        factoryTimeline.Machines["M001"]
             .Occupy(
                 0,
                 2);
+
 
 
         var resourceIndex =
@@ -82,9 +84,6 @@ public class TabuSearchOptimizerTests
                     context);
 
 
-        /*
-         * 注册Move
-         */
 
         var moveSelector =
             new MoveSelector(
@@ -97,13 +96,11 @@ public class TabuSearchOptimizerTests
             10);
 
 
-        /*
-         * 创建邻域生成器
-         */
 
         var neighborhoodGenerator =
             new MoveNeighborhoodGenerator(
                 moveSelector);
+
 
 
         var optimizer =
@@ -114,47 +111,36 @@ public class TabuSearchOptimizerTests
                 new SolutionCloner(),
                 new TabuSearchOptions
                 {
-                    Iterations =
-                        50,
+                    Iterations = 50,
 
-                    TabuTenure =
-                        5,
+                    TabuTenure = 5,
 
-                    AllowWorseMoves =
-                        true
+                    AllowWorseMoves = true
                 });
+
 
 
         var evaluator =
             new ScheduleEvaluator();
 
 
+
         var before =
             evaluator.Evaluate(
                 solution,
-                timeline,
+                timelines,
                 context);
 
 
-        output.WriteLine(
-            $"Before Score:{before.Score}");
-
-
-        /*
-         * Act
-         */
 
         var result =
             optimizer.Optimize(
                 solution,
                 context,
-                timeline,
+                timelines,
                 evaluator);
 
 
-        /*
-         * Output
-         */
 
         TestSchedulePrinter.Print(
             output,
@@ -167,29 +153,24 @@ public class TabuSearchOptimizerTests
             result.Solution);
 
 
-        /*
-         * Assert
-         */
 
         Assert.NotNull(
             result.Solution);
 
 
         Assert.NotNull(
-            result.Timeline);
+            result.Timelines);
 
 
         Assert.NotNull(
             result.Evaluation);
 
 
-        output.WriteLine(
-            $"After Score:{result.Evaluation.Score}");
-
 
         Assert.True(
             result.Evaluation.Score <=
             before.Score);
+
 
 
         Assert.Equal(
@@ -199,6 +180,7 @@ public class TabuSearchOptimizerTests
                 .MachineCode);
 
 
+
         Assert.Equal(
             1,
             result.Solution
@@ -206,9 +188,6 @@ public class TabuSearchOptimizerTests
                 .DurationSlots);
 
 
-        /*
-         * 验证原始解未污染
-         */
 
         Assert.Equal(
             "M001",
@@ -222,22 +201,21 @@ public class TabuSearchOptimizerTests
                 .DurationSlots);
     }
 
+
+
     [Fact]
     public void TabuSearch_Should_Select_Best_Neighbor_From_Multiple_Moves()
     {
-        /*
-         * Arrange
-         */
-
         var context =
             TestSchedulingDataFactory
                 .CreateSimpleContext();
 
 
-        var timeline =
+        var timelines =
             TestTimelineFactory
                 .Create(
                     context);
+
 
 
         var solution =
@@ -261,10 +239,16 @@ public class TabuSearchOptimizerTests
             });
 
 
-        timeline.Machines["M001"]
+
+        var factoryTimeline =
+            timelines.Factories["F001"];
+            
+
+        factoryTimeline.Machines["M001"]
             .Occupy(
                 5,
                 2);
+
 
 
         var resourceIndex =
@@ -279,9 +263,6 @@ public class TabuSearchOptimizerTests
                     context);
 
 
-        /*
-         * 注册多个邻域
-         */
 
         var moveSelector =
             new MoveSelector(
@@ -299,9 +280,11 @@ public class TabuSearchOptimizerTests
             10);
 
 
+
         var neighborhoodGenerator =
             new MoveNeighborhoodGenerator(
                 moveSelector);
+
 
 
         var optimizer =
@@ -312,47 +295,36 @@ public class TabuSearchOptimizerTests
                 new SolutionCloner(),
                 new TabuSearchOptions
                 {
-                    Iterations =
-                        50,
+                    Iterations = 50,
 
-                    TabuTenure =
-                        5,
+                    TabuTenure = 5,
 
-                    AllowWorseMoves =
-                        true
+                    AllowWorseMoves = true
                 });
+
 
 
         var evaluator =
             new ScheduleEvaluator();
 
 
+
         var before =
             evaluator.Evaluate(
                 solution,
-                timeline,
+                timelines,
                 context);
 
 
-        output.WriteLine(
-            $"Before:{before.Score}");
-
-
-        /*
-         * Act
-         */
 
         var result =
             optimizer.Optimize(
                 solution,
                 context,
-                timeline,
+                timelines,
                 evaluator);
 
 
-        /*
-         * Output
-         */
 
         TestSchedulePrinter.Print(
             output,
@@ -365,9 +337,6 @@ public class TabuSearchOptimizerTests
             result.Solution);
 
 
-        /*
-         * Assert
-         */
 
         Assert.NotNull(
             result.Solution);
@@ -377,28 +346,19 @@ public class TabuSearchOptimizerTests
             result.Evaluation);
 
 
-        output.WriteLine(
-            $"After:{result.Evaluation.Score}");
-
-
-        /*
-         * 必须找到更优邻域
-         */
 
         Assert.True(
             result.Evaluation.Score <=
             before.Score);
 
 
-        /*
-         * 验证选择的是ChangeMachine产生的更优结果
-         */
 
         Assert.Equal(
             "M002",
             result.Solution
                 .Operations[0]
                 .MachineCode);
+
 
 
         Assert.Equal(
@@ -408,9 +368,6 @@ public class TabuSearchOptimizerTests
                 .DurationSlots);
 
 
-        /*
-         * 原解保持
-         */
 
         Assert.Equal(
             "M001",

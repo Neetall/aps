@@ -16,15 +16,19 @@ public static class TestSolutionFactory
     /// Move测试
     /// </summary>
     public static SchedulingSolution CreateSlowMachineSolution(
-        TimelineContext timeline)
+        TimelineContextGroup timelines)
     {
         var solution =
             new SchedulingSolution();
 
 
+
         solution.Operations.Add(
             new ScheduledOperation
             {
+                FactoryCode =
+                    "F001",
+
                 JobTicketCode =
                     "JT001",
 
@@ -39,10 +43,18 @@ public static class TestSolutionFactory
             });
 
 
-        timeline.Machines["M001"]
+
+        var factory =
+            timelines.Get(
+                "F001");
+
+
+
+        factory.Machines["M001"]
             .Occupy(
                 0,
                 2);
+
 
 
         return solution;

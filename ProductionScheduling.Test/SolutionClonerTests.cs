@@ -10,7 +10,7 @@ namespace ProductionScheduling.Test;
 
 public class SolutionClonerTests
 {
-    private TimelineContext CreateTimeline()
+    private TimelineContextGroup CreateTimelines()
     {
         var slots =
             new List<TimeSlot>();
@@ -39,18 +39,34 @@ public class SolutionClonerTests
                 slots);
 
 
-        return new TimelineContext(
-            timeModel);
+        var timelines =
+            new TimelineContextGroup();
+
+
+        var factory =
+            new FactoryTimeline(
+                "F001",
+                timeModel);
+
+
+        factory.AddMachine(
+            new MachineTimeline(
+                "M001",
+                slots.Count));
+
+
+        timelines.AddFactory(
+            factory);
+
+
+        return timelines;
     }
+
 
 
     [Fact]
     public void Clone_Should_Create_Independent_State()
     {
-        /*
-         * Arrange
-         */
-
         var source =
             new ScheduleState
             {
@@ -67,6 +83,9 @@ public class SolutionClonerTests
                                 MachineCode =
                                     "M001",
 
+                                FactoryCode =
+                                    "F001",
+
                                 StartSlot =
                                     10,
 
@@ -76,15 +95,17 @@ public class SolutionClonerTests
                         ]
                     },
 
+                
 
-                Timeline =
-                    CreateTimeline(),
+                Timelines =
+                    CreateTimelines(),
 
 
                 Evaluation =
                     new EvaluationResult
                     {
-                        Score = 100
+                        Score =
+                            100
                     },
 
 
@@ -111,22 +132,17 @@ public class SolutionClonerTests
             };
 
 
+
         var cloner =
             new SolutionCloner();
 
 
-        /*
-         * Act
-         */
 
         var clone =
             cloner.Clone(
                 source);
 
 
-        /*
-         * 修改Clone
-         */
 
         clone.Solution
             .Operations[0]
@@ -137,13 +153,10 @@ public class SolutionClonerTests
 
 
         clone.History[0]
-                .MoveName =
+            .MoveName =
             "ShiftTime";
 
 
-        /*
-         * Assert
-         */
 
         Assert.Equal(
             10,
@@ -174,8 +187,9 @@ public class SolutionClonerTests
                 Solution =
                     new SchedulingSolution(),
 
-                Timeline =
-                    CreateTimeline(),
+
+                Timelines =
+                    CreateTimelines(),
 
 
                 History =
@@ -192,19 +206,24 @@ public class SolutionClonerTests
             };
 
 
+
         var clone =
             new SolutionCloner()
-                .Clone(source);
+                .Clone(
+                    source);
+
 
 
         Assert.Single(
             clone.History);
 
 
+
         Assert.Equal(
             "SwapOperation",
             clone.History[0]
                 .MoveName);
+
 
 
         Assert.NotSame(

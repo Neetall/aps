@@ -35,10 +35,11 @@ public class GreedySchedulerTests
                     context);
 
 
-        var timeline =
+        var timelines =
             TestTimelineFactory
                 .Create(
                     context);
+
 
 
         /*
@@ -48,7 +49,7 @@ public class GreedySchedulerTests
         var solution =
             scheduler.Schedule(
                 context,
-                timeline);
+                timelines);
 
 
 
@@ -60,22 +61,31 @@ public class GreedySchedulerTests
             "========== 排产结果 ==========");
 
 
+
         foreach(var operation in solution.Operations)
         {
+            var factory =
+                timelines.Get(
+                    operation.FactoryCode);
+
+
+
             var start =
-                timeline.TimeModel
+                factory.TimeModel
                     .GetSlot(
                         operation.StartSlot)
                     .StartTime;
 
 
+
             var end =
-                timeline.TimeModel
+                factory.TimeModel
                     .GetSlot(
                         operation.StartSlot +
                         operation.DurationSlots -
                         1)
                     .EndTime;
+
 
 
             output.WriteLine(
@@ -85,6 +95,7 @@ public class GreedySchedulerTests
                 $"结束:{end:yyyy-MM-dd HH:mm} | " +
                 $"持续:{operation.DurationSlots}小时");
         }
+
 
 
         output.WriteLine(
@@ -98,6 +109,7 @@ public class GreedySchedulerTests
 
         Assert.True(
             solution.IsFeasible);
+
 
 
         Assert.Equal(
@@ -115,29 +127,11 @@ public class GreedySchedulerTests
 
 
 
-        /*
-         * JT001:
-         *
-         * M001:
-         * 100 / 50 = 2小时
-         *
-         * M002:
-         * 100 / 100 = 1小时
-         *
-         * 应选择M002
-         */
-
         Assert.Equal(
             "M002",
             first.MachineCode);
 
 
-
-        /*
-         * JT002只有M001
-         *
-         * 必须等待JT001完成
-         */
 
         Assert.True(
             second.StartSlot >=
@@ -145,10 +139,6 @@ public class GreedySchedulerTests
             first.DurationSlots);
 
 
-
-        /*
-         * 两个工序不能重叠
-         */
 
         Assert.False(
             first.StartSlot <

@@ -15,16 +15,12 @@ public class OptimizationPipelineTests
     [Fact]
     public void Pipeline_Should_Execute_Multiple_Optimizers()
     {
-        /*
-         * Arrange
-         */
-
         var context =
             TestSchedulingDataFactory
                 .CreateSimpleContext();
 
 
-        var timeline =
+        var timelines =
             TestTimelineFactory
                 .Create(
                     context);
@@ -33,7 +29,8 @@ public class OptimizationPipelineTests
         var solution =
             new SchedulingSolution
             {
-                IsFeasible = true
+                IsFeasible =
+                    true
             };
 
 
@@ -73,8 +70,10 @@ public class OptimizationPipelineTests
             });
 
 
+
         var executeOrder =
             new List<OptimizationAlgorithmType>();
+
 
 
         var runner =
@@ -90,21 +89,15 @@ public class OptimizationPipelineTests
                 });
 
 
-        /*
-         * Act
-         */
 
         var result =
             runner.Run(
                 solution,
                 context,
-                timeline,
+                timelines,
                 evaluator);
 
 
-        /*
-         * Assert
-         */
 
         Assert.NotNull(
             result);
@@ -126,12 +119,13 @@ public class OptimizationPipelineTests
     }
 
 
+
     private class FakeOptimizer : ISolutionOptimizer
     {
         public OptimizationResult Optimize(
             SchedulingSolution solution,
             SchedulingContext context,
-            TimelineContext timeline,
+            TimelineContextGroup timelines,
             ScheduleEvaluator evaluator)
         {
             return new OptimizationResult
@@ -139,13 +133,13 @@ public class OptimizationPipelineTests
                 Solution =
                     solution,
 
-                Timeline =
-                    timeline,
+                Timelines =
+                    timelines,
 
                 Evaluation =
                     evaluator.Evaluate(
                         solution,
-                        timeline,
+                        timelines,
                         context)
             };
         }

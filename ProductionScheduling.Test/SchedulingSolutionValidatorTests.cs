@@ -3,9 +3,7 @@ using ProductionScheduling.Algorithm.Validation;
 using ProductionScheduling.Test.Infrastructure;
 using Xunit;
 
-
 namespace ProductionScheduling.Test;
-
 
 public class SchedulingSolutionValidatorTests
 {
@@ -25,6 +23,9 @@ public class SchedulingSolutionValidatorTests
                 MachineCode =
                     "M001",
 
+                FactoryCode =
+                    "F001",
+
                 StartSlot =
                     0,
 
@@ -42,6 +43,9 @@ public class SchedulingSolutionValidatorTests
                 MachineCode =
                     "M002",
 
+                FactoryCode =
+                    "F001",
+
                 StartSlot =
                     0,
 
@@ -50,19 +54,23 @@ public class SchedulingSolutionValidatorTests
             });
 
 
-        var timeline =
-            TestTimelineFactory.CreateEmpty();
+
+        var timelines =
+            TestTimelineFactory
+                .CreateEmpty();
+
 
 
         var validator =
             new SchedulingSolutionValidator();
 
 
+
         Assert.Throws<InvalidOperationException>(
             () =>
                 validator.Validate(
                     solution,
-                    timeline));
+                    timelines));
     }
 
 
@@ -75,10 +83,11 @@ public class SchedulingSolutionValidatorTests
                 .CreateSimpleContext();
 
 
-        var timeline =
+        var timelines =
             TestTimelineFactory
                 .Create(
                     context);
+
 
 
         var solution =
@@ -94,6 +103,9 @@ public class SchedulingSolutionValidatorTests
                 MachineCode =
                     "M001",
 
+                FactoryCode =
+                    "F001",
+
                 StartSlot =
                     0,
 
@@ -102,7 +114,9 @@ public class SchedulingSolutionValidatorTests
             });
 
 
-        timeline.Machines["M001"]
+
+        timelines.Factories["F001"]
+            .Machines["M001"]
             .Occupy(
                 0,
                 2);
@@ -113,8 +127,9 @@ public class SchedulingSolutionValidatorTests
             new SchedulingSolutionValidator();
 
 
+
         validator.Validate(
             solution,
-            timeline);
+            timelines);
     }
 }

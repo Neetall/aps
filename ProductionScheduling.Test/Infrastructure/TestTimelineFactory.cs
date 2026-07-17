@@ -6,7 +6,7 @@ namespace ProductionScheduling.Test.Infrastructure;
 
 public static class TestTimelineFactory
 {
-    public static TimelineContext Create(
+    public static TimelineContextGroup Create(
         SchedulingContext context)
     {
         var initializer =
@@ -19,7 +19,7 @@ public static class TestTimelineFactory
 
 
 
-    public static TimelineContext CreateEmpty()
+    public static TimelineContextGroup CreateEmpty()
     {
         var slots =
             new List<TimeSlot>();
@@ -45,12 +45,37 @@ public static class TestTimelineFactory
         }
 
 
+
         var timeModel =
             new ContinuousTimeModel(
                 slots);
 
 
-        return new TimelineContext(
-            timeModel);
+
+        var factory =
+            new FactoryTimeline(
+                "F001",
+                timeModel);
+
+
+
+        factory.AddMachine(
+            new MachineTimeline(
+                "M001",
+                timeModel.SlotCount));
+
+
+
+        var group =
+            new TimelineContextGroup();
+
+
+
+        group.AddFactory(
+            factory);
+
+
+
+        return group;
     }
 }

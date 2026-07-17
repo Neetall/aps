@@ -37,7 +37,7 @@ public class LnsOptimizerTests
 
 
 
-        var timeline =
+        var timelines =
             TestTimelineFactory
                 .Create(
                     context);
@@ -52,6 +52,9 @@ public class LnsOptimizerTests
         solution.Operations.Add(
             new ScheduledOperation
             {
+                FactoryCode =
+                    "F001",
+
                 JobTicketCode =
                     "JT001",
 
@@ -67,7 +70,13 @@ public class LnsOptimizerTests
 
 
 
-        timeline.Machines["M001"]
+        var factory =
+            timelines.Get(
+                "F001");
+
+
+
+        factory.Machines["M001"]
             .Occupy(
                 0,
                 2);
@@ -128,7 +137,7 @@ public class LnsOptimizerTests
         var before =
             evaluator.Evaluate(
                 solution,
-                timeline,
+                timelines,
                 context);
 
 
@@ -142,7 +151,7 @@ public class LnsOptimizerTests
             optimizer.Optimize(
                 solution,
                 context,
-                timeline,
+                timelines,
                 evaluator);
 
 
@@ -165,7 +174,7 @@ public class LnsOptimizerTests
 
 
         Assert.NotNull(
-            result.Timeline);
+            result.Timelines);
 
 
         Assert.NotNull(

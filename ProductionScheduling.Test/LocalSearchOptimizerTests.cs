@@ -13,16 +13,12 @@ public class LocalSearchOptimizerTests
     [Fact]
     public void LocalSearch_Should_Move_To_Better_Machine()
     {
-        /*
-         * Arrange
-         */
-
         var context =
             TestSchedulingDataFactory
                 .CreateSimpleContext();
 
 
-        var timeline =
+        var timelines =
             TestTimelineFactory
                 .Create(
                     context);
@@ -31,7 +27,7 @@ public class LocalSearchOptimizerTests
         var solution =
             TestSolutionFactory
                 .CreateSlowMachineSolution(
-                    timeline);
+                    timelines);
 
 
         var beforeMachine =
@@ -44,10 +40,6 @@ public class LocalSearchOptimizerTests
                 .DurationSlots;
 
 
-        /*
-         * 创建算法配置
-         */
-
         var options =
             new SchedulingAlgorithmOptions
             {
@@ -58,10 +50,6 @@ public class LocalSearchOptimizerTests
                     }
             };
 
-
-        /*
-         * 创建优化器依赖
-         */
 
         var resourceIndex =
             TestAlgorithmFactory
@@ -99,45 +87,36 @@ public class LocalSearchOptimizerTests
         var before =
             evaluator.Evaluate(
                 solution,
-                timeline,
+                timelines,
                 context);
 
 
-        /*
-         * Act
-         */
 
         var result =
             optimizer.Optimize(
                 solution,
                 context,
-                timeline,
+                timelines,
                 evaluator);
+
 
 
         var after =
             result.Evaluation!;
 
 
-        /*
-         * Assert
-         */
-
         Assert.NotNull(
             result.Solution);
 
 
         Assert.NotNull(
-            result.Timeline);
+            result.Timelines);
 
 
         Assert.NotNull(
             result.Evaluation);
 
 
-        /*
-         * 应移动到快设备
-         */
 
         Assert.Equal(
             "M002",
@@ -146,9 +125,6 @@ public class LocalSearchOptimizerTests
                 .MachineCode);
 
 
-        /*
-         * 加工时间降低
-         */
 
         Assert.Equal(
             1,
@@ -157,23 +133,18 @@ public class LocalSearchOptimizerTests
                 .DurationSlots);
 
 
-        /*
-         * 评价改善
-         */
 
         Assert.True(
             after.Score <
             before.Score);
 
 
-        /*
-         * 原始方案没有污染
-         */
 
         Assert.Equal(
             beforeMachine,
             solution.Operations[0]
                 .MachineCode);
+
 
 
         Assert.Equal(
@@ -182,12 +153,13 @@ public class LocalSearchOptimizerTests
                 .DurationSlots);
 
 
-        /*
-         * 新时间轴占用正确
-         */
+
+        var factoryTimeline =
+            result.Timelines.Factories["F001"];
+
 
         Assert.False(
-            result.Timeline
+            factoryTimeline
                 .Machines["M002"]
                 .IsFree(
                     result.Solution
@@ -195,12 +167,9 @@ public class LocalSearchOptimizerTests
                         .StartSlot));
 
 
-        /*
-         * 原设备释放
-         */
 
         Assert.True(
-            result.Timeline
+            factoryTimeline
                 .Machines["M001"]
                 .IsFree(
                     0));

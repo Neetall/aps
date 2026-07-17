@@ -10,16 +10,12 @@ public class ScheduleEvaluatorTests
     [Fact]
     public void Faster_Machine_Should_Have_Better_Score()
     {
-        /*
-         * Arrange
-         */
-
         var context =
             TestSchedulingDataFactory
                 .CreateSimpleContext();
 
 
-        var timeline =
+        var timelines =
             TestTimelineFactory
                 .Create(
                     context);
@@ -29,11 +25,7 @@ public class ScheduleEvaluatorTests
             new ScheduleEvaluator();
 
 
-        /*
-         * 慢设备方案
-         *
-         * JT001 -> M001
-         */
+
         var slowSolution =
             new SchedulingSolution();
 
@@ -55,35 +47,29 @@ public class ScheduleEvaluatorTests
             });
 
 
-        timeline.Machines["M001"]
+        timelines.Factories["F001"]
+            .Machines["M001"]
             .Occupy(
                 0,
                 2);
 
 
+
         var slowResult =
             evaluator.Evaluate(
                 slowSolution,
-                timeline,
+                timelines,
                 context);
 
 
-        /*
-         * 创建新的Timeline
-         *
-         * 防止污染
-         */
-        var fastTimeline =
+
+        var fastTimelines =
             TestTimelineFactory
                 .Create(
                     context);
 
 
-        /*
-         * 快设备方案
-         *
-         * JT001 -> M002
-         */
+
         var fastSolution =
             new SchedulingSolution();
 
@@ -105,22 +91,22 @@ public class ScheduleEvaluatorTests
             });
 
 
-        fastTimeline.Machines["M002"]
+
+        fastTimelines.Factories["F001"]
+            .Machines["M002"]
             .Occupy(
                 0,
                 1);
 
 
+
         var fastResult =
             evaluator.Evaluate(
                 fastSolution,
-                fastTimeline,
+                fastTimelines,
                 context);
 
 
-        /*
-         * Assert
-         */
 
         Assert.True(
             fastResult.Score <

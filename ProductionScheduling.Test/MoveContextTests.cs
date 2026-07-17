@@ -11,16 +11,12 @@ public class MoveContextTests
     [Fact]
     public void MoveContext_Should_Hold_All_Move_Dependencies()
     {
-        /*
-         * Arrange
-         */
-
         var context =
             TestSchedulingDataFactory
                 .CreateSimpleContext();
 
 
-        var timeline =
+        var timelines =
             TestTimelineFactory
                 .Create(
                     context);
@@ -63,9 +59,6 @@ public class MoveContextTests
                     context);
 
 
-        /*
-         * Act
-         */
 
         var moveContext =
             new MoveContext
@@ -76,8 +69,8 @@ public class MoveContextTests
                 Solution =
                     solution,
 
-                Timeline =
-                    timeline,
+                Timelines =
+                    timelines,
 
                 ResourceIndex =
                     resourceIndex,
@@ -89,10 +82,6 @@ public class MoveContextTests
                     operation
             };
 
-
-        /*
-         * Assert
-         */
 
 
         Assert.Same(
@@ -106,8 +95,8 @@ public class MoveContextTests
 
 
         Assert.Same(
-            timeline,
-            moveContext.Timeline);
+            timelines,
+            moveContext.Timelines);
 
 
         Assert.Same(
@@ -124,6 +113,7 @@ public class MoveContextTests
             operation,
             moveContext.CurrentOperation);
     }
+
 
 
     [Fact]
@@ -157,8 +147,10 @@ public class MoveContextTests
         solution.Operations.Add(
             operation1);
 
+
         solution.Operations.Add(
             operation2);
+
 
 
         var moveContext =
@@ -175,8 +167,10 @@ public class MoveContextTests
             };
 
 
+
         moveContext.CurrentOperation =
             operation2;
+
 
 
         Assert.Same(

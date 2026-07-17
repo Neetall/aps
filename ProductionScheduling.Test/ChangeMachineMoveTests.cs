@@ -22,10 +22,11 @@ public class ChangeMachineMoveTests
                 .CreateSimpleContext();
 
 
-        var timeline =
+        var timelines =
             TestTimelineFactory
                 .Create(
                     context);
+
 
 
         /*
@@ -47,6 +48,9 @@ public class ChangeMachineMoveTests
         solution.Operations.Add(
             new ScheduledOperation
             {
+                FactoryCode =
+                    "F001",
+
                 JobTicketCode =
                     "JT001",
 
@@ -61,10 +65,18 @@ public class ChangeMachineMoveTests
             });
 
 
-        timeline.Machines["M001"]
+
+        var factory =
+            timelines.Get(
+                "F001");
+
+
+
+        factory.Machines["M001"]
             .Occupy(
                 0,
                 2);
+
 
 
         var resourceIndex =
@@ -79,6 +91,7 @@ public class ChangeMachineMoveTests
                     context);
 
 
+
         var moveContext =
             new MoveContext
             {
@@ -88,8 +101,8 @@ public class ChangeMachineMoveTests
                 Solution =
                     solution,
 
-                Timeline =
-                    timeline,
+                Timelines =
+                    timelines,
 
                 ResourceIndex =
                     resourceIndex,
@@ -102,9 +115,11 @@ public class ChangeMachineMoveTests
             };
 
 
+
         var move =
             new ChangeMachineMove(
                 new ScheduleDurationCalculator());
+
 
 
         /*
@@ -116,6 +131,7 @@ public class ChangeMachineMoveTests
                 moveContext);
 
 
+
         /*
          * Assert
          */
@@ -124,8 +140,10 @@ public class ChangeMachineMoveTests
             result);
 
 
+
         var operation =
             solution.Operations[0];
+
 
 
         Assert.Equal(
@@ -133,19 +151,22 @@ public class ChangeMachineMoveTests
             operation.MachineCode);
 
 
+
         Assert.Equal(
             1,
             operation.DurationSlots);
 
 
+
         Assert.False(
-            timeline.Machines["M002"]
+            factory.Machines["M002"]
                 .IsFree(
                     0));
 
 
+
         Assert.True(
-            timeline.Machines["M001"]
+            factory.Machines["M001"]
                 .IsFree(
                     0));
     }

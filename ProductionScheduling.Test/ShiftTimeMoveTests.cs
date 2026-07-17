@@ -12,30 +12,18 @@ public class ShiftTimeMoveTests
     [Fact]
     public void ShiftTimeMove_Should_Move_Operation_To_New_Time()
     {
-        /*
-         * Arrange
-         */
-
         var context =
             TestSchedulingDataFactory
                 .CreateSimpleContext();
 
 
-        var timeline =
+        var timelines =
             TestTimelineFactory
                 .Create(
                     context);
 
 
-        /*
-         * 初始方案
-         *
-         * JT001:
-         *
-         * M001
-         *
-         * Slot 0-1
-         */
+
         var solution =
             new SchedulingSolution();
 
@@ -49,6 +37,9 @@ public class ShiftTimeMoveTests
                 MachineCode =
                     "M001",
 
+                FactoryCode =
+                    "F001",
+
                 StartSlot =
                     0,
 
@@ -57,10 +48,13 @@ public class ShiftTimeMoveTests
             });
 
 
-        timeline.Machines["M001"]
+
+        timelines.Factories["F001"]
+            .Machines["M001"]
             .Occupy(
                 0,
                 2);
+
 
 
         var resourceIndex =
@@ -75,6 +69,7 @@ public class ShiftTimeMoveTests
                     context);
 
 
+
         var moveContext =
             new MoveContext
             {
@@ -84,8 +79,8 @@ public class ShiftTimeMoveTests
                 Solution =
                     solution,
 
-                Timeline =
-                    timeline,
+                Timelines =
+                    timelines,
 
                 ResourceIndex =
                     resourceIndex,
@@ -98,29 +93,26 @@ public class ShiftTimeMoveTests
             };
 
 
+
         var move =
             new ShiftTimeMove();
 
 
-        /*
-         * Act
-         */
 
         var result =
             move.Apply(
                 moveContext);
 
 
-        /*
-         * Assert
-         */
 
         Assert.True(
             result);
 
 
+
         var operation =
             solution.Operations[0];
+
 
 
         Assert.Equal(
@@ -138,15 +130,21 @@ public class ShiftTimeMoveTests
             operation.StartSlot);
 
 
+
+        var machine =
+            timelines.Factories["F001"]
+                .Machines["M001"];
+
+
+
         Assert.False(
-            timeline.Machines["M001"]
-                .IsFree(
-                    operation.StartSlot));
+            machine.IsFree(
+                operation.StartSlot));
+
 
 
         Assert.True(
-            timeline.Machines["M001"]
-                .IsFree(
-                    0));
+            machine.IsFree(
+                0));
     }
 }
