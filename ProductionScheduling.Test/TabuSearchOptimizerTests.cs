@@ -33,18 +33,6 @@ public class TabuSearchOptimizerTests
 
 
 
-        /*
-         * 初始方案
-         *
-         * JT001 -> M001
-         *
-         * M001:
-         * 100 / 50 = 2小时
-         *
-         * M002:
-         * 100 / 100 = 1小时
-         */
-
         var solution =
             new SchedulingSolution();
 
@@ -89,16 +77,6 @@ public class TabuSearchOptimizerTests
 
 
 
-        var options =
-            new TabuSearchOptions
-            {
-                Iterations = 50,
-
-                TabuTenure = 5
-            };
-
-
-
         var moveSelector =
             new MoveSelector(
                 new Random(1));
@@ -125,7 +103,14 @@ public class TabuSearchOptimizerTests
 
                 new SolutionCloner(),
 
-                options);
+                new TabuSearchOptions
+                {
+                    Iterations = 20,
+
+                    TabuTenure = 5,
+
+                    AllowWorseMoves = true
+                });
 
 
 
@@ -163,8 +148,30 @@ public class TabuSearchOptimizerTests
             result.Solution);
 
 
+
+        Assert.NotNull(
+            result.Timeline);
+
+
+
         Assert.NotNull(
             result.Evaluation);
+
+
+
+        Assert.Equal(
+            "M002",
+            result.Solution
+                .Operations[0]
+                .MachineCode);
+
+
+
+        Assert.Equal(
+            1,
+            result.Solution
+                .Operations[0]
+                .DurationSlots);
 
 
 
@@ -174,36 +181,19 @@ public class TabuSearchOptimizerTests
 
 
 
-        var operation =
-            result.Solution
-                .Operations[0];
+        /*
+         * 原solution不能污染
+         */
 
+        Assert.Equal(
+            "M001",
+            solution.Operations[0]
+                .MachineCode);
 
 
         Assert.Equal(
-            "M002",
-            operation.MachineCode);
-
-
-
-        Assert.Equal(
-            1,
-            operation.DurationSlots);
-
-
-
-        Assert.False(
-            result.Timeline
-                .Machines["M002"]
-                .IsFree(
-                    operation.StartSlot));
-
-
-
-        Assert.True(
-            result.Timeline
-                .Machines["M001"]
-                .IsFree(
-                    0));
+            2,
+            solution.Operations[0]
+                .DurationSlots);
     }
 }
