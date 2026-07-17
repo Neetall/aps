@@ -15,7 +15,7 @@ public class ScheduleEvaluator
             new EvaluationResult();
 
 
-        if (solution.Operations.Count == 0)
+        if(solution.Operations.Count == 0)
         {
             result.Score =
                 double.MaxValue;
@@ -25,7 +25,9 @@ public class ScheduleEvaluator
 
 
         /*
-         * 最大完工时间
+         * 最大完工Slot
+         *
+         * 算法评分使用
          */
         var endSlot =
             solution.Operations
@@ -34,10 +36,33 @@ public class ScheduleEvaluator
                     x.DurationSlots);
 
 
-        result.EndTime =
-            timeline.Timeline[
+
+        result.MakespanSlots =
+            endSlot;
+
+
+
+        /*
+         * 转换为真实时间
+         *
+         * 仅用于展示
+         */
+        if(endSlot > 0 &&
+           endSlot <= timeline.Timeline.Count)
+        {
+            result.EndTime =
+                timeline.Timeline[
                     endSlot - 1]
                 .EndTime;
+        }
+        else
+        {
+            result.Score =
+                double.MaxValue;
+
+            return result;
+        }
+
 
 
         /*
@@ -49,11 +74,13 @@ public class ScheduleEvaluator
                     x.DurationSlots);
 
 
+
         result.ProductionHours =
             totalSlots *
             context.Options.TimeGranularityMinutes
             /
             60.0;
+
 
 
         /*
@@ -66,6 +93,7 @@ public class ScheduleEvaluator
                     x.UsedSlotCount);
 
 
+
         var total =
             timeline.Machines
                 .Values
@@ -73,10 +101,12 @@ public class ScheduleEvaluator
                     x.SlotCount);
 
 
+
         result.MachineUtilization =
             total == 0
                 ? 0
                 : (double)used / total;
+
 
 
         /*
@@ -89,21 +119,30 @@ public class ScheduleEvaluator
                 result);
 
 
+
         return result;
     }
+
 
 
     private double CalculateScore(
         EvaluationResult result)
     {
         /*
-         * 完工时间权重最高
+         * 第一目标:
+         * 最早完工
+         *
+         * 第二目标:
+         * 提高利用率
+         *
+         * 第三目标:
+         * 延期控制
          */
+
+
         var makespan =
-            result.EndTime
-                .Ticks
-            /
-            TimeSpan.TicksPerHour;
+            result.MakespanSlots;
+
 
 
         var utilizationPenalty =
@@ -113,16 +152,18 @@ public class ScheduleEvaluator
             100;
 
 
+
         var delayPenalty =
             result.DelayCount *
             1000;
 
 
+
         return
             makespan * 10000
             +
-            utilizationPenalty
+            delayPenalty
             +
-            delayPenalty;
+            utilizationPenalty;
     }
 }
