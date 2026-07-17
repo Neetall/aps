@@ -1,10 +1,13 @@
 using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Index;
+using ProductionScheduling.Algorithm.Moves.Implementations;
 using ProductionScheduling.Algorithm.Optimization.Core;
 using ProductionScheduling.Algorithm.Optimization.Factory;
+using ProductionScheduling.Algorithm.Optimization.LocalSearch;
 using ProductionScheduling.Algorithm.Optimization.Pipeline;
 using ProductionScheduling.Algorithm.Optimization.Selection;
+using ProductionScheduling.Algorithm.Optimization.SimulatedAnnealing;
 using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Domain.Scheduling;
 
@@ -29,7 +32,58 @@ public static class TestAlgorithmFactory
             resourceIndex);
     }
 
+    /// <summary>
+    /// 创建LocalSearch优化器
+    /// </summary>
+    public static ISolutionOptimizer CreateLocalSearchOptimizer(
+        SchedulingContext context,
+        SchedulingAlgorithmOptions options)
+    {
+        var resourceIndex =
+            CreateResourceIndex(
+                context);
 
+
+        var ticketIndex =
+            CreateJobTicketIndex(
+                context);
+
+
+
+        var moveSelector =
+            new MoveSelector(
+                new Random(1));
+
+
+
+        moveSelector.Register(
+            new ChangeMachineMove(
+                new ScheduleDurationCalculator()),
+            options.Moves.ChangeMachineWeight);
+
+
+
+        moveSelector.Register(
+            new ShiftTimeMove(),
+            options.Moves.ShiftTimeWeight);
+
+
+
+        moveSelector.Register(
+            new SwapOperationMove(),
+            options.Moves.SwapOperationWeight);
+
+
+
+        return new LocalSearchOptimizer(
+            resourceIndex,
+            ticketIndex,
+            new OperationSelector(
+                new Random(1)),
+            moveSelector,
+            new SolutionCloner(),
+            options.LocalSearch);
+    }
 
     /// <summary>
     /// 创建资源索引
@@ -108,5 +162,36 @@ public static class TestAlgorithmFactory
         return new OptimizationPipelineRunner(
             options,
             optimizerFactory.Create);
+    }
+    
+    public static SimulatedAnnealingOptimizer CreateSimulatedAnnealing(
+        SchedulingContext context,
+        SchedulingAlgorithmOptions options)
+    {
+        var resourceIndex =
+            TestAlgorithmFactory
+                .CreateResourceIndex(
+                    context);
+
+
+        var ticketIndex =
+            TestAlgorithmFactory
+                .CreateJobTicketIndex(
+                    context);
+
+
+
+        return new SimulatedAnnealingOptimizer(
+            resourceIndex,
+            ticketIndex,
+            new OperationSelector(
+                new Random(1)),
+            new MoveSelectorFactory(
+                    options.Moves)
+                .Create(),
+            new SolutionCloner(),
+            new AcceptanceCriteria(
+                options.Acceptance),
+            options.SimulatedAnnealing);
     }
 }

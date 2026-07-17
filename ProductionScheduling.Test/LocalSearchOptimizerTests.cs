@@ -1,18 +1,9 @@
-using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Evaluation;
-using ProductionScheduling.Algorithm.Index;
-using ProductionScheduling.Algorithm.Moves;
-using ProductionScheduling.Algorithm.Moves.Implementations;
 using ProductionScheduling.Algorithm.Optimization.Core;
 using ProductionScheduling.Algorithm.Optimization.LocalSearch;
 using ProductionScheduling.Algorithm.Optimization.Selection;
-using ProductionScheduling.Algorithm.Scheduling;
-using ProductionScheduling.Domain.Calendars;
-using ProductionScheduling.Domain.Orders;
-using ProductionScheduling.Domain.Resources;
-using ProductionScheduling.Domain.Scheduling;
-using ProductionScheduling.Timeline;
+using ProductionScheduling.Test.Infrastructure;
 using Xunit;
 
 namespace ProductionScheduling.Test;
@@ -23,215 +14,81 @@ public class LocalSearchOptimizerTests
     public void LocalSearch_Should_Move_To_Better_Machine()
     {
         /*
-         * 1. 创建订单
+         * Arrange
          */
-        var order =
-            new Order
-            {
-                Code = "ORD001",
-                Priority = 1
-            };
 
-
-        var ticket =
-            new JobTicket
-            {
-                Code = "JT001",
-                Sequence = 1,
-                Length = 100
-            };
-
-
-        order.JobTickets.Add(ticket);
-
-
-
-        /*
-         * 2. 创建设备
-         */
-        var machines =
-            new List<Machine>
-            {
-                new()
-                {
-                    Code = "M001",
-
-                    Capabilities =
-                    [
-                        new MachineCapability
-                        {
-                            MachineCode = "M001",
-                            JobTicketCode = "JT001",
-                            HourlyCapacity = 50,
-                            SetupMinutes = 0
-                        }
-                    ]
-                },
-
-
-                new()
-                {
-                    Code = "M002",
-
-                    Capabilities =
-                    [
-                        new MachineCapability
-                        {
-                            MachineCode = "M002",
-                            JobTicketCode = "JT001",
-                            HourlyCapacity = 100,
-                            SetupMinutes = 0
-                        }
-                    ]
-                }
-            };
-
-
-
-        /*
-         * 3. SchedulingContext
-         */
         var context =
-            new SchedulingContext
-            {
-                Orders =
-                [
-                    order
-                ],
-
-                Machines =
-                    machines,
-
-                Options =
-                {
-                    TimeGranularityMinutes = 60
-                }
-            };
+            TestSchedulingDataFactory
+                .CreateSimpleContext();
 
 
 
-        context.FactoryCalendars.Add(
-            new FactoryCalendar
-            {
-                Periods =
-                [
-                    new ShiftPeriod
-                    {
-                        StartTime =
-                            DateTime.Today.AddHours(8),
-
-                        EndTime =
-                            DateTime.Today.AddHours(18)
-                    }
-                ]
-            });
-
-
-
-        /*
-         * 4. Timeline
-         */
         var timeline =
-            new TimelineBuilder()
-                .Build(
+            TestTimelineFactory
+                .Create(
                     context);
 
 
 
-        /*
-         * 5. 初始方案
-         *
-         * JT001 -> M001
-         */
         var solution =
-            new SchedulingSolution();
-
-
-        solution.Operations.Add(
-            new ScheduledOperation
-            {
-                JobTicketCode = "JT001",
-
-                MachineCode = "M001",
-
-                StartSlot = 0,
-
-                DurationSlots = 2
-            });
+            TestSolutionFactory
+                .CreateSlowMachineSolution(
+                    timeline);
 
 
 
-        timeline.Machines["M001"]
-            .Occupy(
-                0,
-                2);
-
-
-
-        var originalMachine =
+        var beforeMachine =
             solution.Operations[0]
                 .MachineCode;
 
 
-        var originalDuration =
+        var beforeDuration =
             solution.Operations[0]
                 .DurationSlots;
 
 
 
         /*
-         * 6. Index
+         * 创建算法配置
          */
-        var resourceIndex =
-            new SchedulingResourceIndex();
 
-
-        resourceIndex.Build(
-            machines);
-
-
-
-        var ticketIndex =
-            new JobTicketIndex();
-
-
-        ticketIndex.Build(
-            context.Orders);
-
-
-
-        /*
-         * 7. MoveSelector
-         */
-        var moveSelector =
-            new MoveSelector(
-                new Random(1));
-
-
-        moveSelector.Register(
-            new ChangeMachineMove(
-                new ScheduleDurationCalculator()),
-            10);
-
-
-
-        /*
-         * 8. 算法配置
-         */
-        var algorithmOptions =
+        var options =
             new SchedulingAlgorithmOptions
             {
                 LocalSearch =
                     new LocalSearchOptions
                     {
-                        Iterations = 10
+                        Iterations = 20
                     }
             };
 
 
+
         /*
-         * 9. Optimizer
+         * 创建优化器依赖
          */
+
+        var resourceIndex =
+            TestAlgorithmFactory
+                .CreateResourceIndex(
+                    context);
+
+
+
+        var ticketIndex =
+            TestAlgorithmFactory
+                .CreateJobTicketIndex(
+                    context);
+
+
+
+        var moveSelector =
+            new MoveSelectorFactory(
+                    options.Moves)
+                .Create();
+
+
+
         var optimizer =
             new LocalSearchOptimizer(
                 resourceIndex,
@@ -240,7 +97,7 @@ public class LocalSearchOptimizerTests
                     new Random(1)),
                 moveSelector,
                 new SolutionCloner(),
-                algorithmOptions.LocalSearch);
+                options.LocalSearch);
 
 
 
@@ -258,8 +115,9 @@ public class LocalSearchOptimizerTests
 
 
         /*
-         * 10. 执行优化
+         * Act
          */
+
         var result =
             optimizer.Optimize(
                 solution,
@@ -275,7 +133,24 @@ public class LocalSearchOptimizerTests
 
 
         /*
-         * 11. 验证优化结果
+         * Assert
+         */
+
+        Assert.NotNull(
+            result.Solution);
+
+
+        Assert.NotNull(
+            result.Timeline);
+
+
+        Assert.NotNull(
+            result.Evaluation);
+
+
+
+        /*
+         * 应移动到快设备
          */
 
         Assert.Equal(
@@ -286,6 +161,10 @@ public class LocalSearchOptimizerTests
 
 
 
+        /*
+         * 加工时间降低
+         */
+
         Assert.Equal(
             1,
             result.Solution
@@ -294,6 +173,10 @@ public class LocalSearchOptimizerTests
 
 
 
+        /*
+         * 评价改善
+         */
+
         Assert.True(
             after.Score <
             before.Score);
@@ -301,31 +184,45 @@ public class LocalSearchOptimizerTests
 
 
         /*
-         * 12. 验证原方案没有污染
+         * 原始方案没有污染
          */
+
         Assert.Equal(
-            originalMachine,
+            beforeMachine,
             solution.Operations[0]
                 .MachineCode);
 
 
 
         Assert.Equal(
-            originalDuration,
+            beforeDuration,
             solution.Operations[0]
                 .DurationSlots);
 
 
 
+        /*
+         * 新时间轴占用正确
+         */
+
         Assert.False(
             result.Timeline
-                .Machines[
-                    result.Solution
-                        .Operations[0]
-                        .MachineCode]
+                .Machines["M002"]
                 .IsFree(
                     result.Solution
                         .Operations[0]
                         .StartSlot));
+
+
+
+        /*
+         * 原设备释放
+         */
+
+        Assert.True(
+            result.Timeline
+                .Machines["M001"]
+                .IsFree(
+                    0));
     }
 }

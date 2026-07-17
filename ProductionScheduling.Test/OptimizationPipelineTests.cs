@@ -4,6 +4,7 @@ using ProductionScheduling.Algorithm.Optimization.Core;
 using ProductionScheduling.Algorithm.Optimization.Pipeline;
 using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Domain.Scheduling;
+using ProductionScheduling.Test.Infrastructure;
 using ProductionScheduling.Timeline;
 using Xunit;
 
@@ -18,21 +19,27 @@ public class OptimizationPipelineTests
          * Arrange
          */
 
-        var solution =
-            new SchedulingSolution();
-
-
         var context =
-            new SchedulingContext();
+            TestSchedulingDataFactory
+                .CreateSimpleContext();
 
 
         var timeline =
-            new TimelineContext(
-                new SchedulingTimeline());
+            TestTimelineFactory
+                .Create(
+                    context);
+
+
+        var solution =
+            new SchedulingSolution
+            {
+                IsFeasible = true
+            };
 
 
         var evaluator =
             new ScheduleEvaluator();
+
 
 
         var options =
@@ -72,6 +79,7 @@ public class OptimizationPipelineTests
             new List<OptimizationAlgorithmType>();
 
 
+
         var runner =
             new OptimizationPipelineRunner(
                 options,
@@ -102,7 +110,6 @@ public class OptimizationPipelineTests
         /*
          * Assert
          */
-
 
         Assert.NotNull(
             result);
