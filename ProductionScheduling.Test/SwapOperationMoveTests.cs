@@ -31,6 +31,9 @@ public class SwapOperationMoveTests
         var op1 =
             new ScheduledOperation
             {
+                FactoryCode =
+                    "F001",
+
                 JobTicketCode =
                     "JT001",
 
@@ -48,6 +51,9 @@ public class SwapOperationMoveTests
         var op2 =
             new ScheduledOperation
             {
+                FactoryCode =
+                    "F001",
+
                 JobTicketCode =
                     "JT002",
 

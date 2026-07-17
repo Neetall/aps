@@ -47,6 +47,9 @@ public class TabuSearchOptimizerTests
         solution.Operations.Add(
             new ScheduledOperation
             {
+                FactoryCode =
+                    "F001",
+
                 JobTicketCode =
                     "JT001",
 
@@ -225,6 +228,9 @@ public class TabuSearchOptimizerTests
         solution.Operations.Add(
             new ScheduledOperation
             {
+                FactoryCode =
+                    "F001",
+
                 JobTicketCode =
                     "JT001",
 

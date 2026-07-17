@@ -33,6 +33,9 @@ public class ScheduleEvaluatorTests
         slowSolution.Operations.Add(
             new ScheduledOperation
             {
+                FactoryCode =
+                    "F001",
+
                 JobTicketCode =
                     "JT001",
 
@@ -77,6 +80,9 @@ public class ScheduleEvaluatorTests
         fastSolution.Operations.Add(
             new ScheduledOperation
             {
+                FactoryCode =
+                    "F001",
+
                 JobTicketCode =
                     "JT001",
 
