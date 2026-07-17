@@ -8,23 +8,16 @@ public class ContinuousTimeModel : ITimeModel
 
 
     public ContinuousTimeModel(
-        List<TimeSlot> slots)
+        IEnumerable<TimeSlot> slots)
     {
-        if(slots == null ||
-           slots.Count == 0)
-            throw new ArgumentException(
-                "时间槽不能为空");
-
-
         this.slots =
-            slots;
-
+            slots.ToList();
 
         for(var i = 0;
-            i < slots.Count;
+            i < this.slots.Count;
             i++)
         {
-            slots[i].Index =
+            this.slots[i].Index =
                 i;
         }
     }
