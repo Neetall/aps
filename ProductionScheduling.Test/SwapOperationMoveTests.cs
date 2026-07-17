@@ -200,8 +200,6 @@ public class SwapOperationMoveTests
     [Fact]
     public void SwapOperationMove_Should_Undo()
     {
-        /*
-         * TODO
-         */
+  
     }
 }

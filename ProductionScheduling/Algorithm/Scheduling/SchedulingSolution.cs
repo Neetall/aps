@@ -41,10 +41,14 @@ public class SchedulingSolution
                 Operations.Count);
 
 
-        foreach (var x in Operations)
+        foreach(var x in Operations)
+        {
             operations.Add(
                 new ScheduledOperation
                 {
+                    FactoryCode =
+                        x.FactoryCode,
+
                     JobTicketCode =
                         x.JobTicketCode,
 
@@ -57,6 +61,7 @@ public class SchedulingSolution
                     DurationSlots =
                         x.DurationSlots
                 });
+        }
 
 
         return new SchedulingSolution

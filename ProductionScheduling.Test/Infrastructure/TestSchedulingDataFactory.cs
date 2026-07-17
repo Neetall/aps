@@ -7,19 +7,10 @@ namespace ProductionScheduling.Test.Infrastructure;
 
 public static class TestSchedulingDataFactory
 {
-    /// <summary>
-    /// 创建简单测试排产数据
-    ///
-    /// 一个订单:
-    /// ORD001
-    ///
-    /// 一个工序:
-    /// JT001
-    ///
-    /// 两台设备:
-    /// M001 慢
-    /// M002 快
-    /// </summary>
+    private const string FactoryCode =
+        "F001";
+
+
     public static SchedulingContext CreateSimpleContext()
     {
         var order =
@@ -34,7 +25,12 @@ public static class TestSchedulingDataFactory
             new JobTicket
             {
                 Code = "JT001",
+
+                FactoryCode =
+                    FactoryCode,
+
                 Sequence = 1,
+
                 Length = 100
             });
 
@@ -45,6 +41,9 @@ public static class TestSchedulingDataFactory
                 new()
                 {
                     Code = "M001",
+
+                    FactoryCode =
+                        FactoryCode,
 
                     Capabilities =
                     [
@@ -62,6 +61,9 @@ public static class TestSchedulingDataFactory
                 new()
                 {
                     Code = "M002",
+
+                    FactoryCode =
+                        FactoryCode,
 
                     Capabilities =
                     [
@@ -98,7 +100,8 @@ public static class TestSchedulingDataFactory
         context.FactoryCalendars.Add(
             new FactoryCalendar
             {
-                FactoryCode = "F001",
+                FactoryCode =
+                    FactoryCode,
 
                 Periods =
                 [
@@ -117,13 +120,17 @@ public static class TestSchedulingDataFactory
         return context;
     }
 
+
+
     public static SchedulingContext CreateGreedySchedulerContext()
     {
         var order =
             new Order
             {
                 Code = "ORD001",
+
                 Priority = 1,
+
                 DueDate =
                     DateTime.Today.AddDays(1)
             };
@@ -134,7 +141,12 @@ public static class TestSchedulingDataFactory
             new JobTicket
             {
                 Code = "JT001",
+
+                FactoryCode =
+                    FactoryCode,
+
                 Sequence = 1,
+
                 Length = 100
             },
 
@@ -142,7 +154,12 @@ public static class TestSchedulingDataFactory
             new JobTicket
             {
                 Code = "JT002",
+
+                FactoryCode =
+                    FactoryCode,
+
                 Sequence = 2,
+
                 Length = 200
             }
         ]);
@@ -155,6 +172,9 @@ public static class TestSchedulingDataFactory
                 {
                     Code = "M001",
 
+                    FactoryCode =
+                        FactoryCode,
+
                     Capabilities =
                     [
                         new MachineCapability
@@ -179,6 +199,9 @@ public static class TestSchedulingDataFactory
                 new()
                 {
                     Code = "M002",
+
+                    FactoryCode =
+                        FactoryCode,
 
                     Capabilities =
                     [
@@ -215,7 +238,8 @@ public static class TestSchedulingDataFactory
         context.FactoryCalendars.Add(
             new FactoryCalendar
             {
-                FactoryCode = "F001",
+                FactoryCode =
+                    FactoryCode,
 
                 Periods =
                 [
@@ -232,15 +256,15 @@ public static class TestSchedulingDataFactory
 
 
         return context;
-    }
-
-    public static SchedulingContext CreateMultiOrderContext()
+    }    public static SchedulingContext CreateMultiOrderContext()
     {
         var order1 =
             new Order
             {
                 Code = "ORD001",
+
                 Priority = 1,
+
                 DueDate =
                     DateTime.Today.AddDays(1)
             };
@@ -250,16 +274,24 @@ public static class TestSchedulingDataFactory
             new JobTicket
             {
                 Code = "JT001",
+
+                FactoryCode =
+                    FactoryCode,
+
                 Sequence = 1,
+
                 Length = 100
             });
+
 
 
         var order2 =
             new Order
             {
                 Code = "ORD002",
+
                 Priority = 2,
+
                 DueDate =
                     DateTime.Today.AddDays(1)
             };
@@ -269,9 +301,15 @@ public static class TestSchedulingDataFactory
             new JobTicket
             {
                 Code = "JT002",
+
+                FactoryCode =
+                    FactoryCode,
+
                 Sequence = 1,
+
                 Length = 100
             });
+
 
 
         var machines =
@@ -280,6 +318,9 @@ public static class TestSchedulingDataFactory
                 new()
                 {
                     Code = "M001",
+
+                    FactoryCode =
+                        FactoryCode,
 
                     Capabilities =
                     [
@@ -291,6 +332,7 @@ public static class TestSchedulingDataFactory
                             SetupMinutes = 0
                         },
 
+
                         new MachineCapability
                         {
                             MachineCode = "M001",
@@ -301,6 +343,7 @@ public static class TestSchedulingDataFactory
                     ]
                 }
             };
+
 
 
         var context =
@@ -322,10 +365,12 @@ public static class TestSchedulingDataFactory
             };
 
 
+
         context.FactoryCalendars.Add(
             new FactoryCalendar
             {
-                FactoryCode = "F001",
+                FactoryCode =
+                    FactoryCode,
 
                 Periods =
                 [
@@ -343,6 +388,8 @@ public static class TestSchedulingDataFactory
 
         return context;
     }
+
+
 
     public static SchedulingContext CreateMachineConflictContext()
     {
@@ -350,6 +397,7 @@ public static class TestSchedulingDataFactory
             new Order
             {
                 Code = "ORD001",
+
                 Priority = 1
             };
 
@@ -359,7 +407,12 @@ public static class TestSchedulingDataFactory
             new JobTicket
             {
                 Code = "JT001",
+
+                FactoryCode =
+                    FactoryCode,
+
                 Sequence = 1,
+
                 Length = 200
             },
 
@@ -367,10 +420,16 @@ public static class TestSchedulingDataFactory
             new JobTicket
             {
                 Code = "JT002",
+
+                FactoryCode =
+                    FactoryCode,
+
                 Sequence = 2,
+
                 Length = 200
             }
         ]);
+
 
 
         var machines =
@@ -379,6 +438,9 @@ public static class TestSchedulingDataFactory
                 new()
                 {
                     Code = "M001",
+
+                    FactoryCode =
+                        FactoryCode,
 
                     Capabilities =
                     [
@@ -403,6 +465,7 @@ public static class TestSchedulingDataFactory
             };
 
 
+
         var context =
             new SchedulingContext
             {
@@ -421,10 +484,12 @@ public static class TestSchedulingDataFactory
             };
 
 
+
         context.FactoryCalendars.Add(
             new FactoryCalendar
             {
-                FactoryCode = "F001",
+                FactoryCode =
+                    FactoryCode,
 
                 Periods =
                 [
@@ -440,8 +505,11 @@ public static class TestSchedulingDataFactory
             });
 
 
+
         return context;
     }
+
+
 
     public static SchedulingContext CreateSwapContext()
     {
@@ -449,6 +517,7 @@ public static class TestSchedulingDataFactory
             new Order
             {
                 Code = "ORD001",
+
                 Priority = 1
             };
 
@@ -458,7 +527,12 @@ public static class TestSchedulingDataFactory
             new JobTicket
             {
                 Code = "JT001",
+
+                FactoryCode =
+                    FactoryCode,
+
                 Sequence = 1,
+
                 Length = 200
             },
 
@@ -466,10 +540,16 @@ public static class TestSchedulingDataFactory
             new JobTicket
             {
                 Code = "JT002",
+
+                FactoryCode =
+                    FactoryCode,
+
                 Sequence = 2,
+
                 Length = 200
             }
         ]);
+
 
 
         var machines =
@@ -478,6 +558,9 @@ public static class TestSchedulingDataFactory
                 new()
                 {
                     Code = "M001",
+
+                    FactoryCode =
+                        FactoryCode,
 
                     Capabilities =
                     [
@@ -502,6 +585,7 @@ public static class TestSchedulingDataFactory
             };
 
 
+
         var context =
             new SchedulingContext
             {
@@ -520,10 +604,12 @@ public static class TestSchedulingDataFactory
             };
 
 
+
         context.FactoryCalendars.Add(
             new FactoryCalendar
             {
-                FactoryCode = "F001",
+                FactoryCode =
+                    FactoryCode,
 
                 Periods =
                 [
@@ -537,6 +623,7 @@ public static class TestSchedulingDataFactory
                     }
                 ]
             });
+
 
 
         return context;

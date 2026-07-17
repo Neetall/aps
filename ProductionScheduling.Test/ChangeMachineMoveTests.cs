@@ -13,10 +13,6 @@ public class ChangeMachineMoveTests
     [Fact]
     public void ChangeMachineMove_Should_Move_To_Faster_Machine()
     {
-        /*
-         * Arrange
-         */
-
         var context =
             TestSchedulingDataFactory
                 .CreateSimpleContext();
@@ -29,17 +25,10 @@ public class ChangeMachineMoveTests
 
 
 
-        /*
-         * 初始方案
-         *
-         * JT001 -> M001
-         *
-         * M001:
-         * 50/h
-         *
-         * M002:
-         * 100/h
-         */
+        var factory =
+            timelines.Factories["F001"];
+
+
 
         var solution =
             new SchedulingSolution();
@@ -63,12 +52,6 @@ public class ChangeMachineMoveTests
                 DurationSlots =
                     2
             });
-
-
-
-        var factory =
-            timelines.Get(
-                "F001");
 
 
 
@@ -122,19 +105,11 @@ public class ChangeMachineMoveTests
 
 
 
-        /*
-         * Act
-         */
-
         var result =
             move.Apply(
                 moveContext);
 
 
-
-        /*
-         * Assert
-         */
 
         Assert.True(
             result);
@@ -161,7 +136,7 @@ public class ChangeMachineMoveTests
         Assert.False(
             factory.Machines["M002"]
                 .IsFree(
-                    0));
+                    operation.StartSlot));
 
 
 
