@@ -14,5 +14,9 @@
     &lt;TestId&gt;xUnit::9EB0F93E-1665-43DD-BBE0-AA9801167358::net10.0::ProductionScheduling.Test.Infrastructure.TestSchedulingDataFactoryTests&lt;/TestId&gt;
     &lt;TestId&gt;xUnit::9EB0F93E-1665-43DD-BBE0-AA9801167358::net10.0::ProductionScheduling.Test.Infrastructure.test.TestTimelineFactoryTests&lt;/TestId&gt;
     &lt;TestId&gt;xUnit::9EB0F93E-1665-43DD-BBE0-AA9801167358::net10.0::ProductionScheduling.Test.Infrastructure.TestAlgorithmFactoryTests&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::9EB0F93E-1665-43DD-BBE0-AA9801167358::net10.0::ProductionScheduling.Test.ScheduleEvaluatorTests&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::9EB0F93E-1665-43DD-BBE0-AA9801167358::net10.0::ProductionScheduling.Test.MoveExecutionRecordTests&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::9EB0F93E-1665-43DD-BBE0-AA9801167358::net10.0::ProductionScheduling.Test.MoveContextTests&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::9EB0F93E-1665-43DD-BBE0-AA9801167358::net10.0::ProductionScheduling.Test.MoveSelectorTests&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

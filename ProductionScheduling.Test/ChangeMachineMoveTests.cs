@@ -1,15 +1,9 @@
-using ProductionScheduling.Algorithm;
 using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Index;
-using ProductionScheduling.Algorithm.Moves;
 using ProductionScheduling.Algorithm.Moves.Core;
 using ProductionScheduling.Algorithm.Moves.Implementations;
 using ProductionScheduling.Algorithm.Scheduling;
-using ProductionScheduling.Domain.Calendars;
-using ProductionScheduling.Domain.Orders;
-using ProductionScheduling.Domain.Resources;
-using ProductionScheduling.Domain.Scheduling;
-using ProductionScheduling.Timeline;
+using ProductionScheduling.Test.Infrastructure;
 using Xunit;
 
 namespace ProductionScheduling.Test;
@@ -20,140 +14,32 @@ public class ChangeMachineMoveTests
     public void ChangeMachineMove_Should_Move_To_Faster_Machine()
     {
         /*
-         * =========================
-         * 1. 创建工单
-         * =========================
-         */
-
-        var order =
-            new Order
-            {
-                Code = "ORD001",
-                Priority = 1
-            };
-
-
-        var ticket =
-            new JobTicket
-            {
-                Code = "JT001",
-                Sequence = 1,
-                Length = 100
-            };
-
-
-        order.JobTickets.Add(ticket);
-
-
-        /*
-         * =========================
-         * 2. 创建设备
-         * =========================
-         */
-
-        var machines =
-            new List<Machine>
-            {
-                new()
-                {
-                    Code = "M001",
-
-                    Capabilities =
-                    [
-                        new MachineCapability
-                        {
-                            MachineCode = "M001",
-                            JobTicketCode = "JT001",
-                            HourlyCapacity = 50,
-                            SetupMinutes = 0
-                        }
-                    ]
-                },
-
-
-                new()
-                {
-                    Code = "M002",
-
-                    Capabilities =
-                    [
-                        new MachineCapability
-                        {
-                            MachineCode = "M002",
-                            JobTicketCode = "JT001",
-                            HourlyCapacity = 100,
-                            SetupMinutes = 0
-                        }
-                    ]
-                }
-            };
-
-
-        /*
-         * =========================
-         * 3. 创建Context
-         * =========================
+         * Arrange
          */
 
         var context =
-            new SchedulingContext
-            {
-                Orders =
-                [
-                    order
-                ],
-
-                Machines =
-                    machines,
-
-                Options =
-                {
-                    TimeGranularityMinutes = 60
-                }
-            };
+            TestSchedulingDataFactory
+                .CreateSimpleContext();
 
 
-        context.FactoryCalendars.Add(
-            new FactoryCalendar
-            {
-                Periods =
-                [
-                    new ShiftPeriod
-                    {
-                        StartTime =
-                            DateTime.Today
-                                .AddHours(8),
-
-                        EndTime =
-                            DateTime.Today
-                                .AddHours(18)
-                    }
-                ]
-            });
-
-
-        /*
-         * =========================
-         * 4. 初始化Timeline
-         * =========================
-         */
 
         var timeline =
-            new TimelineBuilder()
-                .Build(context);
+            TestTimelineFactory
+                .Create(
+                    context);
+
 
 
         /*
-         * =========================
-         * 5. 创建初始方案
-         *
-         * 假设Greedy已经排:
+         * 初始方案
          *
          * JT001 -> M001
          *
-         * 08:00-10:00
+         * M001:
+         * 50/h
          *
-         * =========================
+         * M002:
+         * 100/h
          */
 
         var solution =
@@ -163,14 +49,19 @@ public class ChangeMachineMoveTests
         solution.Operations.Add(
             new ScheduledOperation
             {
-                JobTicketCode = "JT001",
+                JobTicketCode =
+                    "JT001",
 
-                MachineCode = "M001",
+                MachineCode =
+                    "M001",
 
-                StartSlot = 0,
+                StartSlot =
+                    0,
 
-                DurationSlots = 2
+                DurationSlots =
+                    2
             });
+
 
 
         timeline.Machines["M001"]
@@ -179,32 +70,19 @@ public class ChangeMachineMoveTests
                 2);
 
 
-        /*
-         * =========================
-         * 6. 创建索引
-         * =========================
-         */
 
         var resourceIndex =
-            new SchedulingResourceIndex();
+            TestAlgorithmFactory
+                .CreateResourceIndex(
+                    context);
 
 
-        resourceIndex.Build(
-            machines);
 
+        var ticketIndex =
+            TestAlgorithmFactory
+                .CreateJobTicketIndex(
+                    context);
 
-        /*
-         * =========================
-         * 7. 创建索引
-         * =========================
-         */
-
-        var jobTicketIndex =
-            new JobTicketIndex();
-
-
-        jobTicketIndex.Build(
-            context.Orders);
 
 
         var moveContext =
@@ -223,75 +101,65 @@ public class ChangeMachineMoveTests
                     resourceIndex,
 
                 JobTicketIndex =
-                    jobTicketIndex,
+                    ticketIndex,
 
                 CurrentOperation =
                     solution.Operations[0]
             };
 
-        /*
-         * =========================
-         * 8. 执行ChangeMachineMove
-         * =========================
-         */
+
 
         var move =
             new ChangeMachineMove(
                 new ScheduleDurationCalculator());
 
 
+
+        /*
+         * Act
+         */
+
         var result =
             move.Apply(
                 moveContext);
 
 
+
         /*
-         * =========================
-         * 9. 验证
-         * =========================
+         * Assert
          */
 
+        Assert.True(
+            result);
 
-        Assert.True(result);
 
 
         var operation =
             solution.Operations[0];
 
 
-        /*
-         * 应该迁移到M002
-         */
         Assert.Equal(
             "M002",
             operation.MachineCode);
 
 
-        /*
-         * M002产能100/h
-         *
-         * 100长度
-         *
-         * =1小时
-         */
+
         Assert.Equal(
             1,
             operation.DurationSlots);
 
 
-        /*
-         * 新设备占用
-         */
-        Assert.True(
-            !timeline.Machines["M002"]
-                .IsFree(0));
+
+        Assert.False(
+            timeline.Machines["M002"]
+                .IsFree(
+                    0));
 
 
-        /*
-         * 老设备释放
-         */
+
         Assert.True(
             timeline.Machines["M001"]
-                .IsFree(0));
+                .IsFree(
+                    0));
     }
 }

@@ -458,4 +458,107 @@ public static class TestSchedulingDataFactory
 
         return context;
     }
+    
+    public static SchedulingContext CreateSwapContext()
+    {
+        var order =
+            new Order
+            {
+                Code = "ORD001",
+                Priority = 1
+            };
+
+
+        order.JobTickets.AddRange(
+        [
+            new JobTicket
+            {
+                Code = "JT001",
+                Sequence = 1,
+                Length = 200
+            },
+
+
+            new JobTicket
+            {
+                Code = "JT002",
+                Sequence = 2,
+                Length = 200
+            }
+        ]);
+
+
+
+        var machines =
+            new List<Machine>
+            {
+                new()
+                {
+                    Code = "M001",
+
+                    Capabilities =
+                    [
+                        new MachineCapability
+                        {
+                            MachineCode = "M001",
+                            JobTicketCode = "JT001",
+                            HourlyCapacity = 100,
+                            SetupMinutes = 0
+                        },
+
+
+                        new MachineCapability
+                        {
+                            MachineCode = "M001",
+                            JobTicketCode = "JT002",
+                            HourlyCapacity = 100,
+                            SetupMinutes = 0
+                        }
+                    ]
+                }
+            };
+
+
+
+        var context =
+            new SchedulingContext
+            {
+                Orders =
+                [
+                    order
+                ],
+
+                Machines =
+                    machines,
+
+                Options =
+                {
+                    TimeGranularityMinutes = 60
+                }
+            };
+
+
+
+        context.FactoryCalendars.Add(
+            new FactoryCalendar
+            {
+                FactoryCode = "F001",
+
+                Periods =
+                [
+                    new ShiftPeriod
+                    {
+                        StartTime =
+                            DateTime.Today.AddHours(8),
+
+                        EndTime =
+                            DateTime.Today.AddHours(18)
+                    }
+                ]
+            });
+
+
+
+        return context;
+    }
 }
