@@ -1,3 +1,4 @@
+using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Index;
 using ProductionScheduling.Algorithm.Optimization.Core;
@@ -12,42 +13,58 @@ namespace ProductionScheduling.Test.Infrastructure;
 public static class TestAlgorithmFactory
 {
     /// <summary>
-    /// 创建默认算法配置
+    /// 创建Greedy Scheduler
     /// </summary>
-    public static SchedulingAlgorithmOptions CreateOptions()
+    public static IScheduler CreateGreedyScheduler(
+        SchedulingContext context)
     {
-        var options =
-            new SchedulingAlgorithmOptions
-            {
-                LocalSearch =
-                    new LocalSearchOptions
-                    {
-                        Iterations = 50
-                    },
-                SimulatedAnnealing =
-                    new SimulatedAnnealingOptions
-                    {
-                        Iterations = 100
-                    }
-                
-            };
+        var resourceIndex =
+            CreateResourceIndex(
+                context);
 
 
-        options.Pipeline.Add(
-            new OptimizationStepOptions
-            {
-                Algorithm =
-                    OptimizationAlgorithmType.LocalSearch,
 
-                Enabled =
-                    true,
-
-                Order =
-                    1
-            });
+        return new GreedyScheduler(
+            new ScheduleDurationCalculator(),
+            resourceIndex);
+    }
 
 
-        return options;
+
+    /// <summary>
+    /// 创建资源索引
+    /// </summary>
+    public static SchedulingResourceIndex CreateResourceIndex(
+        SchedulingContext context)
+    {
+        var index =
+            new SchedulingResourceIndex();
+
+
+        index.Build(
+            context.Machines);
+
+
+        return index;
+    }
+
+
+
+    /// <summary>
+    /// 创建工单索引
+    /// </summary>
+    public static JobTicketIndex CreateJobTicketIndex(
+        SchedulingContext context)
+    {
+        var index =
+            new JobTicketIndex();
+
+
+        index.Build(
+            context.Orders);
+
+
+        return index;
     }
 
 
@@ -56,28 +73,17 @@ public static class TestAlgorithmFactory
     /// 创建优化流水线
     /// </summary>
     public static OptimizationPipelineRunner CreatePipelineRunner(
-        SchedulingContext context)
+        SchedulingContext context,
+        SchedulingAlgorithmOptions options)
     {
-        var options =
-            CreateOptions();
-
-
-
         var resourceIndex =
-            new SchedulingResourceIndex();
-
-
-        resourceIndex.Build(
-            context.Machines);
-
+            CreateResourceIndex(
+                context);
 
 
         var ticketIndex =
-            new JobTicketIndex();
-
-
-        ticketIndex.Build(
-            context.Orders);
+            CreateJobTicketIndex(
+                context);
 
 
 

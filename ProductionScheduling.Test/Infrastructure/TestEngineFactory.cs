@@ -1,7 +1,5 @@
-using ProductionScheduling.Algorithm.Calculation;
+using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Evaluation;
-using ProductionScheduling.Algorithm.Index;
-using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Application;
 using ProductionScheduling.Application.Result;
 using ProductionScheduling.Domain.Scheduling;
@@ -11,33 +9,38 @@ namespace ProductionScheduling.Test.Infrastructure;
 
 public static class TestEngineFactory
 {
+    /// <summary>
+    /// 创建完整排产Engine
+    /// </summary>
     public static SchedulingEngine Create(
-        SchedulingContext context)
+        SchedulingContext context,
+        SchedulingAlgorithmOptions? options = null)
     {
+        options ??=
+            new SchedulingAlgorithmOptions();
+
+
+
         /*
-         * Resource Index
+         * 时间轴
          */
-        var resourceIndex =
-            new SchedulingResourceIndex();
-
-
-        resourceIndex.Build(
-            context.Machines);
+        var timelineInitializer =
+            new TimelineInitializer();
 
 
 
         /*
-         * Scheduler
+         * 初始排产算法
          */
         var scheduler =
-            new GreedyScheduler(
-                new ScheduleDurationCalculator(),
-                resourceIndex);
+            TestAlgorithmFactory
+                .CreateGreedyScheduler(
+                    context);
 
 
 
         /*
-         * Evaluator
+         * 评价器
          */
         var evaluator =
             new ScheduleEvaluator();
@@ -45,7 +48,7 @@ public static class TestEngineFactory
 
 
         /*
-         * Result Converter
+         * 结果转换
          */
         var resultConverter =
             new SchedulingResultConverter();
@@ -53,17 +56,18 @@ public static class TestEngineFactory
 
 
         /*
-         * Optimization Pipeline
+         * 优化流水线
          */
         var pipelineRunner =
             TestAlgorithmFactory
                 .CreatePipelineRunner(
-                    context);
+                    context,
+                    options);
 
 
 
         return new SchedulingEngine(
-            new TimelineInitializer(),
+            timelineInitializer,
             scheduler,
             evaluator,
             resultConverter,

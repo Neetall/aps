@@ -18,4 +18,16 @@ public static class TestTimelineFactory
         return initializer.Initialize(
             context);
     }
+
+
+
+    /// <summary>
+    /// 创建空时间轴
+    /// 用于Pipeline、Optimizer单元测试
+    /// </summary>
+    public static TimelineContext CreateEmpty()
+    {
+        return new TimelineContext(
+            new SchedulingTimeline());
+    }
 }

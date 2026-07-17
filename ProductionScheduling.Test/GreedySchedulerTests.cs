@@ -1,13 +1,4 @@
-using ProductionScheduling.Algorithm;
-using ProductionScheduling.Algorithm.Calculation;
-using ProductionScheduling.Algorithm.Index;
-using ProductionScheduling.Algorithm.Scheduling;
-using ProductionScheduling.Application.Options;
-using ProductionScheduling.Domain.Calendars;
-using ProductionScheduling.Domain.Orders;
-using ProductionScheduling.Domain.Resources;
-using ProductionScheduling.Domain.Scheduling;
-using ProductionScheduling.Timeline;
+using ProductionScheduling.Test.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -26,203 +17,36 @@ public class GreedySchedulerTests
     }
 
 
+
     [Fact]
     public void GreedyScheduler_Should_Create_Valid_Schedule()
     {
         /*
-         * =========================
-         * 1. 创建订单
-         * =========================
-         */
-
-        var order =
-            new Order
-            {
-                Code = "ORD001",
-
-                Priority = 1,
-
-                DueDate =
-                    DateTime.Today.AddDays(1)
-            };
-
-
-        order.JobTickets.AddRange(
-        [
-            new JobTicket
-            {
-                Code = "JT001",
-
-                Sequence = 1,
-
-                Length = 100
-            },
-
-            new JobTicket
-            {
-                Code = "JT002",
-
-                Sequence = 2,
-
-                Length = 200
-            }
-        ]);
-
-
-        /*
-         * =========================
-         * 2. 创建设备
-         * =========================
-         */
-
-        var machines =
-            new List<Machine>
-            {
-                new()
-                {
-                    Code = "M001",
-
-                    Capabilities =
-                    [
-                        new MachineCapability
-                        {
-                            MachineCode = "M001",
-
-                            JobTicketCode = "JT001",
-
-                            HourlyCapacity = 50,
-
-                            SetupMinutes = 0
-                        },
-
-                        new MachineCapability
-                        {
-                            MachineCode = "M001",
-
-                            JobTicketCode = "JT002",
-
-                            HourlyCapacity = 50,
-
-                            SetupMinutes = 0
-                        }
-                    ]
-                },
-
-
-                new()
-                {
-                    Code = "M002",
-
-                    Capabilities =
-                    [
-                        new MachineCapability
-                        {
-                            MachineCode = "M002",
-
-                            JobTicketCode = "JT001",
-
-                            HourlyCapacity = 100,
-
-                            SetupMinutes = 0
-                        }
-                    ]
-                }
-            };
-
-
-        /*
-         * =========================
-         * 3. 创建排产上下文
-         * =========================
+         * Arrange
          */
 
         var context =
-            new SchedulingContext();
+            TestSchedulingDataFactory
+                .CreateGreedySchedulerContext();
 
-
-        context.Orders.Add(
-            order);
-
-
-        context.Machines.AddRange(
-            machines);
-
-
-        context.Options =
-            new SchedulingOptions
-            {
-                TimeGranularityMinutes = 60
-            };
-
-
-        context.FactoryCalendars.Add(
-            new FactoryCalendar
-            {
-                Periods =
-                [
-                    new ShiftPeriod
-                    {
-                        StartTime =
-                            DateTime.Today
-                                .AddHours(8),
-
-                        EndTime =
-                            DateTime.Today
-                                .AddHours(18)
-                    }
-                ]
-            });
-
-
-        /*
-         * =========================
-         * 4. 初始化时间轴
-         * =========================
-         */
-
-        var builder =
-            new TimelineBuilder();
-
-
-        var timeline =
-            builder.Build(
-                context);
-
-
-        /*
-         * =========================
-         * 5. 创建资源索引
-         * =========================
-         */
-
-        var resourceIndex =
-            new SchedulingResourceIndex();
-
-
-        resourceIndex.Build(
-            machines);
-
-
-        /*
-         * =========================
-         * 6. 创建Greedy算法
-         * =========================
-         */
-
-        var calculator =
-            new ScheduleDurationCalculator();
 
 
         var scheduler =
-            new GreedyScheduler(
-                calculator,
-                resourceIndex);
+            TestAlgorithmFactory
+                .CreateGreedyScheduler(
+                    context);
+
+
+
+        var timeline =
+            TestTimelineFactory
+                .Create(
+                    context);
+
 
 
         /*
-         * =========================
-         * 7. 执行排产
-         * =========================
+         * Act
          */
 
         var solution =
@@ -231,30 +55,31 @@ public class GreedySchedulerTests
                 timeline);
 
 
+
         /*
-         * =========================
          * 输出排产结果
-         * =========================
          */
 
         output.WriteLine(
             "========== 排产结果 ==========");
 
 
-        foreach (var operation in solution.Operations)
+
+        foreach(var operation in solution.Operations)
         {
             var start =
                 timeline.Timeline[
-                        operation.StartSlot]
+                    operation.StartSlot]
                     .StartTime;
 
 
             var end =
                 timeline.Timeline[
-                        operation.StartSlot +
-                        operation.DurationSlots -
-                        1]
+                    operation.StartSlot +
+                    operation.DurationSlots -
+                    1]
                     .EndTime;
+
 
 
             output.WriteLine(
@@ -266,23 +91,25 @@ public class GreedySchedulerTests
         }
 
 
+
         output.WriteLine(
             "============================");
 
 
+
         /*
-         * =========================
-         * 8. 验证
-         * =========================
+         * Assert
          */
 
         Assert.True(
             solution.IsFeasible);
 
 
+
         Assert.Equal(
             2,
             solution.Operations.Count);
+
 
 
         var first =
@@ -293,20 +120,48 @@ public class GreedySchedulerTests
             solution.Operations[1];
 
 
+
         /*
-         * JT001应该选择M002
+         * JT001:
+         *
+         * M001:
+         * 100 / 50 = 2小时
+         *
+         * M002:
+         * 100 / 100 = 1小时
+         *
+         * 应选择M002
          */
+
         Assert.Equal(
             "M002",
             first.MachineCode);
 
 
+
         /*
-         * 第二道工序必须等待第一道完成
+         * JT002只有M001
+         *
+         * 必须等待JT001完成
          */
+
         Assert.True(
-            second.StartSlot
-            >=
+            second.StartSlot >=
+            first.StartSlot +
+            first.DurationSlots);
+
+
+
+        /*
+         * 两个工序不能重叠
+         */
+
+        Assert.False(
+            first.StartSlot <
+            second.StartSlot +
+            second.DurationSlots
+            &&
+            second.StartSlot <
             first.StartSlot +
             first.DurationSlots);
     }
