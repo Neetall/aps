@@ -24,11 +24,7 @@ public class ScheduleEvaluator
         }
 
 
-        /*
-         * 最大完工Slot
-         *
-         * 算法评分使用
-         */
+
         var endSlot =
             solution.Operations
                 .Max(x =>
@@ -42,18 +38,12 @@ public class ScheduleEvaluator
 
 
 
-        /*
-         * 转换为真实时间
-         *
-         * 仅用于展示
-         */
         if(endSlot > 0 &&
-           endSlot <= timeline.Timeline.Count)
+           endSlot <= timeline.TimeModel.SlotCount)
         {
             result.EndTime =
-                timeline.Timeline[
-                    endSlot - 1]
-                .EndTime;
+                timeline.TimeModel.GetSlotEnd(
+                    endSlot - 1);
         }
         else
         {
@@ -65,9 +55,6 @@ public class ScheduleEvaluator
 
 
 
-        /*
-         * 总加工时间
-         */
         var totalSlots =
             solution.Operations
                 .Sum(x =>
@@ -83,9 +70,6 @@ public class ScheduleEvaluator
 
 
 
-        /*
-         * 设备利用率
-         */
         var used =
             timeline.Machines
                 .Values
@@ -109,11 +93,6 @@ public class ScheduleEvaluator
 
 
 
-        /*
-         * 综合评分
-         *
-         * 越小越好
-         */
         result.Score =
             CalculateScore(
                 result);
@@ -128,29 +107,14 @@ public class ScheduleEvaluator
     private double CalculateScore(
         EvaluationResult result)
     {
-        /*
-         * 第一目标:
-         * 最早完工
-         *
-         * 第二目标:
-         * 提高利用率
-         *
-         * 第三目标:
-         * 延期控制
-         */
-
-
         var makespan =
             result.MakespanSlots;
-
 
 
         var utilizationPenalty =
             (1 -
              result.MachineUtilization)
-            *
-            100;
-
+            * 100;
 
 
         var delayPenalty =
@@ -158,12 +122,9 @@ public class ScheduleEvaluator
             1000;
 
 
-
         return
             makespan * 10000
-            +
-            delayPenalty
-            +
-            utilizationPenalty;
+            + delayPenalty
+            + utilizationPenalty;
     }
 }

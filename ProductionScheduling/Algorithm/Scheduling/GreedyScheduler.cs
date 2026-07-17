@@ -1,5 +1,6 @@
 using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Index;
+using ProductionScheduling.Algorithm.Time;
 using ProductionScheduling.Domain.Orders;
 using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
@@ -33,9 +34,6 @@ public class GreedyScheduler : IScheduler
     }
 
 
-    /// <summary>
-    ///     执行排产
-    /// </summary>
     public SchedulingSolution Schedule(
         SchedulingContext context,
         TimelineContext timeline)
@@ -44,9 +42,6 @@ public class GreedyScheduler : IScheduler
             new SchedulingSolution();
 
 
-        /*
-         * 按订单优先级
-         */
         var orders =
             context.Orders
                 .OrderBy(x => x.Priority)
@@ -55,11 +50,6 @@ public class GreedyScheduler : IScheduler
 
         foreach (var order in orders)
         {
-            /*
-             * 当前订单前序工序完成时间
-             *
-             * 后续工序必须等待前序完成
-             */
             var previousEndSlot = 0;
 
 
@@ -73,7 +63,7 @@ public class GreedyScheduler : IScheduler
                         previousEndSlot);
 
 
-                if (candidate == null)
+                if(candidate == null)
                 {
                     solution.IsFeasible =
                         false;
@@ -82,26 +72,15 @@ public class GreedyScheduler : IScheduler
                 }
 
 
-                /*
-                 * 保存排产结果
-                 */
-                solution.Operations
-                    .Add(
-                        candidate.Operation);
+                solution.Operations.Add(
+                    candidate.Operation);
 
 
-                /*
-                 * 占用设备时间
-                 */
-                candidate.MachineTimeline
-                    .Occupy(
-                        candidate.Operation.StartSlot,
-                        candidate.Operation.DurationSlots);
+                candidate.MachineTimeline.Occupy(
+                    candidate.Operation.StartSlot,
+                    candidate.Operation.DurationSlots);
 
 
-                /*
-                 * 更新工序完成时间
-                 */
                 previousEndSlot =
                     candidate.EndSlot;
             }
@@ -112,11 +91,7 @@ public class GreedyScheduler : IScheduler
     }
 
 
-    /// <summary>
-    ///     查找最优设备
-    ///     当前目标:
-    ///     最早完成
-    /// </summary>
+
     private MachineScheduleCandidate? FindBestMachine(
         JobTicket ticket,
         TimelineContext timeline,
@@ -126,61 +101,61 @@ public class GreedyScheduler : IScheduler
             null;
 
 
-        /*
-         * 根据派工单直接获取可用设备
-         *
-         * 不再扫描全部设备
-         */
         var capabilities =
             resourceIndex
                 .GetCapabilities(
                     ticket.Code);
 
 
-        foreach (var capability in capabilities)
+        foreach(var capability in capabilities)
         {
             var machineCode =
                 capability.MachineCode;
 
 
-            if (!timeline.Machines
+            if(!timeline.Machines
                     .TryGetValue(
                         machineCode,
                         out var machineTimeline))
                 continue;
 
 
-            /*
-             * 计算生产需要Slot数量
-             */
+
             var duration =
                 durationCalculator.Calculate(
                     ticket,
                     capability);
 
 
+
             /*
-             * 查找设备最早空闲时间
+             * 通过TimeModel寻找最早可用时间
+             *
+             * 时间连续性由TimeModel决定
+             * 设备占用由MachineTimeline决定
              */
             var startSlot =
-                machineTimeline
-                    .FindEarliest(
+                timeline.TimeModel
+                    .FindEarliestAvailable(
+                        machineTimeline,
                         duration,
                         earliestStartSlot);
 
 
-            if (startSlot < 0) continue;
+
+            if(startSlot < 0)
+                continue;
+
 
 
             var endSlot =
                 startSlot + duration;
 
 
-            /*
-             * 选择最早完成设备
-             */
-            if (best == null ||
-                endSlot < best.EndSlot)
+
+            if(best == null ||
+               endSlot < best.EndSlot)
+            {
                 best =
                     new MachineScheduleCandidate
                     {
@@ -211,6 +186,7 @@ public class GreedyScheduler : IScheduler
                                     duration
                             }
                     };
+            }
         }
 
 

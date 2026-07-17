@@ -1,40 +1,30 @@
-namespace ProductionScheduling.Timeline;
+using ProductionScheduling.Algorithm.Time;
+using ProductionScheduling.Timeline;
 
-/// <summary>
-///     时间轴上下文
-/// </summary>
 public class TimelineContext
 {
-    /// <summary>
-    ///     设备时间轴
-    ///     Key = MachineCode
-    /// </summary>
     private readonly Dictionary<string, MachineTimeline> machines = [];
 
+
     public TimelineContext(
-        SchedulingTimeline timeline)
+        ITimeModel timeModel)
     {
-        Timeline =
-            timeline;
+        TimeModel =
+            timeModel;
     }
 
 
-    /// <summary>
-    ///     全局时间轴
-    /// </summary>
-    public SchedulingTimeline Timeline { get; }
+    public ITimeModel TimeModel { get; }
 
 
-    /// <summary>
-    ///     所有设备时间轴
-    /// </summary>
+    public int SlotCount =>
+        TimeModel.SlotCount;
+
+
     public IReadOnlyDictionary<string, MachineTimeline> Machines =>
         machines;
 
 
-    /// <summary>
-    ///     添加设备时间轴
-    /// </summary>
     public void AddMachineTimeline(
         MachineTimeline timeline)
     {
@@ -43,9 +33,6 @@ public class TimelineContext
     }
 
 
-    /// <summary>
-    ///     获取设备时间轴
-    /// </summary>
     public bool TryGetMachine(
         string machineCode,
         out MachineTimeline timeline)

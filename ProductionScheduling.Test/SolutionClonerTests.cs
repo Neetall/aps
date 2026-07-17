@@ -2,6 +2,7 @@ using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Moves.Core;
 using ProductionScheduling.Algorithm.Optimization.Core;
 using ProductionScheduling.Algorithm.Scheduling;
+using ProductionScheduling.Algorithm.Time;
 using ProductionScheduling.Timeline;
 using Xunit;
 
@@ -9,6 +10,40 @@ namespace ProductionScheduling.Test;
 
 public class SolutionClonerTests
 {
+    private TimelineContext CreateTimeline()
+    {
+        var slots =
+            new List<TimeSlot>();
+
+
+        for(var i = 0;
+            i < 24;
+            i++)
+        {
+            slots.Add(
+                new TimeSlot
+                {
+                    StartTime =
+                        DateTime.Today
+                            .AddHours(i),
+
+                    EndTime =
+                        DateTime.Today
+                            .AddHours(i + 1)
+                });
+        }
+
+
+        var timeModel =
+            new ContinuousTimeModel(
+                slots);
+
+
+        return new TimelineContext(
+            timeModel);
+    }
+
+
     [Fact]
     public void Clone_Should_Create_Independent_State()
     {
@@ -43,8 +78,7 @@ public class SolutionClonerTests
 
 
                 Timeline =
-                    new TimelineContext(
-                        new SchedulingTimeline()),
+                    CreateTimeline(),
 
 
                 Evaluation =
@@ -109,10 +143,7 @@ public class SolutionClonerTests
 
         /*
          * Assert
-         *
-         * 原对象不能变化
          */
-
 
         Assert.Equal(
             10,
@@ -133,6 +164,7 @@ public class SolutionClonerTests
     }
 
 
+
     [Fact]
     public void Clone_Should_Copy_History()
     {
@@ -143,8 +175,7 @@ public class SolutionClonerTests
                     new SchedulingSolution(),
 
                 Timeline =
-                    new TimelineContext(
-                        new SchedulingTimeline()),
+                    CreateTimeline(),
 
 
                 History =

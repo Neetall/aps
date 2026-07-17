@@ -51,6 +51,7 @@ public class GreedySchedulerTests
                 timeline);
 
 
+
         /*
          * 输出排产结果
          */
@@ -59,19 +60,21 @@ public class GreedySchedulerTests
             "========== 排产结果 ==========");
 
 
-        foreach (var operation in solution.Operations)
+        foreach(var operation in solution.Operations)
         {
             var start =
-                timeline.Timeline[
-                        operation.StartSlot]
+                timeline.TimeModel
+                    .GetSlot(
+                        operation.StartSlot)
                     .StartTime;
 
 
             var end =
-                timeline.Timeline[
+                timeline.TimeModel
+                    .GetSlot(
                         operation.StartSlot +
                         operation.DurationSlots -
-                        1]
+                        1)
                     .EndTime;
 
 
@@ -88,6 +91,7 @@ public class GreedySchedulerTests
             "============================");
 
 
+
         /*
          * Assert
          */
@@ -101,12 +105,14 @@ public class GreedySchedulerTests
             solution.Operations.Count);
 
 
+
         var first =
             solution.Operations[0];
 
 
         var second =
             solution.Operations[1];
+
 
 
         /*
@@ -126,6 +132,7 @@ public class GreedySchedulerTests
             first.MachineCode);
 
 
+
         /*
          * JT002只有M001
          *
@@ -136,6 +143,7 @@ public class GreedySchedulerTests
             second.StartSlot >=
             first.StartSlot +
             first.DurationSlots);
+
 
 
         /*

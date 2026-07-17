@@ -1,3 +1,4 @@
+using ProductionScheduling.Algorithm.Time;
 using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
 
@@ -5,9 +6,6 @@ namespace ProductionScheduling.Test.Infrastructure;
 
 public static class TestTimelineFactory
 {
-    /// <summary>
-    /// 创建测试时间轴
-    /// </summary>
     public static TimelineContext Create(
         SchedulingContext context)
     {
@@ -20,13 +18,39 @@ public static class TestTimelineFactory
     }
 
 
-    /// <summary>
-    /// 创建空时间轴
-    /// 用于Pipeline、Optimizer单元测试
-    /// </summary>
+
     public static TimelineContext CreateEmpty()
     {
+        var slots =
+            new List<TimeSlot>();
+
+
+        var start =
+            DateTime.Today;
+
+
+        for(var i = 0;
+            i < 24;
+            i++)
+        {
+            slots.Add(
+                new TimeSlot
+                {
+                    StartTime =
+                        start.AddHours(i),
+
+                    EndTime =
+                        start.AddHours(i + 1)
+                });
+        }
+
+
+        var timeModel =
+            new ContinuousTimeModel(
+                slots);
+
+
         return new TimelineContext(
-            new SchedulingTimeline());
+            timeModel);
     }
 }

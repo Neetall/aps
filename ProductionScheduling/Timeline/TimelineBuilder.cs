@@ -1,60 +1,52 @@
+using ProductionScheduling.Algorithm.Time;
 using ProductionScheduling.Domain.Calendars;
 using ProductionScheduling.Domain.Scheduling;
 
 namespace ProductionScheduling.Timeline;
 
-/// <summary>
-///     时间轴构建器
-///     根据排产上下文生成时间资源
-/// </summary>
 public class TimelineBuilder
 {
-    /// <summary>
-    ///     构建时间上下文
-    /// </summary>
     public TimelineContext Build(
         SchedulingContext context)
     {
-        var timeline =
-            BuildGlobalTimeline(
+        var timeModel =
+            BuildTimeModel(
                 context);
+
 
 
         var result =
             new TimelineContext(
-                timeline);
+                timeModel);
 
 
-        /*
-         * 创建设备时间轴
-         */
-        foreach (var machine in context.Machines)
+
+        foreach(var machine in context.Machines)
+        {
             result.AddMachineTimeline(
                 new MachineTimeline(
                     machine.Code,
-                    timeline.Count));
+                    timeModel.SlotCount));
+        }
 
 
-        /*
-         * 初始化设备不可用时间
-         */
+
         ApplyMachineCalendars(
             result,
             context);
+
 
 
         return result;
     }
 
 
-    /// <summary>
-    ///     构建全局时间轴
-    /// </summary>
-    private SchedulingTimeline BuildGlobalTimeline(
+
+    private ITimeModel BuildTimeModel(
         SchedulingContext context)
     {
-        var timeline =
-            new SchedulingTimeline();
+        var slots =
+            new List<TimeSlot>();
 
 
         var granularity =
@@ -62,23 +54,38 @@ public class TimelineBuilder
                 .TimeGranularityMinutes;
 
 
-        foreach (var calendar in context.FactoryCalendars)
-        foreach (var period in calendar.Periods)
-            AddPeriod(
-                timeline,
-                period,
-                granularity);
+
+        foreach(var calendar in context.FactoryCalendars)
+        {
+            foreach(var period in calendar.Periods)
+            {
+                AddPeriod(
+                    slots,
+                    period,
+                    granularity);
+            }
+        }
 
 
-        return timeline;
+
+        for(var i = 0;
+            i < slots.Count;
+            i++)
+        {
+            slots[i].Index =
+                i;
+        }
+
+
+
+        return new ContinuousTimeModel(
+            slots);
     }
 
 
-    /// <summary>
-    ///     添加工作时间段
-    /// </summary>
+
     private void AddPeriod(
-        SchedulingTimeline timeline,
+        List<TimeSlot> slots,
         ShiftPeriod period,
         int granularity)
     {
@@ -86,27 +93,31 @@ public class TimelineBuilder
             period.StartTime;
 
 
-        while (current < period.EndTime)
+
+        while(current < period.EndTime)
         {
             var end =
                 current.AddMinutes(
                     granularity);
 
 
-            /*
-             * 最后一段不足一个Slot
-             */
-            if (end > period.EndTime)
+
+            if(end > period.EndTime)
                 end =
                     period.EndTime;
 
 
-            timeline.AddSlot(
+
+            slots.Add(
                 new TimeSlot
                 {
-                    StartTime = current,
-                    EndTime = end
+                    StartTime =
+                        current,
+
+                    EndTime =
+                        end
                 });
+
 
 
             current =
@@ -115,66 +126,77 @@ public class TimelineBuilder
     }
 
 
-    /// <summary>
-    ///     应用设备不可用时间
-    /// </summary>
+
     private void ApplyMachineCalendars(
-        TimelineContext timelineContext,
+        TimelineContext timeline,
         SchedulingContext context)
     {
-        foreach (var calendar in context.MachineCalendars)
+        foreach(var calendar in context.MachineCalendars)
         {
-            if (!timelineContext.TryGetMachine(
+            if(!timeline.TryGetMachine(
                     calendar.MachineCode,
-                    out var machineTimeline))
+                    out var machine))
                 continue;
 
 
-            foreach (var block in calendar.Blocks)
+
+            foreach(var block in calendar.Blocks)
+            {
                 ApplyBlock(
-                    timelineContext.Timeline,
-                    machineTimeline,
+                    timeline.TimeModel,
+                    machine,
                     block);
+            }
         }
     }
 
 
-    /// <summary>
-    ///     应用一个设备占用块
-    /// </summary>
+
     private void ApplyBlock(
-        SchedulingTimeline timeline,
-        MachineTimeline machineTimeline,
+        ITimeModel timeModel,
+        MachineTimeline machine,
         MachineCalendarBlock block)
     {
-        var startSlot =
-            timeline.GetStartSlot(
+        var start =
+            timeModel.GetSlotIndex(
                 block.StartTime);
 
 
-        var endSlot =
-            timeline.GetEndSlot(
+        var end =
+            timeModel.GetSlotIndex(
                 block.EndTime);
 
 
-        /*
-         * 时间不在排产范围内
-         */
-        if (startSlot < 0 ||
-            endSlot < 0)
+
+        if(start < 0 &&
+           end < 0)
             return;
+
+
+
+        if(start < 0)
+            start = 0;
+
+
+
+        if(end < 0)
+            end =
+                timeModel.SlotCount;
+
 
 
         var duration =
-            endSlot - startSlot;
+            end - start;
 
 
-        if (duration <= 0)
+
+        if(duration <= 0)
             return;
 
 
-        machineTimeline.ForceOccupy(
-            startSlot,
+
+        machine.ForceOccupy(
+            start,
             duration);
     }
 }

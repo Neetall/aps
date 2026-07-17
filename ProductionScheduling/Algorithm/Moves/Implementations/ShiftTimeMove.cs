@@ -1,5 +1,6 @@
 using ProductionScheduling.Algorithm.Moves.Core;
 using ProductionScheduling.Algorithm.Optimization.Tabu;
+using ProductionScheduling.Algorithm.Time;
 
 namespace ProductionScheduling.Algorithm.Moves.Implementations;
 
@@ -64,9 +65,11 @@ public class ShiftTimeMove : IMove
 
 
         var newStart =
-            timeline.FindEarliest(
-                duration,
-                oldStart + 1);
+            context.Timeline.TimeModel
+                .FindEarliestAvailable(
+                    timeline,
+                    duration,
+                    oldStart + 1);
 
 
         if (newStart < 0)

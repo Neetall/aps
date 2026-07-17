@@ -1,3 +1,4 @@
+using ProductionScheduling.Algorithm.Time;
 using ProductionScheduling.Domain.Calendars;
 
 namespace ProductionScheduling.Timeline;
@@ -5,56 +6,82 @@ namespace ProductionScheduling.Timeline;
 public class TimelineConverter
 {
     public DateTime GetStartTime(
-        SchedulingTimeline timeline,
+        ITimeModel timeModel,
         int slot)
     {
         Validate(
-            timeline,
+            timeModel,
             slot);
 
-        return timeline[slot]
-            .StartTime;
+
+        return timeModel.GetSlotStart(
+            slot);
     }
+
 
 
     public DateTime GetEndTime(
-        SchedulingTimeline timeline,
+        ITimeModel timeModel,
         int slot)
     {
         Validate(
-            timeline,
+            timeModel,
             slot);
 
-        return timeline[slot]
-            .EndTime;
+
+        return timeModel.GetSlotEnd(
+            slot);
     }
 
 
+
     public ShiftPeriod ToPeriod(
-        SchedulingTimeline timeline,
+        ITimeModel timeModel,
         int startSlot,
         int duration)
     {
+        if(duration <= 0)
+            throw new ArgumentException(
+                "Duration必须大于0");
+
+
+
+        Validate(
+            timeModel,
+            startSlot);
+
+
+
+        Validate(
+            timeModel,
+            startSlot + duration - 1);
+
+
+
         return new ShiftPeriod
         {
             StartTime =
-                timeline[startSlot]
-                    .StartTime,
+                timeModel.GetSlotStart(
+                    startSlot),
+
 
             EndTime =
-                timeline[startSlot + duration - 1]
-                    .EndTime
+                timeModel.GetSlotEnd(
+                    startSlot + duration - 1)
         };
     }
 
 
+
     private void Validate(
-        SchedulingTimeline timeline,
+        ITimeModel timeModel,
         int slot)
     {
-        if (slot < 0 ||
-            slot >= timeline.Count)
+        if(!timeModel.ContainsSlot(
+               slot))
+        {
             throw new ArgumentOutOfRangeException(
                 nameof(slot));
+        }
     }
 }

@@ -9,7 +9,6 @@
     <ItemGroup>
         <Folder Include="Algorithm\Constraints\"/>
         <Folder Include="Algorithm\Optimization\Genetic\"/>
-        <Folder Include="Algorithm\Optimization\Lns\"/>
     </ItemGroup>
 
 </Project>

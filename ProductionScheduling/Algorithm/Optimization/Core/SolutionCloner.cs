@@ -1,5 +1,7 @@
 using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Moves.Core;
+using ProductionScheduling.Algorithm.Optimization.Lns.core;
+using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Timeline;
 
 namespace ProductionScheduling.Algorithm.Optimization.Core;
@@ -103,12 +105,14 @@ public class SolutionCloner
     {
         var context =
             new TimelineContext(
-                source.Timeline);
+                source.TimeModel);
 
 
-        foreach (var machine in source.Machines)
+        foreach(var machine in source.Machines)
+        {
             context.AddMachineTimeline(
                 machine.Value.Clone());
+        }
 
 
         return context;
@@ -121,7 +125,7 @@ public class SolutionCloner
     private EvaluationResult? CloneEvaluation(
         EvaluationResult? source)
     {
-        if (source == null)
+        if(source == null)
             return null;
 
 
@@ -133,6 +137,9 @@ public class SolutionCloner
             EndTime =
                 source.EndTime,
 
+            MakespanSlots =
+                source.MakespanSlots,
+
             ProductionHours =
                 source.ProductionHours,
 
@@ -143,4 +150,56 @@ public class SolutionCloner
                 source.DelayCount
         };
     }
+    
+
+    
+    public SchedulingSolution CloneSolution(
+        SchedulingSolution solution)
+    {
+        var result =
+            new SchedulingSolution();
+
+
+        foreach(var operation in
+                solution.Operations)
+        {
+            result.Operations.Add(
+                new ScheduledOperation
+                {
+                    JobTicketCode =
+                        operation.JobTicketCode,
+
+                    MachineCode =
+                        operation.MachineCode,
+
+                    StartSlot =
+                        operation.StartSlot,
+
+                    DurationSlots =
+                        operation.DurationSlots
+                });
+        }
+
+
+        return result;
+    }
+    
+    public LnsState Clone(
+        LnsState source)
+    {
+        return new LnsState
+        {
+            Solution =
+                source.Solution.Clone(),
+
+            Timeline =
+                CloneTimeline(
+                    source.Timeline),
+
+            Evaluation =
+                CloneEvaluation(
+                    source.Evaluation)
+        };
+    }
+    
 }

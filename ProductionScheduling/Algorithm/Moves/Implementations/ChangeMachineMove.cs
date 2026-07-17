@@ -1,6 +1,7 @@
 using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Moves.Core;
 using ProductionScheduling.Algorithm.Optimization.Tabu;
+using ProductionScheduling.Algorithm.Time;
 
 namespace ProductionScheduling.Algorithm.Moves.Implementations;
 
@@ -79,17 +80,23 @@ public class ChangeMachineMove : IMove
 
 
             var start =
-                newTimeline.FindEarliest(
-                    duration);
+                context.Timeline.TimeModel
+                    .FindEarliestAvailable(
+                        newTimeline,
+                        duration);
 
 
-            if (start < 0)
+            if(start < 0)
                 continue;
 
 
-            var oldTimeline =
-                context.Timeline.Machines
-                    [oldMachine];
+            if(!context.Timeline.Machines
+                   .TryGetValue(
+                       oldMachine,
+                       out var oldTimeline))
+            {
+                return false;
+            }
 
 
             oldTimeline.Release(

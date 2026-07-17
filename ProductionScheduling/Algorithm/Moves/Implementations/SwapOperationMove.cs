@@ -69,9 +69,13 @@ public class SwapOperationMove : IMove
         }
 
 
-        var timeline =
-            context.Timeline
-                .Machines[first.MachineCode];
+        if(!context.Timeline.Machines
+               .TryGetValue(
+                   first.MachineCode,
+                   out var timeline))
+        {
+            return false;
+        }
 
 
         var firstOldStart =
