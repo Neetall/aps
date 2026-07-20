@@ -6,6 +6,7 @@ using ProductionScheduling.Algorithm.Optimization.Core;
 using ProductionScheduling.Algorithm.Optimization.Selection;
 using ProductionScheduling.Algorithm.Optimization.Tabu;
 using ProductionScheduling.Algorithm.Scheduling;
+using ProductionScheduling.Algorithm.Validation;
 using ProductionScheduling.Test.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
@@ -40,6 +41,7 @@ public class TabuSearchOptimizerTests
                     context);
 
 
+
         var solution =
             new SchedulingSolution();
 
@@ -62,6 +64,7 @@ public class TabuSearchOptimizerTests
                 DurationSlots =
                     2
             });
+
 
 
         var factoryTimeline =
@@ -112,6 +115,7 @@ public class TabuSearchOptimizerTests
                 ticketIndex,
                 neighborhoodGenerator,
                 new SolutionCloner(),
+                new SchedulingSolutionValidator(),
                 new TabuSearchOptions
                 {
                     Iterations = 50,
@@ -248,7 +252,7 @@ public class TabuSearchOptimizerTests
 
         var factoryTimeline =
             timelines.Factories["F001"];
-            
+
 
         factoryTimeline.Machines["M001"]
             .Occupy(
@@ -299,6 +303,7 @@ public class TabuSearchOptimizerTests
                 ticketIndex,
                 neighborhoodGenerator,
                 new SolutionCloner(),
+                new SchedulingSolutionValidator(),
                 new TabuSearchOptions
                 {
                     Iterations = 50,

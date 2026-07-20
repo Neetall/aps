@@ -10,6 +10,18 @@ public class SchedulingSolutionValidatorTests
     [Fact]
     public void Validate_Should_Fail_When_JobTicket_Duplicate()
     {
+        var context =
+            TestSchedulingDataFactory
+                .CreateSimpleContext();
+
+
+        var timelines =
+            TestTimelineFactory
+                .Create(
+                    context);
+
+
+
         var solution =
             new SchedulingSolution();
 
@@ -55,9 +67,79 @@ public class SchedulingSolutionValidatorTests
 
 
 
+        var validator =
+            new SchedulingSolutionValidator();
+
+
+
+        Assert.Throws<InvalidOperationException>(
+            () =>
+                validator.Validate(
+                    solution,
+                    context,
+                    timelines));
+    }
+
+
+
+    [Fact]
+    public void Validate_Should_Fail_When_Machine_Conflict()
+    {
+        var context =
+            TestSchedulingDataFactory
+                .CreateSimpleContext();
+
+
+
         var timelines =
             TestTimelineFactory
-                .CreateEmpty();
+                .Create(
+                    context);
+
+
+
+        var solution =
+            new SchedulingSolution();
+
+
+        solution.Operations.Add(
+            new ScheduledOperation
+            {
+                JobTicketCode =
+                    "JT001",
+
+                MachineCode =
+                    "M001",
+
+                FactoryCode =
+                    "F001",
+
+                StartSlot =
+                    0,
+
+                DurationSlots =
+                    3
+            });
+
+
+        solution.Operations.Add(
+            new ScheduledOperation
+            {
+                JobTicketCode =
+                    "JT002",
+
+                MachineCode =
+                    "M001",
+
+                FactoryCode =
+                    "F001",
+
+                StartSlot =
+                    2,
+
+                DurationSlots =
+                    2
+            });
 
 
 
@@ -70,6 +152,68 @@ public class SchedulingSolutionValidatorTests
             () =>
                 validator.Validate(
                     solution,
+                    context,
+                    timelines));
+    }
+
+
+
+    [Fact]
+    public void Validate_Should_Fail_When_Operation_Out_Of_Range()
+    {
+        var context =
+            TestSchedulingDataFactory
+                .CreateSimpleContext();
+
+
+
+        var timelines =
+            TestTimelineFactory
+                .Create(
+                    context);
+
+
+
+        var factoryTimeline =
+            timelines.Factories["F001"];
+
+
+
+        var solution =
+            new SchedulingSolution();
+
+
+        solution.Operations.Add(
+            new ScheduledOperation
+            {
+                JobTicketCode =
+                    "JT001",
+
+                MachineCode =
+                    "M001",
+
+                FactoryCode =
+                    "F001",
+
+                StartSlot =
+                    factoryTimeline.TimeModel.SlotCount - 1,
+
+                DurationSlots =
+                    5
+            });
+
+
+
+        var validator =
+            new SchedulingSolutionValidator();
+
+
+
+        Assert.Throws<InvalidOperationException>(
+            () =>
+                validator.Validate(
+                    solution,
+                    context,
                     timelines));
     }
 
@@ -130,6 +274,7 @@ public class SchedulingSolutionValidatorTests
 
         validator.Validate(
             solution,
+            context,
             timelines);
     }
 }

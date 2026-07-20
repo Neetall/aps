@@ -1,5 +1,13 @@
+using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Evaluation;
+using ProductionScheduling.Algorithm.Index;
+using ProductionScheduling.Algorithm.Moves.Core;
+using ProductionScheduling.Algorithm.Moves.Implementations;
+using ProductionScheduling.Algorithm.Optimization.Lns.Acceptance;
+using ProductionScheduling.Algorithm.Optimization.Lns.Destroy;
+using ProductionScheduling.Algorithm.Optimization.Lns.Repair;
+using ProductionScheduling.Algorithm.Optimization.Selection;
 using ProductionScheduling.Application;
 using ProductionScheduling.Application.Result;
 using ProductionScheduling.Domain.Scheduling;
@@ -20,11 +28,13 @@ public static class TestEngineFactory
             new SchedulingAlgorithmOptions();
 
 
+
         /*
          * 时间轴
          */
         var timelineInitializer =
             new TimelineInitializer();
+
 
 
         /*
@@ -36,11 +46,13 @@ public static class TestEngineFactory
                     context);
 
 
+
         /*
          * 评价器
          */
         var evaluator =
             new ScheduleEvaluator();
+
 
 
         /*
@@ -50,6 +62,76 @@ public static class TestEngineFactory
             new SchedulingResultConverter();
 
 
+
+        /*
+         * 索引
+         */
+        var resourceIndex =
+            TestAlgorithmFactory
+                .CreateResourceIndex(
+                    context);
+
+
+
+        var ticketIndex =
+            TestAlgorithmFactory
+                .CreateJobTicketIndex(
+                    context);
+
+
+
+        /*
+         * Move
+         */
+        var moveSelector =
+            new MoveSelector(
+                new Random(1));
+
+
+        moveSelector.Register(
+            new ChangeMachineMove(
+                new ScheduleDurationCalculator()),
+            options.Moves.ChangeMachineWeight);
+
+
+        moveSelector.Register(
+            new ShiftTimeMove(),
+            options.Moves.ShiftTimeWeight);
+
+
+        moveSelector.Register(
+            new SwapOperationMove(),
+            options.Moves.SwapOperationWeight);
+
+
+
+        /*
+         * LNS组件
+         */
+        var destroyOperator =
+            new RandomDestroyOperator();
+
+
+
+        var repairOperator =
+            new GreedyRepairOperator(
+                resourceIndex,
+                ticketIndex,
+                new ScheduleDurationCalculator());
+
+
+
+        var lnsAcceptance =
+            new LnsAcceptance();
+
+
+
+        var neighborhoodGenerator =
+            new MoveNeighborhoodGenerator(
+                moveSelector);
+
+
+
         /*
          * 优化流水线
          */
@@ -57,7 +139,12 @@ public static class TestEngineFactory
             TestAlgorithmFactory
                 .CreatePipelineRunner(
                     context,
-                    options);
+                    options,
+                    destroyOperator,
+                    repairOperator,
+                    lnsAcceptance,
+                    neighborhoodGenerator);
+
 
 
         return new SchedulingEngine(

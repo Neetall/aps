@@ -3,6 +3,7 @@ using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Optimization.Core;
 using ProductionScheduling.Algorithm.Optimization.LocalSearch;
 using ProductionScheduling.Algorithm.Optimization.Selection;
+using ProductionScheduling.Algorithm.Validation;
 using ProductionScheduling.Test.Infrastructure;
 using Xunit;
 
@@ -24,10 +25,12 @@ public class LocalSearchOptimizerTests
                     context);
 
 
+
         var solution =
             TestSolutionFactory
                 .CreateSlowMachineSolution(
                     timelines);
+
 
 
         var beforeMachine =
@@ -38,6 +41,7 @@ public class LocalSearchOptimizerTests
         var beforeDuration =
             solution.Operations[0]
                 .DurationSlots;
+
 
 
         var options =
@@ -51,10 +55,12 @@ public class LocalSearchOptimizerTests
             };
 
 
+
         var resourceIndex =
             TestAlgorithmFactory
                 .CreateResourceIndex(
                     context);
+
 
 
         var ticketIndex =
@@ -63,10 +69,12 @@ public class LocalSearchOptimizerTests
                     context);
 
 
+
         var moveSelector =
             new MoveSelectorFactory(
                     options.Moves)
                 .Create();
+
 
 
         var optimizer =
@@ -77,11 +85,14 @@ public class LocalSearchOptimizerTests
                     new Random(1)),
                 moveSelector,
                 new SolutionCloner(),
+                new SchedulingSolutionValidator(),
                 options.LocalSearch);
+
 
 
         var evaluator =
             new ScheduleEvaluator();
+
 
 
         var before =
@@ -103,6 +114,7 @@ public class LocalSearchOptimizerTests
 
         var after =
             result.Evaluation!;
+
 
 
         Assert.NotNull(
@@ -140,6 +152,7 @@ public class LocalSearchOptimizerTests
 
 
 
+        // 原始solution不应该被修改
         Assert.Equal(
             beforeMachine,
             solution.Operations[0]
@@ -155,7 +168,9 @@ public class LocalSearchOptimizerTests
 
 
         var factoryTimeline =
-            result.Timelines.Factories["F001"];
+            result.Timelines
+                .Factories["F001"];
+
 
 
         Assert.False(
