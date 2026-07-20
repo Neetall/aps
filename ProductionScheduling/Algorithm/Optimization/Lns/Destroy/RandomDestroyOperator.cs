@@ -1,4 +1,5 @@
 using ProductionScheduling.Algorithm.Scheduling;
+using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
 
 namespace ProductionScheduling.Algorithm.Optimization.Lns.Destroy;
@@ -21,8 +22,14 @@ public class RandomDestroyOperator : IDestroyOperator
     public List<ScheduledOperation> Destroy(
         SchedulingSolution solution,
         TimelineContextGroup timelines,
+        SchedulingContext context,
         double rate)
     {
+        if(solution.Operations.Count == 0)
+            return [];
+
+
+
         var count =
             Math.Max(
                 1,
@@ -34,7 +41,7 @@ public class RandomDestroyOperator : IDestroyOperator
 
         var removed =
             solution.Operations
-                .OrderBy(x =>
+                .OrderBy(_ =>
                     random.Next())
                 .Take(count)
                 .ToList();
@@ -63,6 +70,7 @@ public class RandomDestroyOperator : IDestroyOperator
             solution.Operations.Remove(
                 operation);
         }
+
 
 
         return removed;

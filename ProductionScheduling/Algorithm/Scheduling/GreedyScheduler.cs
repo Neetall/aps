@@ -40,8 +40,24 @@ public class GreedyScheduler : IScheduler
         SchedulingContext context,
         TimelineContextGroup timelines)
     {
+        Console.WriteLine(
+            $"订单数量:{context.Orders.Count}");
+
+
+        /*
+         * 初始化资源索引
+         *
+         * 很重要:
+         * API请求进入时每次都是新的Context
+         */
+        resourceIndex.Build(
+            context.Machines);
+
+
+
         var solution =
             new SchedulingSolution();
+
 
 
         var orders =
@@ -54,6 +70,10 @@ public class GreedyScheduler : IScheduler
 
         foreach(var order in orders)
         {
+            Console.WriteLine(
+                $"订单:{order.Code}, 工单数量:{order.JobTickets.Count}");
+
+
             var previousEndSlot =
                 0;
 
@@ -63,6 +83,11 @@ public class GreedyScheduler : IScheduler
                          .OrderBy(x =>
                              x.Sequence))
             {
+                Console.WriteLine(
+                    $"排产工单:{ticket.Code}");
+
+
+
                 var candidate =
                     FindBestMachine(
                         ticket,
@@ -73,8 +98,13 @@ public class GreedyScheduler : IScheduler
 
                 if(candidate == null)
                 {
+                    Console.WriteLine(
+                        $"工单无法排产:{ticket.Code}");
+
+
                     solution.IsFeasible =
                         false;
+
 
                     continue;
                 }
@@ -96,6 +126,20 @@ public class GreedyScheduler : IScheduler
                     candidate.EndSlot;
             }
         }
+
+
+
+        solution.IsFeasible =
+            solution.Operations.Count ==
+            context.Orders
+                .SelectMany(x =>
+                    x.JobTickets)
+                .Count();
+
+
+
+        Console.WriteLine(
+            $"Greedy结果数量:{solution.Operations.Count}");
 
 
 
@@ -127,6 +171,11 @@ public class GreedyScheduler : IScheduler
 
 
 
+        Console.WriteLine(
+            $"工单:{ticket.Code}, 可用设备能力:{capabilities.Count}");
+
+
+
         foreach(var capability in capabilities)
         {
             var machineCode =
@@ -138,7 +187,12 @@ public class GreedyScheduler : IScheduler
                     .TryGetValue(
                         machineCode,
                         out var machineTimeline))
+            {
+                Console.WriteLine(
+                    $"设备不存在Timeline:{machineCode}");
+
                 continue;
+            }
 
 
 
@@ -159,13 +213,23 @@ public class GreedyScheduler : IScheduler
 
 
             if(startSlot < 0)
+            {
+                Console.WriteLine(
+                    $"设备无可用时间:{machineCode}");
+
                 continue;
+            }
 
 
 
             var endSlot =
                 startSlot +
                 duration;
+
+
+
+            Console.WriteLine(
+                $"候选设备:{machineCode}, Start:{startSlot}, End:{endSlot}");
 
 
 

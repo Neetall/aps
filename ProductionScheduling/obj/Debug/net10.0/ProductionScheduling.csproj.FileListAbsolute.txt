@@ -9,3 +9,5 @@
 /Users/neetall/Code/WordExchange/APC/ProductionScheduling/ProductionScheduling/obj/Debug/net10.0/refint/ProductionScheduling.dll
 /Users/neetall/Code/WordExchange/APC/ProductionScheduling/ProductionScheduling/obj/Debug/net10.0/ProductionScheduling.pdb
 /Users/neetall/Code/WordExchange/APC/ProductionScheduling/ProductionScheduling/obj/Debug/net10.0/ref/ProductionScheduling.dll
+/Users/neetall/Code/WordExchange/APC/ProductionScheduling/ProductionScheduling/obj/Debug/net10.0/ProductionScheduling.sourcelink.json
+/Users/neetall/Code/WordExchange/APC/ProductionScheduling/ProductionScheduling/obj/Debug/net10.0/ProductionScheduling.csproj.AssemblyReference.cache

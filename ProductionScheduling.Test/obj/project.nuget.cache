@@ -1,10 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "tLX7Z+4gYEw=",
+  "dgSpecHash": "FlDXPuHBxoo=",
   "success": true,
   "projectFilePath": "/Users/neetall/Code/WordExchange/APC/ProductionScheduling/ProductionScheduling.Test/ProductionScheduling.Test.csproj",
   "expectedPackageFiles": [
     "/Users/neetall/.nuget/packages/microsoft.codecoverage/18.8.1/microsoft.codecoverage.18.8.1.nupkg.sha512",
+    "/Users/neetall/.nuget/packages/microsoft.extensions.dependencyinjection/11.0.0-preview.6.26359.118/microsoft.extensions.dependencyinjection.11.0.0-preview.6.26359.118.nupkg.sha512",
+    "/Users/neetall/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/11.0.0-preview.6.26359.118/microsoft.extensions.dependencyinjection.abstractions.11.0.0-preview.6.26359.118.nupkg.sha512",
     "/Users/neetall/.nuget/packages/microsoft.net.test.sdk/18.8.1/microsoft.net.test.sdk.18.8.1.nupkg.sha512",
     "/Users/neetall/.nuget/packages/microsoft.testplatform.objectmodel/18.8.1/microsoft.testplatform.objectmodel.18.8.1.nupkg.sha512",
     "/Users/neetall/.nuget/packages/microsoft.testplatform.testhost/18.8.1/microsoft.testplatform.testhost.18.8.1.nupkg.sha512",

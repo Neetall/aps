@@ -1,21 +1,25 @@
 using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Optimization.Pipeline;
 using ProductionScheduling.Algorithm.Scheduling;
+using ProductionScheduling.Algorithm.Validation;
 using ProductionScheduling.Application.Result;
 using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
 
 namespace ProductionScheduling.Application;
 
-/// <summary>
-/// 排产引擎入口
-/// </summary>
 public class SchedulingEngine
 {
     private readonly ScheduleEvaluator evaluator;
+
     private readonly OptimizationPipelineRunner pipelineRunner;
+
     private readonly SchedulingResultConverter resultConverter;
+
     private readonly IScheduler scheduler;
+
+    private readonly SchedulingSolutionValidator validator;
+
     private readonly TimelineInitializer timelineInitializer;
 
 
@@ -24,7 +28,8 @@ public class SchedulingEngine
         IScheduler scheduler,
         ScheduleEvaluator evaluator,
         SchedulingResultConverter resultConverter,
-        OptimizationPipelineRunner pipelineRunner)
+        OptimizationPipelineRunner pipelineRunner,
+        SchedulingSolutionValidator validator)
     {
         this.timelineInitializer =
             timelineInitializer;
@@ -40,12 +45,12 @@ public class SchedulingEngine
 
         this.pipelineRunner =
             pipelineRunner;
+
+        this.validator =
+            validator;
     }
 
 
-    /// <summary>
-    /// 执行排产
-    /// </summary>
     public SchedulingResult Execute(
         SchedulingContext context)
     {
@@ -53,7 +58,7 @@ public class SchedulingEngine
         {
             /*
              * 1.
-             * 初始化多工厂时间资源
+             * 初始化资源
              */
             var timelines =
                 timelineInitializer.Initialize(
@@ -70,32 +75,55 @@ public class SchedulingEngine
                     context,
                     timelines);
 
-
+            Console.WriteLine(
+                $"Greedy结果数量:{solution.Operations.Count}");
 
             /*
              * 3.
-             * 优化
+             * 初始方案校验
              */
-            var optimizeResult =
-                pipelineRunner.Run(
-                    solution,
-                    context,
-                    timelines,
-                    evaluator);
-
-
-
-            solution =
-                optimizeResult.Solution;
-
-
-            timelines =
-                optimizeResult.Timelines;
+            validator.Validate(
+                solution,
+                context,
+                timelines);
 
 
 
             /*
              * 4.
+             * 可选优化
+             */
+            if(context.ExecutionOptions.EnableOptimization)
+            {
+                var optimizeResult =
+                    pipelineRunner.Run(
+                        solution,
+                        context,
+                        timelines,
+                        evaluator);
+
+
+                solution =
+                    optimizeResult.Solution;
+
+
+                timelines =
+                    optimizeResult.Timelines;
+
+
+                /*
+                 * 优化后再次校验
+                 */
+                validator.Validate(
+                    solution,
+                    context,
+                    timelines);
+            }
+
+
+
+            /*
+             * 5.
              * 最终评价
              */
             var evaluation =
@@ -107,8 +135,8 @@ public class SchedulingEngine
 
 
             /*
-             * 5.
-             * 转业务结果
+             * 6.
+             * 转换结果
              */
             var result =
                 resultConverter.Convert(
@@ -117,17 +145,20 @@ public class SchedulingEngine
                     context);
 
 
-
             result.Evaluation =
                 evaluation;
 
 
-            result.Message =
-                $"排产完成，完工时间:{evaluation.EndTime:yyyy-MM-dd HH:mm},设备利用率:{evaluation.MachineUtilization:P2}";
-
-
             result.Success =
                 solution.IsFeasible;
+
+
+            result.Message =
+                context.ExecutionOptions.EnableOptimization
+                    ?
+                    $"排产完成(已优化)，完工时间:{evaluation.EndTime:yyyy-MM-dd HH:mm},设备利用率:{evaluation.MachineUtilization:P2}"
+                    :
+                    $"排产完成，完工时间:{evaluation.EndTime:yyyy-MM-dd HH:mm},设备利用率:{evaluation.MachineUtilization:P2}";
 
 
             return result;

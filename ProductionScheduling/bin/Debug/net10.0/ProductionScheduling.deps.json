@@ -7,8 +7,30 @@
   "targets": {
     ".NETCoreApp,Version=v10.0": {
       "ProductionScheduling/1.0.0": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection": "11.0.0-preview.6.26359.118"
+        },
         "runtime": {
           "ProductionScheduling.dll": {}
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection/11.0.0-preview.6.26359.118": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "11.0.0-preview.6.26359.118"
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.DependencyInjection.dll": {
+            "assemblyVersion": "11.0.0.0",
+            "fileVersion": "11.0.26.36018"
+          }
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/11.0.0-preview.6.26359.118": {
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "assemblyVersion": "11.0.0.0",
+            "fileVersion": "11.0.26.36018"
+          }
         }
       }
     }
@@ -18,6 +40,20 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "Microsoft.Extensions.DependencyInjection/11.0.0-preview.6.26359.118": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-MwlfMwxXewuq+X85a31yYx6emRYIyJOboVXZtRH3Wvp/hZZWmlg1pu/tI+XJUm4ltoCNMzpcFF6zJcmbnbnuGA==",
+      "path": "microsoft.extensions.dependencyinjection/11.0.0-preview.6.26359.118",
+      "hashPath": "microsoft.extensions.dependencyinjection.11.0.0-preview.6.26359.118.nupkg.sha512"
+    },
+    "Microsoft.Extensions.DependencyInjection.Abstractions/11.0.0-preview.6.26359.118": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-AOZE/D7WFJ/mGHq1sOy8HL3yIIBx0T5iPupTHh/Xrc77NcK5F9lmryffZsBQTjPh5FFPoMXRoVswEOrWIUD61w==",
+      "path": "microsoft.extensions.dependencyinjection.abstractions/11.0.0-preview.6.26359.118",
+      "hashPath": "microsoft.extensions.dependencyinjection.abstractions.11.0.0-preview.6.26359.118.nupkg.sha512"
     }
   }
 }

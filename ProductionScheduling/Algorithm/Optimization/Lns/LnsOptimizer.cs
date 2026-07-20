@@ -28,6 +28,7 @@ public class LnsOptimizer : ISolutionOptimizer
     private readonly LnsOptions options;
 
 
+
     public LnsOptimizer(
         SolutionCloner cloner,
         IDestroyOperator destroyOperator,
@@ -56,29 +57,40 @@ public class LnsOptimizer : ISolutionOptimizer
     }
 
 
+
     public OptimizationResult Optimize(
         SchedulingSolution solution,
         SchedulingContext context,
         TimelineContextGroup timelines,
         ScheduleEvaluator evaluator)
     {
+        var currentSolution =
+            cloner.CloneSolution(
+                solution);
+
+
+        var currentTimelines =
+            cloner.CloneTimelines(
+                timelines);
+
+
+
         var current =
             new LnsState
             {
                 Solution =
-                    cloner.CloneSolution(
-                        solution),
+                    currentSolution,
 
                 Timelines =
-                    cloner.CloneTimelines(
-                        timelines),
+                    currentTimelines,
 
                 Evaluation =
                     evaluator.Evaluate(
-                        solution,
-                        timelines,
+                        currentSolution,
+                        currentTimelines,
                         context)
             };
+
 
 
         var best =
@@ -101,6 +113,7 @@ public class LnsOptimizer : ISolutionOptimizer
                 destroyOperator.Destroy(
                     candidate.Solution,
                     candidate.Timelines,
+                    context,
                     options.DestroyRate);
 
 

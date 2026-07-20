@@ -4,6 +4,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductionScheduling", "Pro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductionScheduling.Test", "ProductionScheduling.Test\ProductionScheduling.Test.csproj", "{9EB0F93E-1665-43DD-BBE0-AA9801167358}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileHelper", "FileHelper\FileHelper.csproj", "{D15DD65E-AB10-460B-9524-063B56B5A66C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductionScheduling.Api", "ProductionScheduling.Api\ProductionScheduling.Api.csproj", "{EA9B5CAF-A136-4B40-98F2-A3D268666C9B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,13 @@ Global
 		{9EB0F93E-1665-43DD-BBE0-AA9801167358}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EB0F93E-1665-43DD-BBE0-AA9801167358}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EB0F93E-1665-43DD-BBE0-AA9801167358}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D15DD65E-AB10-460B-9524-063B56B5A66C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D15DD65E-AB10-460B-9524-063B56B5A66C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D15DD65E-AB10-460B-9524-063B56B5A66C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D15DD65E-AB10-460B-9524-063B56B5A66C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA9B5CAF-A136-4B40-98F2-A3D268666C9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA9B5CAF-A136-4B40-98F2-A3D268666C9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA9B5CAF-A136-4B40-98F2-A3D268666C9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA9B5CAF-A136-4B40-98F2-A3D268666C9B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

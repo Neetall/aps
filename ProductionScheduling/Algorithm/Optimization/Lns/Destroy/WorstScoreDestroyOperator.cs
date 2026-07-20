@@ -9,18 +9,12 @@ public class WorstScoreDestroyOperator : IDestroyOperator
 {
     private readonly ScheduleEvaluator evaluator;
 
-    private readonly SchedulingContext context;
-
 
     public WorstScoreDestroyOperator(
-        ScheduleEvaluator evaluator,
-        SchedulingContext context)
+        ScheduleEvaluator evaluator)
     {
         this.evaluator =
             evaluator;
-
-        this.context =
-            context;
     }
 
 
@@ -28,6 +22,7 @@ public class WorstScoreDestroyOperator : IDestroyOperator
     public List<ScheduledOperation> Destroy(
         SchedulingSolution solution,
         TimelineContextGroup timelines,
+        SchedulingContext context,
         double rate)
     {
         if(solution.Operations.Count == 0)
@@ -125,7 +120,6 @@ public class WorstScoreDestroyOperator : IDestroyOperator
                     operation.DurationSlots);
             }
         }
-
 
 
         return removed;

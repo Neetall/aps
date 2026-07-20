@@ -1,4 +1,5 @@
 using ProductionScheduling.Algorithm.Scheduling;
+using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
 
 namespace ProductionScheduling.Algorithm.Optimization.Lns.Destroy;
@@ -8,5 +9,6 @@ public interface IDestroyOperator
     List<ScheduledOperation> Destroy(
         SchedulingSolution solution,
         TimelineContextGroup timelines,
+        SchedulingContext context,
         double rate);
 }

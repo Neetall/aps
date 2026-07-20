@@ -1,5 +1,7 @@
 public class ScheduledOperation
 {
+    public string OrderCode { get; set; } = string.Empty;
+    
     public string FactoryCode { get; set; } = string.Empty;
 
     public string JobTicketCode { get; set; } = string.Empty;

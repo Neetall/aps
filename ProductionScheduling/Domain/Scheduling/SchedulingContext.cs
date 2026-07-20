@@ -36,4 +36,9 @@ public class SchedulingContext
     ///     排产参数
     /// </summary>
     public SchedulingOptions Options { get; set; } = new();
+    
+    /// <summary>
+    /// 优化参数
+    /// </summary>
+    public SchedulingExecutionOptions ExecutionOptions { get; set; } = new();
 }
