@@ -12,29 +12,40 @@ public static class SchedulingRequestMapper
     public static SchedulingContext ToContext(
         SchedulingRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
+
         return new SchedulingContext
         {
             Orders =
-                request.Orders
+                request.Orders?
                     .Select(ToOrder)
-                    .ToList(),
+                    .ToList()
+                ?? [],
+
 
             Machines =
-                request.Machines
+                request.Machines?
                     .Select(ToMachine)
-                    .ToList(),
+                    .ToList()
+                ?? [],
+
 
             FactoryCalendars =
-                request.FactoryCalendars
+                request.FactoryCalendars?
                     .Select(ToFactoryCalendar)
-                    .ToList(),
+                    .ToList()
+                ?? [],
+
 
             MachineCalendars =
-                request.MachineCalendars
+                request.MachineCalendars?
                     .Select(ToMachineCalendar)
                     .ToList()
+                ?? []
         };
     }
+
 
 
     private static Order ToOrder(
@@ -54,21 +65,30 @@ public static class SchedulingRequestMapper
             };
 
 
-        foreach(var ticket in dto.JobTickets)
+        foreach(var ticket in dto.JobTickets ?? [])
         {
             order.JobTickets.Add(
                 new JobTicket
                 {
+                    /*
+                     * 工单所属订单
+                     * 不允许外部修改
+                     */
                     OrderCode =
                         dto.Code,
+
+
                     Code =
                         ticket.Code,
+
 
                     Sequence =
                         ticket.Sequence,
 
+
                     Length =
                         ticket.Length,
+
 
                     FactoryCode =
                         ticket.FactoryCode
@@ -78,6 +98,7 @@ public static class SchedulingRequestMapper
 
         return order;
     }
+
 
 
     private static Machine ToMachine(
@@ -94,17 +115,14 @@ public static class SchedulingRequestMapper
             };
 
 
-        foreach(var capability in dto.Capabilities)
+        foreach(var capability in dto.Capabilities ?? [])
         {
             machine.Capabilities.Add(
                 new MachineCapability
                 {
                     /*
-                     * 关键修复:
-                     *
-                     * Capability属于哪个设备
-                     * 不能从DTO传递
-                     * 直接使用当前Machine Code
+                     * 能力属于设备
+                     * 不能由调用方指定其他设备
                      */
                     MachineCode =
                         dto.Code,
@@ -128,6 +146,7 @@ public static class SchedulingRequestMapper
     }
 
 
+
     private static FactoryCalendar ToFactoryCalendar(
         FactoryCalendarDto dto)
     {
@@ -136,19 +155,23 @@ public static class SchedulingRequestMapper
             FactoryCode =
                 dto.FactoryCode,
 
-            Periods =
-                dto.Periods
-                    .Select(x => new ShiftPeriod
-                    {
-                        StartTime =
-                            x.StartTime,
 
-                        EndTime =
-                            x.EndTime
-                    })
+            Periods =
+                dto.Periods?
+                    .Select(x =>
+                        new ShiftPeriod
+                        {
+                            StartTime =
+                                x.StartTime,
+
+                            EndTime =
+                                x.EndTime
+                        })
                     .ToList()
+                ?? []
         };
     }
+
 
 
     private static MachineCalendar ToMachineCalendar(
@@ -159,26 +182,33 @@ public static class SchedulingRequestMapper
             FactoryCode =
                 dto.FactoryCode,
 
+
             MachineCode =
                 dto.MachineCode,
 
+
             Blocks =
-                dto.Blocks
-                    .Select(x => new MachineCalendarBlock
-                    {
-                        StartTime =
-                            x.StartTime,
+                dto.Blocks?
+                    .Select(x =>
+                        new MachineCalendarBlock
+                        {
+                            StartTime =
+                                x.StartTime,
 
-                        EndTime =
-                            x.EndTime,
 
-                        Type =
-                            (MachineBlockType)x.Type,
+                            EndTime =
+                                x.EndTime,
 
-                        Remark =
-                            x.Remark
-                    })
+
+                            Type =
+                                (MachineBlockType)x.Type,
+
+
+                            Remark =
+                                x.Remark
+                        })
                     .ToList()
+                ?? []
         };
     }
 }

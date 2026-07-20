@@ -9,7 +9,7 @@ public class SchedulingSolution
 
 
     /// <summary>
-    ///     是否存在不可排任务
+    /// 是否完全满足硬约束
     /// </summary>
     public bool IsFeasible { get; set; } = true;
 
@@ -28,6 +28,11 @@ public class SchedulingSolution
             return Operations.Max(x => x.EndSlot);
         }
     }
+    
+    /// <summary>
+    /// 未排入计划的工单
+    /// </summary>
+    public List<string> UnscheduledJobTickets { get; set; } = [];
 
 
     /// <summary>
@@ -70,7 +75,11 @@ public class SchedulingSolution
                 IsFeasible,
 
             Operations =
-                operations
+                operations,
+
+            UnscheduledJobTickets =
+                new List<string>(
+                    UnscheduledJobTickets)
         };
     }
 }

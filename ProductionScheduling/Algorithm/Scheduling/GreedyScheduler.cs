@@ -44,11 +44,11 @@ public class GreedyScheduler : IScheduler
             $"订单数量:{context.Orders.Count}");
 
 
+
         /*
          * 初始化资源索引
          *
-         * 很重要:
-         * API请求进入时每次都是新的Context
+         * API请求每次都是新的Context
          */
         resourceIndex.Build(
             context.Machines);
@@ -74,6 +74,12 @@ public class GreedyScheduler : IScheduler
                 $"订单:{order.Code}, 工单数量:{order.JobTickets.Count}");
 
 
+
+            /*
+             * 同一订单内:
+             *
+             * Sequence顺序执行
+             */
             var previousEndSlot =
                 0;
 
@@ -96,14 +102,19 @@ public class GreedyScheduler : IScheduler
 
 
 
+                /*
+                 * 无法安排
+                 *
+                 * 保留失败信息
+                 */
                 if(candidate == null)
                 {
-                    Console.WriteLine(
-                        $"工单无法排产:{ticket.Code}");
-
-
                     solution.IsFeasible =
                         false;
+
+
+                    solution.UnscheduledJobTickets.Add(
+                        $"{ticket.Code}:没有可用设备或设备时间不足");
 
 
                     continue;
@@ -129,17 +140,38 @@ public class GreedyScheduler : IScheduler
 
 
 
+        /*
+         * 最终可行性判断
+         *
+         * 不根据Operations数量判断
+         * 因为未来可能存在:
+         * - 插入
+         * - 优化修复
+         * - 局部重排
+         *
+         * 统一根据失败列表判断
+         */
         solution.IsFeasible =
-            solution.Operations.Count ==
-            context.Orders
-                .SelectMany(x =>
-                    x.JobTickets)
-                .Count();
+            solution.UnscheduledJobTickets.Count == 0;
 
 
 
         Console.WriteLine(
             $"Greedy结果数量:{solution.Operations.Count}");
+
+
+
+        if(solution.UnscheduledJobTickets.Count > 0)
+        {
+            Console.WriteLine(
+                "未排产工单:");
+
+            foreach(var item in solution.UnscheduledJobTickets)
+            {
+                Console.WriteLine(
+                    item);
+            }
+        }
 
 
 

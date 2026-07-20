@@ -1,4 +1,11 @@
-public class EvaluationResult
+namespace ProductionScheduling.Api.Domain.Response;
+
+/// <summary>
+/// 排产评价结果
+///
+/// API输出模型
+/// </summary>
+public class EvaluationDto
 {
     /// <summary>
     /// 综合评分
@@ -13,7 +20,7 @@ public class EvaluationResult
 
 
     /// <summary>
-    /// 最大完工Slot
+    /// 最大完工Slot数量
     /// </summary>
     public int MakespanSlots { get; set; }
 
@@ -31,7 +38,7 @@ public class EvaluationResult
 
 
     /// <summary>
-    /// 超期订单数量
+    /// 延期订单数量
     /// </summary>
     public int DelayCount { get; set; }
 
@@ -46,10 +53,4 @@ public class EvaluationResult
     /// 延期说明
     /// </summary>
     public List<string> DelayMessages { get; set; } = [];
-
-
-    /// <summary>
-    /// 未排工单数量
-    /// </summary>
-    public int UnscheduledCount { get; set; }
 }

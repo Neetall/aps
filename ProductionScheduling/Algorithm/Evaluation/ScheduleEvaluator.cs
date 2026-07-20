@@ -15,10 +15,14 @@ public class ScheduleEvaluator
             new EvaluationResult();
 
 
+
         if(solution.Operations.Count == 0)
         {
             result.Score =
                 double.MaxValue;
+
+            result.UnscheduledCount =
+                solution.UnscheduledJobTickets.Count;
 
             return result;
         }
@@ -97,8 +101,6 @@ public class ScheduleEvaluator
 
         /*
          * 设备利用率
-         *
-         * 多工厂分别统计
          */
         var usedSlots =
             0;
@@ -132,6 +134,25 @@ public class ScheduleEvaluator
 
 
 
+        /*
+         * 未排工单数量
+         */
+        result.UnscheduledCount =
+            solution.UnscheduledJobTickets.Count;
+
+
+
+        /*
+         * 交期检查
+         */
+        CalculateDelay(
+            solution,
+            context,
+            timelines,
+            result);
+
+
+
         result.Score =
             CalculateScore(
                 result);
@@ -143,11 +164,109 @@ public class ScheduleEvaluator
 
 
 
+    private void CalculateDelay(
+        SchedulingSolution solution,
+        SchedulingContext context,
+        TimelineContextGroup timelines,
+        EvaluationResult result)
+    {
+        foreach(var order in context.Orders)
+        {
+            if(order.DueDate == null)
+                continue;
+
+
+
+            var operations =
+                solution.Operations
+                    .Where(x =>
+                        x.OrderCode ==
+                        order.Code)
+                    .ToList();
+
+
+
+            if(operations.Count == 0)
+                continue;
+
+
+
+            DateTime? orderEnd =
+                null;
+
+
+
+            foreach(var operation in operations)
+            {
+                var factory =
+                    timelines.Get(
+                        operation.FactoryCode);
+
+
+
+                var endTime =
+                    factory.TimeModel
+                        .GetSlotEnd(
+                            operation.EndSlot - 1);
+
+
+
+                if(orderEnd == null ||
+                   endTime > orderEnd)
+                {
+                    orderEnd =
+                        endTime;
+                }
+            }
+
+
+
+            if(orderEnd > order.DueDate)
+            {
+                result.DelayCount++;
+
+
+                result.DelayMessages.Add(
+                    $"订单{order.Code}超过交期，完成时间:{orderEnd:yyyy-MM-dd HH:mm}");
+            }
+        }
+    }
+
+
+
     private double CalculateScore(
         EvaluationResult result)
     {
-        var makespan =
-            result.MakespanSlots;
+        /*
+         * 权重:
+         *
+         * 未排工单
+         *      >
+         * 交期延期
+         *      >
+         * 完工时间
+         *      >
+         * 利用率
+         *
+         */
+
+
+        var makespanPenalty =
+            result.MakespanSlots *
+            10000;
+
+
+
+        var delayPenalty =
+            result.DelayCount *
+            100000;
+
+
+
+        var unscheduledPenalty =
+            result.UnscheduledCount *
+            1000000;
+
 
 
         var utilizationPenalty =
@@ -156,15 +275,13 @@ public class ScheduleEvaluator
             * 100;
 
 
-        var delayPenalty =
-            result.DelayCount *
-            1000;
-
 
         return
-            makespan * 10000
+            makespanPenalty
             +
             delayPenalty
+            +
+            unscheduledPenalty
             +
             utilizationPenalty;
     }

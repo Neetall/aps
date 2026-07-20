@@ -10,37 +10,89 @@ public static class SchedulingResponseMapper
     {
         return new SchedulingResponse
         {
-            Success = result.Success,
+            Success =
+                result.Success,
 
-            RequestId = requestId,
 
-            Message = result.Message,
+            RequestId =
+                requestId,
+
+
+            Message =
+                result.Message,
+
+
+            IsFeasible =
+                result.IsFeasible,
+
+
+            Warnings =
+                result.Warnings
+                    .ToList(),
+
+
+            Evaluation =
+                result.Evaluation == null
+                    ? null
+                    : new EvaluationDto
+                    {
+                        Score =
+                            result.Evaluation.Score,
+
+                        EndTime =
+                            result.Evaluation.EndTime,
+
+                        MakespanSlots =
+                            result.Evaluation.MakespanSlots,
+
+                        ProductionHours =
+                            result.Evaluation.ProductionHours,
+
+                        MachineUtilization =
+                            result.Evaluation.MachineUtilization,
+
+                        DelayCount =
+                            result.Evaluation.DelayCount,
+
+                        DelayPenalty =
+                            result.Evaluation.DelayPenalty,
+
+                        DelayMessages =
+                            result.Evaluation.DelayMessages
+                    },
+
 
             Operations =
                 result.Items
-                    .Select(x => new ScheduledOperationDto
-                    {
-                        OrderCode =
-                            x.OrderCode,
+                    .Select(x =>
+                        new ScheduledOperationDto
+                        {
+                            OrderCode =
+                                x.OrderCode,
 
-                        JobTicketCode =
-                            x.JobTicketCode,
 
-                        MachineCode =
-                            x.MachineCode,
+                            JobTicketCode =
+                                x.JobTicketCode,
 
-                        ShiftPeriods =
-                            x.ShiftPeriods
-                                .Select(p => new ShiftPeriodDto
-                                {
-                                    StartTime =
-                                        p.StartTime,
 
-                                    EndTime =
-                                        p.EndTime
-                                })
-                                .ToList()
-                    })
+                            MachineCode =
+                                x.MachineCode,
+
+
+                            ShiftPeriods =
+                                x.ShiftPeriods
+                                    .Select(p =>
+                                        new ShiftPeriodDto
+                                        {
+                                            StartTime =
+                                                p.StartTime,
+
+
+                                            EndTime =
+                                                p.EndTime
+                                        })
+                                    .ToList()
+                        })
                     .ToList()
         };
     }

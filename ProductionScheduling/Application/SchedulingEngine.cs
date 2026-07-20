@@ -51,6 +51,7 @@ public class SchedulingEngine
     }
 
 
+
     public SchedulingResult Execute(
         SchedulingContext context)
     {
@@ -75,14 +76,27 @@ public class SchedulingEngine
                     context,
                     timelines);
 
+
             Console.WriteLine(
                 $"Greedy结果数量:{solution.Operations.Count}");
+
+
 
             /*
              * 3.
              * 初始方案校验
+             *
+             * 注意:
+             * Validator只检查硬约束
+             *
+             * 不检查:
+             * 是否全部工单完成
+             *
+             * 因为:
+             * 不可完全排产时
+             * 仍需要返回最佳结果
              */
-            validator.Validate(
+            TryValidate(
                 solution,
                 context,
                 timelines);
@@ -103,6 +117,7 @@ public class SchedulingEngine
                         evaluator);
 
 
+
                 solution =
                     optimizeResult.Solution;
 
@@ -111,10 +126,11 @@ public class SchedulingEngine
                     optimizeResult.Timelines;
 
 
+
                 /*
                  * 优化后再次校验
                  */
-                validator.Validate(
+                TryValidate(
                     solution,
                     context,
                     timelines);
@@ -145,12 +161,34 @@ public class SchedulingEngine
                     context);
 
 
+
             result.Evaluation =
                 evaluation;
 
 
+
+            /*
+             * Success:
+             *
+             * 表示排产服务正常完成
+             *
+             * 不代表:
+             * 所有工单均完成
+             */
             result.Success =
+                true;
+
+
+
+            /*
+             * IsFeasible:
+             *
+             * 表示是否满足完整排产要求
+             */
+            result.IsFeasible =
                 solution.IsFeasible;
+
+
 
 
             result.Message =
@@ -168,8 +206,43 @@ public class SchedulingEngine
             return new SchedulingResult
             {
                 Success = false,
+
+                IsFeasible = false,
+
                 Message = ex.Message
             };
+        }
+    }
+
+
+
+    private void TryValidate(
+        SchedulingSolution solution,
+        SchedulingContext context,
+        TimelineContextGroup timelines)
+    {
+        try
+        {
+            validator.Validate(
+                solution,
+                context,
+                timelines);
+        }
+        catch(Exception ex)
+        {
+            /*
+             * Validator失败:
+             *
+             * 记录问题
+             *
+             * 不阻断排产
+             */
+            solution.IsFeasible =
+                false;
+
+
+            Console.WriteLine(
+                $"排产校验警告:{ex.Message}");
         }
     }
 }
