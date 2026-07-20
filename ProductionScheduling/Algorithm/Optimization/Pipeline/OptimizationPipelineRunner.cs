@@ -1,6 +1,7 @@
 using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Optimization.Core;
+using ProductionScheduling.Algorithm.Optimization.Factory;
 using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
@@ -30,17 +31,13 @@ public class OptimizationPipelineRunner
 {
     private readonly SchedulingAlgorithmOptions options;
 
-    private readonly Func<
-        OptimizationAlgorithmType,
-        ISolutionOptimizer> optimizerFactory;
+    private readonly OptimizerFactory optimizerFactory;
 
 
 
     public OptimizationPipelineRunner(
         SchedulingAlgorithmOptions options,
-        Func<
-            OptimizationAlgorithmType,
-            ISolutionOptimizer> optimizerFactory)
+        OptimizerFactory optimizerFactory)
     {
         this.options =
             options;
@@ -101,7 +98,7 @@ public class OptimizationPipelineRunner
 
 
             var optimizer =
-                optimizerFactory(
+                optimizerFactory.Create(
                     step.Algorithm);
 
 

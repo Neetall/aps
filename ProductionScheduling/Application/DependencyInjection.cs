@@ -284,47 +284,11 @@ public static class DependencyInjection
          * =========================
          */
 
-        services.AddScoped<OptimizerFactoryContext>();
 
         services.AddScoped<OptimizerFactory>();
 
 
-        services.AddScoped<Func<
-            OptimizationAlgorithmType,
-            ISolutionOptimizer>>(provider =>
-        {
-            return type =>
-            {
-                return type switch
-                {
-                    OptimizationAlgorithmType.LocalSearch =>
-                        provider.GetRequiredService<
-                            LocalSearchOptimizer>(),
-
-
-                    OptimizationAlgorithmType.SimulatedAnnealing =>
-                        provider.GetRequiredService<
-                            SimulatedAnnealingOptimizer>(),
-
-
-                    OptimizationAlgorithmType.Tabu =>
-                        provider.GetRequiredService<
-                            TabuSearchOptimizer>(),
-
-
-                    OptimizationAlgorithmType.Lns =>
-                        provider.GetRequiredService<
-                            LnsOptimizer>(),
-
-
-                    _ =>
-                        throw new NotSupportedException(
-                            $"不支持优化算法:{type}")
-                };
-            };
-        });
-
-
+        services.AddScoped<OptimizerFactory>();
 
         /*
          * =========================

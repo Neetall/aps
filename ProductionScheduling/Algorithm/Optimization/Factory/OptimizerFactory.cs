@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+
 using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Optimization.Core;
 using ProductionScheduling.Algorithm.Optimization.LocalSearch;
@@ -6,12 +7,13 @@ using ProductionScheduling.Algorithm.Optimization.Lns;
 using ProductionScheduling.Algorithm.Optimization.SimulatedAnnealing;
 using ProductionScheduling.Algorithm.Optimization.Tabu;
 
+
 namespace ProductionScheduling.Algorithm.Optimization.Factory;
 
 /// <summary>
 /// 优化器工厂
 ///
-/// 根据配置创建具体优化算法
+/// 根据算法类型从DI容器获取优化器
 /// </summary>
 public class OptimizerFactory
 {
@@ -27,9 +29,6 @@ public class OptimizerFactory
 
 
 
-    /// <summary>
-    /// 创建优化器
-    /// </summary>
     public ISolutionOptimizer Create(
         OptimizationAlgorithmType type)
     {
