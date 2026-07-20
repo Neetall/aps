@@ -1,3 +1,4 @@
+using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Moves.Core;
 using ProductionScheduling.Algorithm.Optimization.Tabu;
 using ProductionScheduling.Algorithm.Time;
@@ -5,14 +6,28 @@ using ProductionScheduling.Algorithm.Time;
 namespace ProductionScheduling.Algorithm.Moves.Implementations;
 
 /// <summary>
-///     同设备时间移动
-///     不改变设备
-///     只调整开始时间
+/// 同设备时间移动
+///
+/// 不改变设备
+/// 只调整开始时间
 /// </summary>
 public class ShiftTimeMove : IMove
 {
+    private readonly AlgorithmDebugOptions debugOptions;
+
+
+    public ShiftTimeMove(
+        AlgorithmDebugOptions debugOptions)
+    {
+        this.debugOptions =
+            debugOptions;
+    }
+
+
+
     public string Name =>
         "ShiftTime";
+
 
 
     public bool Apply(
@@ -24,12 +39,18 @@ public class ShiftTimeMove : IMove
 
         if(operation == null)
         {
+            Debug(
+                "ShiftTime失败:没有当前Operation");
+
+
             context.ExecutionRecord =
                 new MoveExecutionRecord
                 {
                     MoveName = Name,
+
                     Success = false
                 };
+
 
             return false;
         }
@@ -47,12 +68,18 @@ public class ShiftTimeMove : IMove
                     operation.MachineCode,
                     out var timeline))
         {
+            Debug(
+                $"ShiftTime失败:设备不存在:{operation.MachineCode}");
+
+
             context.ExecutionRecord =
                 new MoveExecutionRecord
                 {
                     MoveName = Name,
+
                     Success = false
                 };
+
 
             return false;
         }
@@ -68,9 +95,15 @@ public class ShiftTimeMove : IMove
 
 
 
-        /*
-         * 临时释放当前占用
-         */
+        Debug(
+            $"ShiftTime开始: " +
+            $"Job:{operation.JobTicketCode}, " +
+            $"Machine:{operation.MachineCode}, " +
+            $"OldStart:{oldStart}, " +
+            $"Duration:{duration}");
+
+
+
         timeline.Release(
             oldStart,
             duration);
@@ -86,21 +119,28 @@ public class ShiftTimeMove : IMove
 
 
 
+        Debug(
+            $"ShiftTime查找结果:NewStart:{newStart}");
+
+
+
         if(newStart < 0)
         {
-            /*
-             * 找不到新位置
-             * 恢复原排产
-             */
             timeline.Occupy(
                 oldStart,
                 duration);
+
+
+
+            Debug(
+                "ShiftTime失败:没有找到新的时间位置");
 
 
             context.ExecutionRecord =
                 new MoveExecutionRecord
                 {
                     MoveName = Name,
+
                     Success = false
                 };
 
@@ -169,6 +209,13 @@ public class ShiftTimeMove : IMove
             };
 
 
+        Debug(
+            $"ShiftTime成功: " +
+            $"Job:{operation.JobTicketCode}, " +
+            $"Old:{oldStart}, New:{newStart}");
+
+
+
         return true;
     }
 
@@ -232,5 +279,17 @@ public class ShiftTimeMove : IMove
 
         context.ExecutionRecord =
             null;
+    }
+
+
+
+    private void Debug(
+        string message)
+    {
+        if(debugOptions.EnableMoveLog)
+        {
+            Console.WriteLine(
+                message);
+        }
     }
 }

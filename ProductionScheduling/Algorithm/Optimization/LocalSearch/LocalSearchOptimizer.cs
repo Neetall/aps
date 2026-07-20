@@ -1,7 +1,6 @@
 using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Index;
-using ProductionScheduling.Algorithm.Moves.Core;
 using ProductionScheduling.Algorithm.Optimization.Core;
 using ProductionScheduling.Algorithm.Optimization.Selection;
 using ProductionScheduling.Algorithm.Scheduling;
@@ -13,6 +12,7 @@ namespace ProductionScheduling.Algorithm.Optimization.LocalSearch;
 
 /// <summary>
 /// 局部搜索优化器
+///
 /// 基于邻域移动不断寻找更优排产方案
 /// </summary>
 public class LocalSearchOptimizer : ISolutionOptimizer
@@ -31,6 +31,8 @@ public class LocalSearchOptimizer : ISolutionOptimizer
 
     private readonly SchedulingSolutionValidator validator;
 
+    private readonly AlgorithmDebugOptions debugOptions;
+
 
     public LocalSearchOptimizer(
         SchedulingResourceIndex resourceIndex,
@@ -39,7 +41,8 @@ public class LocalSearchOptimizer : ISolutionOptimizer
         MoveSelector moveSelector,
         SolutionCloner cloner,
         SchedulingSolutionValidator validator,
-        LocalSearchOptions options)
+        LocalSearchOptions options,
+        AlgorithmDebugOptions debugOptions)
     {
         this.resourceIndex =
             resourceIndex;
@@ -61,7 +64,11 @@ public class LocalSearchOptimizer : ISolutionOptimizer
 
         this.options =
             options;
+
+        this.debugOptions =
+            debugOptions;
     }
+
 
 
     public OptimizationResult Optimize(
@@ -91,6 +98,20 @@ public class LocalSearchOptimizer : ISolutionOptimizer
 
 
 
+        PipelineLog(
+            $"LocalSearch开始 Score:{current.Evaluation.Score}");
+
+
+
+        var acceptCount =
+            0;
+
+
+        var failMoveCount =
+            0;
+
+
+
         for(var i = 0;
             i < options.Iterations;
             i++)
@@ -108,12 +129,30 @@ public class LocalSearchOptimizer : ISolutionOptimizer
 
 
             if(operation == null)
+            {
+                IterationLog(
+                    $"Iteration:{i}, 无可选Operation");
+
                 continue;
+            }
 
 
 
             var move =
                 moveSelector.Select();
+
+
+
+            IterationLog(
+                $"Iteration:{i}, " +
+                $"Move:{move.GetType().Name}, " +
+                $"Operation:{operation.JobTicketCode}, " +
+                $"Machine:{operation.MachineCode}");
+
+
+
+            var beforeScore =
+                current.Evaluation!.Score;
 
 
 
@@ -148,7 +187,15 @@ public class LocalSearchOptimizer : ISolutionOptimizer
 
 
             if(!success)
+            {
+                failMoveCount++;
+
+
+                IterationLog(
+                    $"Move失败:{move.GetType().Name}");
+
                 continue;
+            }
 
 
 
@@ -157,6 +204,9 @@ public class LocalSearchOptimizer : ISolutionOptimizer
                     context,
                     candidate.Timelines))
             {
+                IterationLog(
+                    $"Move后方案非法:{move.GetType().Name}");
+
                 continue;
             }
 
@@ -170,13 +220,45 @@ public class LocalSearchOptimizer : ISolutionOptimizer
 
 
 
-            if(candidate.Evaluation.Score <
-               current.Evaluation!.Score)
+            var afterScore =
+                candidate.Evaluation.Score;
+
+
+
+            IterationLog(
+                $"Move结果:{move.GetType().Name}, " +
+                $"Before:{beforeScore}, " +
+                $"After:{afterScore}");
+
+
+
+            if(afterScore <
+               beforeScore)
             {
                 current =
                     candidate;
+
+
+                acceptCount++;
+
+
+                IterationLog(
+                    $"接受优化:{move.GetType().Name}");
+            }
+            else
+            {
+                IterationLog(
+                    $"拒绝优化:{move.GetType().Name}");
             }
         }
+
+
+
+        PipelineLog(
+            $"LocalSearch结束 " +
+            $"Score:{current.Evaluation.Score}, " +
+            $"接受次数:{acceptCount}, " +
+            $"失败Move:{failMoveCount}");
 
 
 
@@ -209,9 +291,48 @@ public class LocalSearchOptimizer : ISolutionOptimizer
 
             return true;
         }
-        catch
+        catch(Exception ex)
         {
+            Debug(
+                $"Validator失败:{ex.Message}");
+
             return false;
+        }
+    }
+
+
+
+    private void PipelineLog(
+        string message)
+    {
+        if(debugOptions.EnablePipelineLog)
+        {
+            Console.WriteLine(
+                message);
+        }
+    }
+
+
+
+    private void IterationLog(
+        string message)
+    {
+        if(debugOptions.EnableIterationLog)
+        {
+            Console.WriteLine(
+                message);
+        }
+    }
+
+
+
+    private void Debug(
+        string message)
+    {
+        if(debugOptions.EnableDebugLog)
+        {
+            Console.WriteLine(
+                message);
         }
     }
 }

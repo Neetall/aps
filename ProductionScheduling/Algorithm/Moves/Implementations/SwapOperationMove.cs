@@ -1,3 +1,4 @@
+using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Moves.Core;
 using ProductionScheduling.Algorithm.Optimization.Tabu;
 using ProductionScheduling.Algorithm.Scheduling;
@@ -5,18 +6,31 @@ using ProductionScheduling.Algorithm.Scheduling;
 namespace ProductionScheduling.Algorithm.Moves.Implementations;
 
 /// <summary>
-///     交换两个派工单时间顺序
+/// 交换两个派工单时间顺序
 ///
-///     条件:
-///     1. 同工厂
-///     2. 同设备
-///     3. 整体交换
-///     4. 不拆分
+/// 条件:
+/// 1. 同工厂
+/// 2. 同设备
+/// 3. 整体交换
+/// 4. 不拆分
 /// </summary>
 public class SwapOperationMove : IMove
 {
+    private readonly AlgorithmDebugOptions debugOptions;
+
+
+    public SwapOperationMove(
+        AlgorithmDebugOptions debugOptions)
+    {
+        this.debugOptions =
+            debugOptions;
+    }
+
+
+
     public string Name =>
         "SwapOperation";
+
 
 
     public bool Apply(
@@ -26,9 +40,14 @@ public class SwapOperationMove : IMove
             context.CurrentOperation;
 
 
+
         if(first == null)
         {
+            Debug(
+                "SwapOperation失败:没有当前Operation");
+
             Fail(context);
+
             return false;
         }
 
@@ -42,7 +61,11 @@ public class SwapOperationMove : IMove
 
         if(second == null)
         {
+            Debug(
+                $"SwapOperation失败:没有找到交换目标:{first.JobTicketCode}");
+
             Fail(context);
+
             return false;
         }
 
@@ -51,7 +74,11 @@ public class SwapOperationMove : IMove
         if(first.FactoryCode !=
            second.FactoryCode)
         {
+            Debug(
+                "SwapOperation失败:工厂不同");
+
             Fail(context);
+
             return false;
         }
 
@@ -60,9 +87,20 @@ public class SwapOperationMove : IMove
         if(first.MachineCode !=
            second.MachineCode)
         {
+            Debug(
+                "SwapOperation失败:设备不同");
+
             Fail(context);
+
             return false;
         }
+
+
+
+        Debug(
+            $"SwapOperation开始: " +
+            $"{first.JobTicketCode} <-> {second.JobTicketCode}, " +
+            $"Machine:{first.MachineCode}");
 
 
 
@@ -76,7 +114,11 @@ public class SwapOperationMove : IMove
                first.MachineCode,
                out var timeline))
         {
+            Debug(
+                $"SwapOperation失败:设备不存在:{first.MachineCode}");
+
             Fail(context);
+
             return false;
         }
 
@@ -99,9 +141,6 @@ public class SwapOperationMove : IMove
 
 
 
-        /*
-         * 释放旧位置
-         */
         timeline.Release(
             firstOldStart,
             firstDuration);
@@ -122,9 +161,6 @@ public class SwapOperationMove : IMove
 
 
 
-        /*
-         * 检查交换后是否可用
-         */
         if(!timeline.CanOccupy(
                 firstNewStart,
                 firstDuration)
@@ -141,6 +177,10 @@ public class SwapOperationMove : IMove
             timeline.Occupy(
                 secondOldStart,
                 secondDuration);
+
+
+            Debug(
+                "SwapOperation失败:交换后时间冲突");
 
 
             Fail(context);
@@ -175,6 +215,7 @@ public class SwapOperationMove : IMove
             {
                 MoveName =
                     Name,
+
 
                 Success =
                     true,
@@ -232,6 +273,13 @@ public class SwapOperationMove : IMove
             };
 
 
+
+        Debug(
+            $"SwapOperation成功: " +
+            $"{first.JobTicketCode}<->{second.JobTicketCode}");
+
+
+
         return true;
     }
 
@@ -287,9 +335,6 @@ public class SwapOperationMove : IMove
 
 
 
-        /*
-         * 删除交换后位置
-         */
         timeline.Release(
             first.StartSlot,
             first.DurationSlots);
@@ -301,9 +346,6 @@ public class SwapOperationMove : IMove
 
 
 
-        /*
-         * 恢复原位置
-         */
         timeline.Occupy(
             record.OldStartSlot,
             record.OldDurationSlots);
@@ -373,5 +415,17 @@ public class SwapOperationMove : IMove
                 Success =
                     false
             };
+    }
+
+
+
+    private void Debug(
+        string message)
+    {
+        if(debugOptions.EnableMoveLog)
+        {
+            Console.WriteLine(
+                message);
+        }
     }
 }

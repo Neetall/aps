@@ -4,15 +4,16 @@ using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Index;
+using ProductionScheduling.Algorithm.Moves.Implementations;
 using ProductionScheduling.Algorithm.Optimization.Core;
 using ProductionScheduling.Algorithm.Optimization.Factory;
-using ProductionScheduling.Algorithm.Optimization.LocalSearch;
 using ProductionScheduling.Algorithm.Optimization.Lns;
 using ProductionScheduling.Algorithm.Optimization.Lns.Acceptance;
 using ProductionScheduling.Algorithm.Optimization.Lns.core;
 using ProductionScheduling.Algorithm.Optimization.Lns.Core;
 using ProductionScheduling.Algorithm.Optimization.Lns.Destroy;
 using ProductionScheduling.Algorithm.Optimization.Lns.Repair;
+using ProductionScheduling.Algorithm.Optimization.LocalSearch;
 using ProductionScheduling.Algorithm.Optimization.Pipeline;
 using ProductionScheduling.Algorithm.Optimization.Selection;
 using ProductionScheduling.Algorithm.Optimization.SimulatedAnnealing;
@@ -37,6 +38,20 @@ public static class DependencyInjection
          * =========================
          */
 
+        services.AddSingleton(
+            new AlgorithmDebugOptions
+            {
+                EnableDebugLog = true,
+
+                EnableMoveLog = true,
+
+                EnableIterationLog = true,
+
+                EnableSchedulerLog = true,
+
+                EnablePipelineLog = true
+            });
+        
         services.AddSingleton(
             new SchedulingAlgorithmOptions());
 
@@ -142,15 +157,54 @@ public static class DependencyInjection
 
         /*
          * =========================
+         * Moves
+         * =========================
+         *
+         * LocalSearch / SA / Tabu 共用
+         */
+
+        services.AddScoped<ChangeMachineMove>();
+
+        services.AddScoped<ShiftTimeMove>();
+
+        services.AddScoped<SwapOperationMove>();
+
+
+
+        /*
+         * =========================
          * Move Selection
          * =========================
          */
 
         services.AddScoped<OperationSelector>();
 
-        services.AddScoped<MoveSelector>();
 
-        services.AddScoped<MoveSelectorFactory>();
+        services.AddScoped<MoveSelector>(
+            provider =>
+            {
+                var selector =
+                    new MoveSelector();
+
+
+                selector.Register(
+                    provider.GetRequiredService<ChangeMachineMove>(),
+                    5);
+
+
+                selector.Register(
+                    provider.GetRequiredService<ShiftTimeMove>(),
+                    3);
+
+
+                selector.Register(
+                    provider.GetRequiredService<SwapOperationMove>(),
+                    2);
+
+
+                return selector;
+            });
+
 
         services.AddScoped<MoveNeighborhoodGenerator>();
 
@@ -269,6 +323,7 @@ public static class DependencyInjection
                 };
             };
         });
+
 
 
         /*

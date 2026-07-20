@@ -35,6 +35,8 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 
     private readonly SchedulingSolutionValidator validator;
 
+    private readonly AlgorithmDebugOptions debugOptions;
+
 
     public SimulatedAnnealingOptimizer(
         SchedulingResourceIndex resourceIndex,
@@ -44,7 +46,8 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
         SolutionCloner cloner,
         AcceptanceCriteria acceptanceCriteria,
         SchedulingSolutionValidator validator,
-        SimulatedAnnealingOptions options)
+        SimulatedAnnealingOptions options,
+        AlgorithmDebugOptions debugOptions)
     {
         this.resourceIndex =
             resourceIndex;
@@ -69,7 +72,11 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 
         this.options =
             options;
+
+        this.debugOptions =
+            debugOptions;
     }
+
 
 
     public OptimizationResult Optimize(
@@ -105,8 +112,22 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 
 
 
+        PipelineLog(
+            $"SimulatedAnnealing开始 Score:{current.Evaluation.Score}");
+
+
+
         var temperature =
             options.InitialTemperature;
+
+
+
+        var acceptCount =
+            0;
+
+
+        var bestCount =
+            0;
 
 
 
@@ -133,6 +154,14 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 
             var move =
                 moveSelector.Select();
+
+
+
+            IterationLog(
+                $"Iteration:{i}, " +
+                $"Temperature:{temperature}, " +
+                $"Move:{move.Name}, " +
+                $"Operation:{operation.JobTicketCode}");
 
 
 
@@ -176,20 +205,6 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 
             if(!success)
             {
-                candidate.History.Add(
-                    new MoveExecutionRecord
-                    {
-                        MoveName =
-                            move.Name,
-
-                        Success =
-                            false,
-
-                        JobTicketCode =
-                            operation.JobTicketCode
-                    });
-
-
                 temperature =
                     CoolDown(
                         temperature);
@@ -231,6 +246,14 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                     oldScore,
                     newScore,
                     temperature);
+
+
+
+            IterationLog(
+                $"SA结果:" +
+                $"Before:{oldScore}, " +
+                $"After:{newScore}, " +
+                $"Accepted:{accepted}");
 
 
 
@@ -289,6 +312,9 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
             {
                 current =
                     candidate;
+
+
+                acceptCount++;
             }
 
 
@@ -299,6 +325,9 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                 best =
                     cloner.Clone(
                         current);
+
+
+                bestCount++;
             }
 
 
@@ -315,6 +344,14 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                 break;
             }
         }
+
+
+
+        PipelineLog(
+            $"SimulatedAnnealing结束 " +
+            $"Score:{best.Evaluation.Score}, " +
+            $"接受:{acceptCount}, " +
+            $"优化次数:{bestCount}");
 
 
 
@@ -347,8 +384,11 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 
             return true;
         }
-        catch
+        catch(Exception ex)
         {
+            Debug(
+                $"Validator失败:{ex.Message}");
+
             return false;
         }
     }
@@ -360,5 +400,41 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
     {
         return temperature *
                options.CoolingRate;
+    }
+
+
+
+    private void PipelineLog(
+        string message)
+    {
+        if(debugOptions.EnablePipelineLog)
+        {
+            Console.WriteLine(
+                message);
+        }
+    }
+
+
+
+    private void IterationLog(
+        string message)
+    {
+        if(debugOptions.EnableIterationLog)
+        {
+            Console.WriteLine(
+                message);
+        }
+    }
+
+
+
+    private void Debug(
+        string message)
+    {
+        if(debugOptions.EnableDebugLog)
+        {
+            Console.WriteLine(
+                message);
+        }
     }
 }

@@ -25,6 +25,9 @@ public class TabuSearchOptimizer : ISolutionOptimizer
 
     private readonly TabuSearchOptions options;
 
+    private readonly AlgorithmDebugOptions debugOptions;
+
+
 
     public TabuSearchOptimizer(
         SchedulingResourceIndex resourceIndex,
@@ -32,7 +35,8 @@ public class TabuSearchOptimizer : ISolutionOptimizer
         MoveNeighborhoodGenerator neighborhoodGenerator,
         SolutionCloner cloner,
         SchedulingSolutionValidator validator,
-        TabuSearchOptions options)
+        TabuSearchOptions options,
+        AlgorithmDebugOptions debugOptions)
     {
         this.resourceIndex =
             resourceIndex;
@@ -51,7 +55,11 @@ public class TabuSearchOptimizer : ISolutionOptimizer
 
         this.options =
             options;
+
+        this.debugOptions =
+            debugOptions;
     }
+
 
 
     public OptimizationResult Optimize(
@@ -93,6 +101,28 @@ public class TabuSearchOptimizer : ISolutionOptimizer
 
 
 
+        PipelineLog(
+            $"TabuSearch开始 Score:{current.Evaluation.Score}");
+
+
+
+        var acceptedCount =
+            0;
+
+
+        var tabuSkipCount =
+            0;
+
+
+        var invalidCount =
+            0;
+
+
+        var noNeighborCount =
+            0;
+
+
+
         for(var iteration = 0;
             iteration < options.Iterations;
             iteration++)
@@ -100,6 +130,11 @@ public class TabuSearchOptimizer : ISolutionOptimizer
             var neighbors =
                 neighborhoodGenerator.Generate(
                     current.Solution);
+
+
+
+            IterationLog(
+                $"Iteration:{iteration}, 邻域数量:{neighbors.Count}");
 
 
 
@@ -167,6 +202,8 @@ public class TabuSearchOptimizer : ISolutionOptimizer
                         context,
                         candidate.Timelines))
                 {
+                    invalidCount++;
+
                     continue;
                 }
 
@@ -215,6 +252,8 @@ public class TabuSearchOptimizer : ISolutionOptimizer
                 if(isTabu &&
                    !aspiration)
                 {
+                    tabuSkipCount++;
+
                     continue;
                 }
 
@@ -257,12 +296,27 @@ public class TabuSearchOptimizer : ISolutionOptimizer
 
 
             if(bestNeighbor == null)
+            {
+                noNeighborCount++;
+
                 continue;
+            }
 
 
 
             current =
                 bestNeighbor.State!;
+
+
+
+            acceptedCount++;
+
+
+
+            IterationLog(
+                $"Iteration:{iteration}, " +
+                $"接受:{bestNeighbor.Move.Name}, " +
+                $"Score:{bestNeighbor.Score}");
 
 
 
@@ -281,8 +335,22 @@ public class TabuSearchOptimizer : ISolutionOptimizer
                 best =
                     cloner.Clone(
                         current);
+
+
+                PipelineLog(
+                    $"Tabu发现更优方案 Score:{best.Evaluation.Score}");
             }
         }
+
+
+
+        PipelineLog(
+            $"TabuSearch结束 " +
+            $"Score:{best.Evaluation.Score}, " +
+            $"接受:{acceptedCount}, " +
+            $"禁忌跳过:{tabuSkipCount}, " +
+            $"非法:{invalidCount}, " +
+            $"无候选:{noNeighborCount}");
 
 
 
@@ -315,9 +383,48 @@ public class TabuSearchOptimizer : ISolutionOptimizer
 
             return true;
         }
-        catch
+        catch(Exception ex)
         {
+            Debug(
+                $"Validator失败:{ex.Message}");
+
             return false;
+        }
+    }
+
+
+
+    private void PipelineLog(
+        string message)
+    {
+        if(debugOptions.EnablePipelineLog)
+        {
+            Console.WriteLine(
+                message);
+        }
+    }
+
+
+
+    private void IterationLog(
+        string message)
+    {
+        if(debugOptions.EnableIterationLog)
+        {
+            Console.WriteLine(
+                message);
+        }
+    }
+
+
+
+    private void Debug(
+        string message)
+    {
+        if(debugOptions.EnableDebugLog)
+        {
+            Console.WriteLine(
+                message);
         }
     }
 }

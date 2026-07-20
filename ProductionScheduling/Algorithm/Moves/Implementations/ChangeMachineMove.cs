@@ -1,4 +1,5 @@
 using ProductionScheduling.Algorithm.Calculation;
+using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Moves.Core;
 using ProductionScheduling.Algorithm.Optimization.Tabu;
 using ProductionScheduling.Algorithm.Time;
@@ -9,17 +10,25 @@ public class ChangeMachineMove : IMove
 {
     private readonly ScheduleDurationCalculator durationCalculator;
 
+    private readonly AlgorithmDebugOptions debugOptions;
+
 
     public ChangeMachineMove(
-        ScheduleDurationCalculator durationCalculator)
+        ScheduleDurationCalculator durationCalculator,
+        AlgorithmDebugOptions debugOptions)
     {
         this.durationCalculator =
             durationCalculator;
+
+        this.debugOptions =
+            debugOptions;
     }
+
 
 
     public string Name =>
         "ChangeMachine";
+
 
 
     public bool Apply(
@@ -29,8 +38,14 @@ public class ChangeMachineMove : IMove
             context.CurrentOperation;
 
 
+
         if(operation == null)
+        {
+            Debug(
+                "ChangeMachine失败:没有当前Operation");
+
             return false;
+        }
 
 
 
@@ -53,6 +68,15 @@ public class ChangeMachineMove : IMove
 
 
 
+        Debug(
+            $"ChangeMachine开始: " +
+            $"Job:{operation.JobTicketCode}, " +
+            $"OldMachine:{oldMachine}, " +
+            $"OldStart:{oldStart}, " +
+            $"Duration:{oldDuration}");
+
+
+
         var ticket =
             context.JobTicketIndex.Get(
                 operation.JobTicketCode);
@@ -60,7 +84,12 @@ public class ChangeMachineMove : IMove
 
 
         if(ticket == null)
+        {
+            Debug(
+                $"ChangeMachine失败:找不到工单:{operation.JobTicketCode}");
+
             return false;
+        }
 
 
 
@@ -70,22 +99,39 @@ public class ChangeMachineMove : IMove
 
 
 
+        Debug(
+            $"可选设备数量:{capabilities.Count}");
+
+
+
         foreach(var capability in capabilities)
         {
+            Debug(
+                $"尝试设备:{capability.MachineCode}");
+
+
+
             if(capability.MachineCode ==
                oldMachine)
+            {
+                Debug(
+                    "跳过当前设备");
+
                 continue;
+            }
 
 
 
-            /*
-             * 设备必须属于当前工厂
-             */
             if(!factory.Machines
                     .TryGetValue(
                         capability.MachineCode,
                         out var newTimeline))
+            {
+                Debug(
+                    $"目标设备不存在Timeline:{capability.MachineCode}");
+
                 continue;
+            }
 
 
 
@@ -96,16 +142,34 @@ public class ChangeMachineMove : IMove
 
 
 
+            Debug(
+                $"目标设备:{capability.MachineCode}, " +
+                $"新Duration:{duration}");
+
+
+
             var start =
                 factory.TimeModel
                     .FindEarliestAvailable(
                         newTimeline,
-                        duration);
+                        duration,
+                        operation.StartSlot);
+
+
+
+            Debug(
+                $"目标设备:{capability.MachineCode}, " +
+                $"Start:{start}");
 
 
 
             if(start < 0)
+            {
+                Debug(
+                    $"目标设备无可用时间:{capability.MachineCode}");
+
                 continue;
+            }
 
 
 
@@ -114,23 +178,20 @@ public class ChangeMachineMove : IMove
                         oldMachine,
                         out var oldTimeline))
             {
+                Debug(
+                    $"原设备不存在Timeline:{oldMachine}");
+
                 return false;
             }
 
 
 
-            /*
-             * 释放旧设备
-             */
             oldTimeline.Release(
                 oldStart,
                 oldDuration);
 
 
 
-            /*
-             * 占用新设备
-             */
             newTimeline.Occupy(
                 start,
                 duration);
@@ -197,8 +258,21 @@ public class ChangeMachineMove : IMove
                 };
 
 
+
+            Debug(
+                $"ChangeMachine成功: " +
+                $"{oldMachine}->{capability.MachineCode}, " +
+                $"Start:{start}, Duration:{duration}");
+
+
+
             return true;
         }
+
+
+
+        Debug(
+            "ChangeMachine失败:没有找到可用设备");
 
 
 
@@ -280,5 +354,17 @@ public class ChangeMachineMove : IMove
 
         context.ExecutionRecord =
             null;
+    }
+
+
+
+    private void Debug(
+        string message)
+    {
+        if(debugOptions.EnableMoveLog)
+        {
+            Console.WriteLine(
+                message);
+        }
     }
 }

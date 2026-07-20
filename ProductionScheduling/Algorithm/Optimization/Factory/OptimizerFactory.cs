@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Optimization.Core;
 using ProductionScheduling.Algorithm.Optimization.LocalSearch;
@@ -14,14 +15,14 @@ namespace ProductionScheduling.Algorithm.Optimization.Factory;
 /// </summary>
 public class OptimizerFactory
 {
-    private readonly OptimizerFactoryContext context;
+    private readonly IServiceProvider provider;
 
 
     public OptimizerFactory(
-        OptimizerFactoryContext context)
+        IServiceProvider provider)
     {
-        this.context =
-            context;
+        this.provider =
+            provider;
     }
 
 
@@ -35,19 +36,23 @@ public class OptimizerFactory
         return type switch
         {
             OptimizationAlgorithmType.LocalSearch =>
-                CreateLocalSearch(),
+                provider.GetRequiredService<
+                    LocalSearchOptimizer>(),
 
 
             OptimizationAlgorithmType.SimulatedAnnealing =>
-                CreateSimulatedAnnealing(),
+                provider.GetRequiredService<
+                    SimulatedAnnealingOptimizer>(),
 
 
             OptimizationAlgorithmType.Tabu =>
-                CreateTabu(),
+                provider.GetRequiredService<
+                    TabuSearchOptimizer>(),
 
 
             OptimizationAlgorithmType.Lns =>
-                CreateLns(),
+                provider.GetRequiredService<
+                    LnsOptimizer>(),
 
 
             OptimizationAlgorithmType.Genetic =>
@@ -59,61 +64,5 @@ public class OptimizerFactory
                 throw new ArgumentOutOfRangeException(
                     nameof(type))
         };
-    }
-
-
-
-    private ISolutionOptimizer CreateLocalSearch()
-    {
-        return new LocalSearchOptimizer(
-            context.ResourceIndex,
-            context.JobTicketIndex,
-            context.OperationSelector,
-            context.MoveSelectorFactory.Create(),
-            context.Cloner,
-            context.Validator,
-            context.Options.LocalSearch);
-    }
-
-
-
-    private ISolutionOptimizer CreateSimulatedAnnealing()
-    {
-        return new SimulatedAnnealingOptimizer(
-            context.ResourceIndex,
-            context.JobTicketIndex,
-            context.OperationSelector,
-            context.MoveSelectorFactory.Create(),
-            context.Cloner,
-            new AcceptanceCriteria(
-                context.Options.Acceptance),
-            context.Validator,
-            context.Options.SimulatedAnnealing);
-    }
-
-
-
-    private ISolutionOptimizer CreateTabu()
-    {
-        return new TabuSearchOptimizer(
-            context.ResourceIndex,
-            context.JobTicketIndex,
-            context.NeighborhoodGenerator,
-            context.Cloner,
-            context.Validator,
-            context.Options.TabuSearch);
-    }
-
-
-
-    private ISolutionOptimizer CreateLns()
-    {
-        return new LnsOptimizer(
-            context.Cloner,
-            context.DestroyOperator,
-            context.RepairOperator,
-            context.LnsAcceptance,
-            context.Validator,
-            context.Options.Lns);
     }
 }

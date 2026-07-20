@@ -9,13 +9,26 @@ public class MoveSelectorFactory
 {
     private readonly MoveOptions options;
 
+    private readonly ScheduleDurationCalculator durationCalculator;
+
+    private readonly AlgorithmDebugOptions debugOptions;
+
 
     public MoveSelectorFactory(
-        MoveOptions options)
+        MoveOptions options,
+        ScheduleDurationCalculator durationCalculator,
+        AlgorithmDebugOptions debugOptions)
     {
         this.options =
             options;
+
+        this.durationCalculator =
+            durationCalculator;
+
+        this.debugOptions =
+            debugOptions;
     }
+
 
 
     public MoveSelector Create()
@@ -24,20 +37,27 @@ public class MoveSelectorFactory
             new MoveSelector();
 
 
+
         selector.Register(
             new ChangeMachineMove(
-                new ScheduleDurationCalculator()),
+                durationCalculator,
+                debugOptions),
             options.ChangeMachineWeight);
 
 
+
         selector.Register(
-            new ShiftTimeMove(),
+            new ShiftTimeMove(
+                debugOptions),
             options.ShiftTimeWeight);
 
 
+
         selector.Register(
-            new SwapOperationMove(),
+            new SwapOperationMove(
+                debugOptions),
             options.SwapOperationWeight);
+
 
 
         return selector;

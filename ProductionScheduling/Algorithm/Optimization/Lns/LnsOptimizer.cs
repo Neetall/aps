@@ -27,6 +27,8 @@ public class LnsOptimizer : ISolutionOptimizer
 
     private readonly LnsOptions options;
 
+    private readonly AlgorithmDebugOptions debugOptions;
+
 
 
     public LnsOptimizer(
@@ -35,7 +37,8 @@ public class LnsOptimizer : ISolutionOptimizer
         IRepairOperator repairOperator,
         ILnsAcceptance acceptance,
         SchedulingSolutionValidator validator,
-        LnsOptions options)
+        LnsOptions options,
+        AlgorithmDebugOptions debugOptions)
     {
         this.cloner =
             cloner;
@@ -54,6 +57,9 @@ public class LnsOptimizer : ISolutionOptimizer
 
         this.options =
             options;
+
+        this.debugOptions =
+            debugOptions;
     }
 
 
@@ -93,9 +99,27 @@ public class LnsOptimizer : ISolutionOptimizer
 
 
 
+        PipelineLog(
+            $"LNS开始 Score:{current.Evaluation.Score}");
+
+
+
         var best =
             cloner.Clone(
                 current);
+
+
+
+        var acceptCount =
+            0;
+
+
+        var invalidCount =
+            0;
+
+
+        var bestCount =
+            0;
 
 
 
@@ -119,7 +143,17 @@ public class LnsOptimizer : ISolutionOptimizer
 
 
             if(removed.Count == 0)
+            {
+                Debug(
+                    $"Iteration:{i}, Destroy没有移除任务");
+
                 continue;
+            }
+
+
+
+            IterationLog(
+                $"Iteration:{i}, Destroy数量:{removed.Count}");
 
 
 
@@ -135,6 +169,12 @@ public class LnsOptimizer : ISolutionOptimizer
                     context,
                     candidate.Timelines))
             {
+                invalidCount++;
+
+
+                Debug(
+                    $"Iteration:{i}, Repair后方案非法");
+
                 continue;
             }
 
@@ -148,10 +188,20 @@ public class LnsOptimizer : ISolutionOptimizer
 
 
 
+            IterationLog(
+                $"Iteration:{i}, " +
+                $"Before:{current.Evaluation!.Score}, " +
+                $"After:{candidate.Evaluation.Score}");
+
+
+
             if(!acceptance.Accept(
                     current.Evaluation!,
                     candidate.Evaluation))
             {
+                IterationLog(
+                    $"Iteration:{i}, 拒绝候选方案");
+
                 continue;
             }
 
@@ -161,6 +211,14 @@ public class LnsOptimizer : ISolutionOptimizer
                 candidate;
 
 
+            acceptCount++;
+
+
+
+            IterationLog(
+                $"Iteration:{i}, 接受候选方案");
+
+
 
             if(current.Evaluation!.Score <
                best.Evaluation!.Score)
@@ -168,8 +226,24 @@ public class LnsOptimizer : ISolutionOptimizer
                 best =
                     cloner.Clone(
                         current);
+
+
+                bestCount++;
+
+
+                PipelineLog(
+                    $"LNS发现更优方案 Score:{best.Evaluation.Score}");
             }
         }
+
+
+
+        PipelineLog(
+            $"LNS结束 " +
+            $"Score:{best.Evaluation.Score}, " +
+            $"接受:{acceptCount}, " +
+            $"最优次数:{bestCount}, " +
+            $"非法:{invalidCount}");
 
 
 
@@ -202,9 +276,48 @@ public class LnsOptimizer : ISolutionOptimizer
 
             return true;
         }
-        catch
+        catch(Exception ex)
         {
+            Debug(
+                $"Validator失败:{ex.Message}");
+
             return false;
+        }
+    }
+
+
+
+    private void PipelineLog(
+        string message)
+    {
+        if(debugOptions.EnablePipelineLog)
+        {
+            Console.WriteLine(
+                message);
+        }
+    }
+
+
+
+    private void IterationLog(
+        string message)
+    {
+        if(debugOptions.EnableIterationLog)
+        {
+            Console.WriteLine(
+                message);
+        }
+    }
+
+
+
+    private void Debug(
+        string message)
+    {
+        if(debugOptions.EnableDebugLog)
+        {
+            Console.WriteLine(
+                message);
         }
     }
 }

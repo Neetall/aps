@@ -1,4 +1,5 @@
 using ProductionScheduling.Algorithm.Calculation;
+using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Index;
 using ProductionScheduling.Algorithm.Time;
 using ProductionScheduling.Domain.Orders;
@@ -22,16 +23,22 @@ public class GreedyScheduler : IScheduler
 
     private readonly SchedulingResourceIndex resourceIndex;
 
+    private readonly AlgorithmDebugOptions debugOptions;
+
 
     public GreedyScheduler(
         ScheduleDurationCalculator durationCalculator,
-        SchedulingResourceIndex resourceIndex)
+        SchedulingResourceIndex resourceIndex,
+        AlgorithmDebugOptions debugOptions)
     {
         this.durationCalculator =
             durationCalculator;
 
         this.resourceIndex =
             resourceIndex;
+
+        this.debugOptions =
+            debugOptions;
     }
 
 
@@ -40,7 +47,7 @@ public class GreedyScheduler : IScheduler
         SchedulingContext context,
         TimelineContextGroup timelines)
     {
-        Console.WriteLine(
+        Debug(
             $"订单数量:{context.Orders.Count}");
 
 
@@ -70,7 +77,7 @@ public class GreedyScheduler : IScheduler
 
         foreach(var order in orders)
         {
-            Console.WriteLine(
+            Debug(
                 $"订单:{order.Code}, 工单数量:{order.JobTickets.Count}");
 
 
@@ -89,7 +96,7 @@ public class GreedyScheduler : IScheduler
                          .OrderBy(x =>
                              x.Sequence))
             {
-                Console.WriteLine(
+                Debug(
                     $"排产工单:{ticket.Code}");
 
 
@@ -104,8 +111,6 @@ public class GreedyScheduler : IScheduler
 
                 /*
                  * 无法安排
-                 *
-                 * 保留失败信息
                  */
                 if(candidate == null)
                 {
@@ -140,36 +145,24 @@ public class GreedyScheduler : IScheduler
 
 
 
-        /*
-         * 最终可行性判断
-         *
-         * 不根据Operations数量判断
-         * 因为未来可能存在:
-         * - 插入
-         * - 优化修复
-         * - 局部重排
-         *
-         * 统一根据失败列表判断
-         */
         solution.IsFeasible =
             solution.UnscheduledJobTickets.Count == 0;
 
 
 
-        Console.WriteLine(
+        Debug(
             $"Greedy结果数量:{solution.Operations.Count}");
 
 
 
         if(solution.UnscheduledJobTickets.Count > 0)
         {
-            Console.WriteLine(
+            Debug(
                 "未排产工单:");
 
             foreach(var item in solution.UnscheduledJobTickets)
             {
-                Console.WriteLine(
-                    item);
+                Debug(item);
             }
         }
 
@@ -203,7 +196,7 @@ public class GreedyScheduler : IScheduler
 
 
 
-        Console.WriteLine(
+        Debug(
             $"工单:{ticket.Code}, 可用设备能力:{capabilities.Count}");
 
 
@@ -220,7 +213,7 @@ public class GreedyScheduler : IScheduler
                         machineCode,
                         out var machineTimeline))
             {
-                Console.WriteLine(
+                Debug(
                     $"设备不存在Timeline:{machineCode}");
 
                 continue;
@@ -246,7 +239,7 @@ public class GreedyScheduler : IScheduler
 
             if(startSlot < 0)
             {
-                Console.WriteLine(
+                Debug(
                     $"设备无可用时间:{machineCode}");
 
                 continue;
@@ -260,7 +253,7 @@ public class GreedyScheduler : IScheduler
 
 
 
-            Console.WriteLine(
+            Debug(
                 $"候选设备:{machineCode}, Start:{startSlot}, End:{endSlot}");
 
 
@@ -308,5 +301,17 @@ public class GreedyScheduler : IScheduler
 
 
         return best;
+    }
+
+
+
+    private void Debug(
+        string message)
+    {
+        if(debugOptions.EnableSchedulerLog)
+        {
+            Console.WriteLine(
+                message);
+        }
     }
 }

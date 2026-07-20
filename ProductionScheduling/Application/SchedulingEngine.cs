@@ -1,4 +1,5 @@
 using ProductionScheduling.Algorithm.Evaluation;
+using ProductionScheduling.Algorithm.Index;
 using ProductionScheduling.Algorithm.Optimization.Pipeline;
 using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Algorithm.Validation;
@@ -22,6 +23,11 @@ public class SchedulingEngine
 
     private readonly TimelineInitializer timelineInitializer;
 
+    private readonly JobTicketIndex jobTicketIndex;
+
+    private readonly SchedulingResourceIndex resourceIndex;
+
+
 
     public SchedulingEngine(
         TimelineInitializer timelineInitializer,
@@ -29,7 +35,9 @@ public class SchedulingEngine
         ScheduleEvaluator evaluator,
         SchedulingResultConverter resultConverter,
         OptimizationPipelineRunner pipelineRunner,
-        SchedulingSolutionValidator validator)
+        SchedulingSolutionValidator validator,
+        JobTicketIndex jobTicketIndex,
+        SchedulingResourceIndex resourceIndex)
     {
         this.timelineInitializer =
             timelineInitializer;
@@ -48,6 +56,12 @@ public class SchedulingEngine
 
         this.validator =
             validator;
+
+        this.jobTicketIndex =
+            jobTicketIndex;
+
+        this.resourceIndex =
+            resourceIndex;
     }
 
 
@@ -58,8 +72,25 @@ public class SchedulingEngine
         try
         {
             /*
+             * 0.
+             * 初始化算法索引
+             *
+             * 所有算法共享:
+             * - JobTicket查询
+             * - 设备能力查询
+             */
+            jobTicketIndex.Build(
+                context.Orders);
+
+
+            resourceIndex.Build(
+                context.Machines);
+
+
+
+            /*
              * 1.
-             * 初始化资源
+             * 初始化资源Timeline
              */
             var timelines =
                 timelineInitializer.Initialize(
@@ -86,15 +117,11 @@ public class SchedulingEngine
              * 3.
              * 初始方案校验
              *
-             * 注意:
-             * Validator只检查硬约束
-             *
-             * 不检查:
-             * 是否全部工单完成
+             * Validator失败:
+             * 不阻断返回
              *
              * 因为:
-             * 不可完全排产时
-             * 仍需要返回最佳结果
+             * 部分排产结果也有价值
              */
             TryValidate(
                 solution,
@@ -105,7 +132,7 @@ public class SchedulingEngine
 
             /*
              * 4.
-             * 可选优化
+             * 执行优化流水线
              */
             if(context.ExecutionOptions.EnableOptimization)
             {
@@ -152,7 +179,7 @@ public class SchedulingEngine
 
             /*
              * 6.
-             * 转换结果
+             * 转换接口结果
              */
             var result =
                 resultConverter.Convert(
@@ -170,10 +197,10 @@ public class SchedulingEngine
             /*
              * Success:
              *
-             * 表示排产服务正常完成
+             * 表示排产流程正常执行完成
              *
              * 不代表:
-             * 所有工单均完成
+             * 所有工单均已排产
              */
             result.Success =
                 true;
@@ -183,11 +210,10 @@ public class SchedulingEngine
             /*
              * IsFeasible:
              *
-             * 表示是否满足完整排产要求
+             * 表示是否满足全部排产约束
              */
             result.IsFeasible =
                 solution.IsFeasible;
-
 
 
 
@@ -230,13 +256,6 @@ public class SchedulingEngine
         }
         catch(Exception ex)
         {
-            /*
-             * Validator失败:
-             *
-             * 记录问题
-             *
-             * 不阻断排产
-             */
             solution.IsFeasible =
                 false;
 
