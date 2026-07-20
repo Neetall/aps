@@ -5,6 +5,7 @@ using ProductionScheduling.Algorithm.Moves.Core;
 using ProductionScheduling.Algorithm.Optimization.Core;
 using ProductionScheduling.Algorithm.Optimization.Selection;
 using ProductionScheduling.Algorithm.Scheduling;
+using ProductionScheduling.Algorithm.Validation;
 using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
 
@@ -19,12 +20,20 @@ namespace ProductionScheduling.Algorithm.Optimization.SimulatedAnnealing;
 public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 {
     private readonly AcceptanceCriteria acceptanceCriteria;
+
     private readonly SolutionCloner cloner;
+
     private readonly SimulatedAnnealingOptions options;
+
     private readonly JobTicketIndex jobTicketIndex;
+
     private readonly MoveSelector moveSelector;
+
     private readonly OperationSelector operationSelector;
+
     private readonly SchedulingResourceIndex resourceIndex;
+
+    private readonly SchedulingSolutionValidator validator;
 
 
     public SimulatedAnnealingOptimizer(
@@ -34,6 +43,7 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
         MoveSelector moveSelector,
         SolutionCloner cloner,
         AcceptanceCriteria acceptanceCriteria,
+        SchedulingSolutionValidator validator,
         SimulatedAnnealingOptions options)
     {
         this.resourceIndex =
@@ -53,6 +63,9 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
 
         this.acceptanceCriteria =
             acceptanceCriteria;
+
+        this.validator =
+            validator;
 
         this.options =
             options;
@@ -181,6 +194,19 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                     CoolDown(
                         temperature);
 
+                continue;
+            }
+
+
+
+            if(!IsValid(
+                    candidate.Solution,
+                    context,
+                    candidate.Timelines))
+            {
+                temperature =
+                    CoolDown(
+                        temperature);
 
                 continue;
             }
@@ -234,29 +260,23 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                     JobTicketCode =
                         operation.JobTicketCode,
 
-
                     OldMachineCode =
                         execution?.OldMachineCode,
 
-
                     NewMachineCode =
                         execution?.NewMachineCode,
-
 
                     OldStartSlot =
                         execution?.OldStartSlot
                         ?? 0,
 
-
                     NewStartSlot =
                         execution?.NewStartSlot
                         ?? 0,
 
-
                     OldDurationSlots =
                         execution?.OldDurationSlots
                         ?? 0,
-
 
                     NewDurationSlots =
                         execution?.NewDurationSlots
@@ -310,6 +330,29 @@ public class SimulatedAnnealingOptimizer : ISolutionOptimizer
                 best.Evaluation
         };
     }
+
+
+
+    private bool IsValid(
+        SchedulingSolution solution,
+        SchedulingContext context,
+        TimelineContextGroup timelines)
+    {
+        try
+        {
+            validator.Validate(
+                solution,
+                context,
+                timelines);
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
 
 
     private double CoolDown(

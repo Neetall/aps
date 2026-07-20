@@ -5,6 +5,7 @@ using ProductionScheduling.Algorithm.Moves.Core;
 using ProductionScheduling.Algorithm.Optimization.Core;
 using ProductionScheduling.Algorithm.Optimization.Selection;
 using ProductionScheduling.Algorithm.Scheduling;
+using ProductionScheduling.Algorithm.Validation;
 using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
 
@@ -13,9 +14,15 @@ namespace ProductionScheduling.Algorithm.Optimization.Tabu;
 public class TabuSearchOptimizer : ISolutionOptimizer
 {
     private readonly SchedulingResourceIndex resourceIndex;
+
     private readonly JobTicketIndex jobTicketIndex;
+
     private readonly MoveNeighborhoodGenerator neighborhoodGenerator;
+
     private readonly SolutionCloner cloner;
+
+    private readonly SchedulingSolutionValidator validator;
+
     private readonly TabuSearchOptions options;
 
 
@@ -24,6 +31,7 @@ public class TabuSearchOptimizer : ISolutionOptimizer
         JobTicketIndex jobTicketIndex,
         MoveNeighborhoodGenerator neighborhoodGenerator,
         SolutionCloner cloner,
+        SchedulingSolutionValidator validator,
         TabuSearchOptions options)
     {
         this.resourceIndex =
@@ -37,6 +45,9 @@ public class TabuSearchOptimizer : ISolutionOptimizer
 
         this.cloner =
             cloner;
+
+        this.validator =
+            validator;
 
         this.options =
             options;
@@ -145,7 +156,19 @@ public class TabuSearchOptimizer : ISolutionOptimizer
 
                 if(!neighbor.Move.Apply(
                         moveContext))
+                {
                     continue;
+                }
+
+
+
+                if(!IsValid(
+                        candidate.Solution,
+                        context,
+                        candidate.Timelines))
+                {
+                    continue;
+                }
 
 
 
@@ -164,7 +187,9 @@ public class TabuSearchOptimizer : ISolutionOptimizer
 
                 if(record == null ||
                    !record.Success)
+                {
                     continue;
+                }
 
 
 
@@ -189,14 +214,18 @@ public class TabuSearchOptimizer : ISolutionOptimizer
 
                 if(isTabu &&
                    !aspiration)
+                {
                     continue;
+                }
 
 
 
                 if(!options.AllowWorseMoves &&
                    candidate.Evaluation.Score >=
                    current.Evaluation!.Score)
+                {
                     continue;
+                }
 
 
 
@@ -268,5 +297,27 @@ public class TabuSearchOptimizer : ISolutionOptimizer
             Evaluation =
                 best.Evaluation
         };
+    }
+
+
+
+    private bool IsValid(
+        SchedulingSolution solution,
+        SchedulingContext context,
+        TimelineContextGroup timelines)
+    {
+        try
+        {
+            validator.Validate(
+                solution,
+                context,
+                timelines);
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

@@ -5,6 +5,7 @@ using ProductionScheduling.Algorithm.Moves.Core;
 using ProductionScheduling.Algorithm.Optimization.Core;
 using ProductionScheduling.Algorithm.Optimization.Selection;
 using ProductionScheduling.Algorithm.Scheduling;
+using ProductionScheduling.Algorithm.Validation;
 using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
 
@@ -28,6 +29,8 @@ public class LocalSearchOptimizer : ISolutionOptimizer
 
     private readonly SchedulingResourceIndex resourceIndex;
 
+    private readonly SchedulingSolutionValidator validator;
+
 
     public LocalSearchOptimizer(
         SchedulingResourceIndex resourceIndex,
@@ -35,6 +38,7 @@ public class LocalSearchOptimizer : ISolutionOptimizer
         OperationSelector operationSelector,
         MoveSelector moveSelector,
         SolutionCloner cloner,
+        SchedulingSolutionValidator validator,
         LocalSearchOptions options)
     {
         this.resourceIndex =
@@ -51,6 +55,9 @@ public class LocalSearchOptimizer : ISolutionOptimizer
 
         this.cloner =
             cloner;
+
+        this.validator =
+            validator;
 
         this.options =
             options;
@@ -145,6 +152,16 @@ public class LocalSearchOptimizer : ISolutionOptimizer
 
 
 
+            if(!IsValid(
+                    candidate.Solution,
+                    context,
+                    candidate.Timelines))
+            {
+                continue;
+            }
+
+
+
             candidate.Evaluation =
                 evaluator.Evaluate(
                     candidate.Solution,
@@ -174,5 +191,27 @@ public class LocalSearchOptimizer : ISolutionOptimizer
             Evaluation =
                 current.Evaluation
         };
+    }
+
+
+
+    private bool IsValid(
+        SchedulingSolution solution,
+        SchedulingContext context,
+        TimelineContextGroup timelines)
+    {
+        try
+        {
+            validator.Validate(
+                solution,
+                context,
+                timelines);
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

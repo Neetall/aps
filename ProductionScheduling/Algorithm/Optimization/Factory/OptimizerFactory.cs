@@ -3,8 +3,15 @@ using ProductionScheduling.Algorithm.Index;
 using ProductionScheduling.Algorithm.Moves.Core;
 using ProductionScheduling.Algorithm.Optimization.Core;
 using ProductionScheduling.Algorithm.Optimization.LocalSearch;
+using ProductionScheduling.Algorithm.Optimization.Lns;
+using ProductionScheduling.Algorithm.Optimization.Lns.Acceptance;
+using ProductionScheduling.Algorithm.Optimization.Lns.Core;
+using ProductionScheduling.Algorithm.Optimization.Lns.Destroy;
+using ProductionScheduling.Algorithm.Optimization.Lns.Repair;
 using ProductionScheduling.Algorithm.Optimization.Selection;
 using ProductionScheduling.Algorithm.Optimization.SimulatedAnnealing;
+using ProductionScheduling.Algorithm.Optimization.Tabu;
+using ProductionScheduling.Algorithm.Validation;
 
 namespace ProductionScheduling.Algorithm.Optimization.Factory;
 
@@ -25,6 +32,16 @@ public class OptimizerFactory
 
     private readonly SolutionCloner cloner;
 
+    private readonly SchedulingSolutionValidator validator;
+
+    private readonly IDestroyOperator destroyOperator;
+
+    private readonly IRepairOperator repairOperator;
+
+    private readonly ILnsAcceptance lnsAcceptance;
+
+    private readonly MoveNeighborhoodGenerator neighborhoodGenerator;
+
     private readonly SchedulingAlgorithmOptions options;
 
 
@@ -34,6 +51,11 @@ public class OptimizerFactory
         OperationSelector operationSelector,
         MoveSelectorFactory moveSelectorFactory,
         SolutionCloner cloner,
+        SchedulingSolutionValidator validator,
+        IDestroyOperator destroyOperator,
+        IRepairOperator repairOperator,
+        ILnsAcceptance lnsAcceptance,
+        MoveNeighborhoodGenerator neighborhoodGenerator,
         SchedulingAlgorithmOptions options)
     {
         this.resourceIndex =
@@ -50,6 +72,21 @@ public class OptimizerFactory
 
         this.cloner =
             cloner;
+
+        this.validator =
+            validator;
+
+        this.destroyOperator =
+            destroyOperator;
+
+        this.repairOperator =
+            repairOperator;
+
+        this.lnsAcceptance =
+            lnsAcceptance;
+
+        this.neighborhoodGenerator =
+            neighborhoodGenerator;
 
         this.options =
             options;
@@ -73,13 +110,11 @@ public class OptimizerFactory
 
 
             OptimizationAlgorithmType.Tabu =>
-                throw new NotImplementedException(
-                    "Tabu优化器尚未实现"),
+                CreateTabu(),
 
 
             OptimizationAlgorithmType.Lns =>
-                throw new NotImplementedException(
-                    "LNS优化器尚未实现"),
+                CreateLns(),
 
 
             OptimizationAlgorithmType.Genetic =>
@@ -94,6 +129,7 @@ public class OptimizerFactory
     }
 
 
+
     private ISolutionOptimizer CreateLocalSearch()
     {
         return new LocalSearchOptimizer(
@@ -102,8 +138,10 @@ public class OptimizerFactory
             operationSelector,
             moveSelectorFactory.Create(),
             cloner,
+            validator,
             options.LocalSearch);
     }
+
 
 
     private ISolutionOptimizer CreateSimulatedAnnealing()
@@ -116,6 +154,33 @@ public class OptimizerFactory
             cloner,
             new AcceptanceCriteria(
                 options.Acceptance),
+            validator,
             options.SimulatedAnnealing);
+    }
+
+
+
+    private ISolutionOptimizer CreateTabu()
+    {
+        return new TabuSearchOptimizer(
+            resourceIndex,
+            jobTicketIndex,
+            neighborhoodGenerator,
+            cloner,
+            validator,
+            options.TabuSearch);
+    }
+
+
+
+    private ISolutionOptimizer CreateLns()
+    {
+        return new LnsOptimizer(
+            cloner,
+            destroyOperator,
+            repairOperator,
+            lnsAcceptance,
+            validator,
+            options.Lns);
     }
 }

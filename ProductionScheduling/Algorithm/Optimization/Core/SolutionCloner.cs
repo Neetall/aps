@@ -48,7 +48,7 @@ public class SolutionCloner
     /// <summary>
     /// 复制多工厂时间轴
     /// </summary>
-    private TimelineContextGroup CloneTimelines(
+    public TimelineContextGroup CloneTimelines(
         TimelineContextGroup source)
     {
         var result =

@@ -70,7 +70,8 @@ public class LnsOptimizer : ISolutionOptimizer
                         solution),
 
                 Timelines =
-                    timelines,
+                    cloner.CloneTimelines(
+                        timelines),
 
                 Evaluation =
                     evaluator.Evaluate(
@@ -78,7 +79,6 @@ public class LnsOptimizer : ISolutionOptimizer
                         timelines,
                         context)
             };
-
 
 
         var best =
@@ -117,9 +117,13 @@ public class LnsOptimizer : ISolutionOptimizer
 
 
 
-            validator.Validate(
-                candidate.Solution,
-                candidate.Timelines);
+            if(!IsValid(
+                    candidate.Solution,
+                    context,
+                    candidate.Timelines))
+            {
+                continue;
+            }
 
 
 
@@ -167,5 +171,27 @@ public class LnsOptimizer : ISolutionOptimizer
             Evaluation =
                 best.Evaluation
         };
+    }
+
+
+
+    private bool IsValid(
+        SchedulingSolution solution,
+        SchedulingContext context,
+        TimelineContextGroup timelines)
+    {
+        try
+        {
+            validator.Validate(
+                solution,
+                context,
+                timelines);
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
