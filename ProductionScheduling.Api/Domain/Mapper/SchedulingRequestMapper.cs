@@ -42,7 +42,13 @@ public static class SchedulingRequestMapper
                 request.MachineCalendars?
                     .Select(ToMachineCalendar)
                     .ToList()
-                ?? []
+                ?? [],
+            ExecutionOptions =
+                new SchedulingExecutionOptions
+                {
+                    EnableOptimization =
+                        request.ExecutionOptions.EnableOptimization,
+                }
         };
     }
 

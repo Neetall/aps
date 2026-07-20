@@ -12,7 +12,41 @@ public sealed class SchedulingAlgorithmOptions
     ///
     /// 按Order顺序执行
     /// </summary>
-    public List<OptimizationStepOptions> Pipeline { get; } = [];
+    public List<OptimizationStepOptions> Pipeline { get; set; }
+        =
+        [
+            new()
+            {
+                Enabled = true,
+                Order = 1,
+                Algorithm =
+                    OptimizationAlgorithmType.LocalSearch
+            },
+
+            new()
+            {
+                Enabled = true,
+                Order = 2,
+                Algorithm =
+                    OptimizationAlgorithmType.SimulatedAnnealing
+            },
+
+            new()
+            {
+                Enabled = true,
+                Order = 3,
+                Algorithm =
+                    OptimizationAlgorithmType.Tabu
+            },
+
+            new()
+            {
+                Enabled = true,
+                Order = 4,
+                Algorithm =
+                    OptimizationAlgorithmType.Lns
+            }
+        ];
 
 
     /// <summary>

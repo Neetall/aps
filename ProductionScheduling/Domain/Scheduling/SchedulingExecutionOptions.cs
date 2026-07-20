@@ -5,14 +5,33 @@ namespace ProductionScheduling.Domain.Scheduling;
 public class SchedulingExecutionOptions
 {
     /// <summary>
-    /// 是否执行优化
+    /// 是否执行优化流程
+    ///
+    /// false:
+    /// 只返回Greedy结果
+    ///
+    /// true:
+    /// 执行完整优化Pipeline
     /// </summary>
     public bool EnableOptimization { get; set; }
 
 
+
     /// <summary>
-    /// 使用的优化算法
+    /// 优化Pipeline配置
+    ///
+    /// 按顺序执行:
+    /// LocalSearch
+    /// SA
+    /// Tabu
+    /// LNS
     /// </summary>
-    public OptimizationAlgorithmType AlgorithmType { get; set; }
-        = OptimizationAlgorithmType.LocalSearch;
+    public List<OptimizationAlgorithmType> Algorithms { get; set; }
+        =
+        [
+            OptimizationAlgorithmType.LocalSearch,
+            OptimizationAlgorithmType.SimulatedAnnealing,
+            OptimizationAlgorithmType.Tabu,
+            OptimizationAlgorithmType.Lns
+        ];
 }

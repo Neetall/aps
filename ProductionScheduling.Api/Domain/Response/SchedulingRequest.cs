@@ -40,4 +40,7 @@ public class SchedulingRequest
     /// 排产配置
     /// </summary>
     public SchedulingOptionsDto Options { get; set; } = new();
+    
+    public SchedulingExecutionOptionsDto ExecutionOptions { get; set; }
+        = new();
 }

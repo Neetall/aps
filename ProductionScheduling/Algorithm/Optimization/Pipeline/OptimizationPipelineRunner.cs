@@ -11,6 +11,20 @@ namespace ProductionScheduling.Algorithm.Optimization.Pipeline;
 /// 优化算法流水线执行器
 ///
 /// 按配置顺序执行多个优化算法
+///
+/// 示例:
+///
+/// Greedy
+///   ↓
+/// LocalSearch
+///   ↓
+/// SimulatedAnnealing
+///   ↓
+/// Tabu
+///   ↓
+/// LNS
+///
+/// 每一步都会尝试改善当前最佳方案
 /// </summary>
 public class OptimizationPipelineRunner
 {
@@ -19,6 +33,7 @@ public class OptimizationPipelineRunner
     private readonly Func<
         OptimizationAlgorithmType,
         ISolutionOptimizer> optimizerFactory;
+
 
 
     public OptimizationPipelineRunner(
@@ -33,6 +48,7 @@ public class OptimizationPipelineRunner
         this.optimizerFactory =
             optimizerFactory;
     }
+
 
 
     /// <summary>
@@ -61,6 +77,12 @@ public class OptimizationPipelineRunner
             };
 
 
+
+        Console.WriteLine(
+            $"优化开始 Score:{current.Evaluation.Score}");
+
+
+
         var steps =
             options.Pipeline
                 .Where(x =>
@@ -73,19 +95,66 @@ public class OptimizationPipelineRunner
 
         foreach(var step in steps)
         {
+            Console.WriteLine(
+                $"执行优化算法:{step.Algorithm}");
+
+
+
             var optimizer =
                 optimizerFactory(
                     step.Algorithm);
 
 
 
-            current =
+            var result =
                 optimizer.Optimize(
                     current.Solution,
                     context,
                     current.Timelines,
                     evaluator);
+
+
+
+            if(result.Evaluation == null)
+            {
+                continue;
+            }
+
+
+
+            Console.WriteLine(
+                $"算法:{step.Algorithm}, Score:{result.Evaluation.Score}");
+
+
+
+            /*
+             * 只接受更优方案
+             *
+             * 防止:
+             * SA/LNS随机搜索导致结果变差
+             */
+            if(result.Evaluation.Score <
+               current.Evaluation.Score)
+            {
+                current =
+                    result;
+
+
+                Console.WriteLine(
+                    $"接受优化结果:{step.Algorithm}");
+            }
+            else
+            {
+                Console.WriteLine(
+                    $"拒绝优化结果:{step.Algorithm}");
+            }
         }
+
+
+
+        Console.WriteLine(
+            $"优化结束 Score:{current.Evaluation.Score}");
+
 
 
         return current;
