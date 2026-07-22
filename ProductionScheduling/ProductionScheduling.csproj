@@ -7,10 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Folder Include="Algorithm\Constraints\"/>
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="Google.OrTools" Version="9.15.6755" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="11.0.0-preview.6.26359.118" />
     </ItemGroup>

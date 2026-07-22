@@ -17,7 +17,8 @@ public class SchedulingResourceIndex
      * ]
      */
     private readonly Dictionary<string, List<MachineCapability>> capabilities =
-        new();
+        new(
+            StringComparer.OrdinalIgnoreCase);
 
 
     /*
@@ -25,8 +26,9 @@ public class SchedulingResourceIndex
      *
      * MachineCapability
      */
-    private readonly Dictionary<(string, string), MachineCapability> capabilityMap =
-        new();
+    private readonly Dictionary<string, MachineCapability> capabilityMap =
+        new(
+            StringComparer.OrdinalIgnoreCase);
 
 
     /*
@@ -38,7 +40,8 @@ public class SchedulingResourceIndex
      * ]
      */
     private readonly Dictionary<string, List<string>> machineCodes =
-        new();
+        new(
+            StringComparer.OrdinalIgnoreCase);
 
 
     /// <summary>
@@ -94,7 +97,8 @@ public class SchedulingResourceIndex
 
 
             if (!codes.Contains(
-                    capability.MachineCode))
+                    capability.MachineCode,
+                    StringComparer.OrdinalIgnoreCase))
                 codes.Add(
                     capability.MachineCode);
 
@@ -106,10 +110,9 @@ public class SchedulingResourceIndex
              */
             capabilityMap
                 [
-                    (
+                    CreateCapabilityKey(
                         capability.JobTicketCode,
-                        capability.MachineCode
-                    )
+                        capability.MachineCode)
                 ]
                 =
                 capability;
@@ -157,10 +160,9 @@ public class SchedulingResourceIndex
         string machineCode)
     {
         if (capabilityMap.TryGetValue(
-                (
+                CreateCapabilityKey(
                     jobTicketCode,
-                    machineCode
-                ),
+                    machineCode),
                 out var capability))
             return capability;
 
@@ -177,5 +179,13 @@ public class SchedulingResourceIndex
     {
         return capabilities.ContainsKey(
             jobTicketCode);
+    }
+
+
+    private string CreateCapabilityKey(
+        string jobTicketCode,
+        string machineCode)
+    {
+        return $"{jobTicketCode}|{machineCode}";
     }
 }

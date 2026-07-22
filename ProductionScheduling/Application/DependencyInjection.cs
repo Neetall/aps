@@ -52,11 +52,11 @@ public static class DependencyInjection
         services.AddSingleton(
             new AlgorithmDebugOptions
             {
-                EnableDebugLog = true,
-                EnableMoveLog = true,
-                EnableIterationLog = true,
-                EnableSchedulerLog = true,
-                EnablePipelineLog = true
+                EnableDebugLog = false,
+                EnableMoveLog = false,
+                EnableIterationLog = false,
+                EnableSchedulerLog = false,
+                EnablePipelineLog = false
             });
 
         /*
@@ -160,7 +160,10 @@ public static class DependencyInjection
     private static void RegisterEvaluation(
         IServiceCollection services)
     {
-        services.AddScoped<ScheduleEvaluator>();
+        services.AddScoped(
+            provider =>
+                new ScheduleEvaluator(
+                    provider.GetRequiredService<EvaluationScoreOptions>()));
     }
 
     private static void RegisterValidation(

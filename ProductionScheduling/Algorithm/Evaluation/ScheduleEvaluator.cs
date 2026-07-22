@@ -1,5 +1,6 @@
 using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Algorithm.Configuration;
+using ProductionScheduling.Domain.Calendars;
 using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
 
@@ -12,13 +13,6 @@ public class ScheduleEvaluator
     public ScheduleEvaluator()
         : this(
             new EvaluationScoreOptions())
-    {
-    }
-
-    public ScheduleEvaluator(
-        SchedulingAlgorithmOptions options)
-        : this(
-            options.Evaluation)
     {
     }
 
@@ -125,10 +119,6 @@ public class ScheduleEvaluator
         /*
          * 设备利用率
          */
-        var usedSlots =
-            0;
-
-
         var totalSlotsCapacity =
             0;
 
@@ -138,12 +128,12 @@ public class ScheduleEvaluator
         {
             foreach(var machine in factory.Machines.Values)
             {
-                usedSlots +=
-                    machine.UsedSlotCount;
-
-
                 totalSlotsCapacity +=
-                    machine.SlotCount;
+                    machine.SlotCount -
+                    CountUnavailableSlots(
+                        factory,
+                        machine.MachineCode,
+                        context.MachineCalendars);
             }
         }
 
@@ -152,7 +142,7 @@ public class ScheduleEvaluator
         result.MachineUtilization =
             totalSlotsCapacity == 0
                 ? 0
-                : (double)usedSlots /
+                : (double)totalSlots /
                   totalSlotsCapacity;
 
 
@@ -195,7 +185,7 @@ public class ScheduleEvaluator
     {
         foreach(var order in context.Orders)
         {
-            if(order.DueDate == null)
+            if(order.DueDate == default)
                 continue;
 
 
@@ -307,5 +297,73 @@ public class ScheduleEvaluator
             unscheduledPenalty
             +
             utilizationPenalty;
+    }
+
+
+
+    private int CountUnavailableSlots(
+        FactoryTimeline factory,
+        string machineCode,
+        IEnumerable<MachineCalendar> machineCalendars)
+    {
+        var unavailableSlots =
+            new HashSet<int>();
+
+
+        foreach(var calendar in machineCalendars)
+        {
+            if(calendar.FactoryCode !=
+               factory.FactoryCode ||
+               calendar.MachineCode !=
+               machineCode)
+            {
+                continue;
+            }
+
+
+            foreach(var block in calendar.Blocks)
+            {
+                var startSlot =
+                    factory.TimeModel.GetSlotIndex(
+                        block.StartTime);
+
+
+                var endSlot =
+                    factory.TimeModel.GetSlotIndex(
+                        block.EndTime);
+
+
+                if(startSlot < 0 &&
+                   endSlot < 0)
+                {
+                    continue;
+                }
+
+
+                if(startSlot < 0)
+                    startSlot = 0;
+
+
+                if(endSlot < 0)
+                    endSlot =
+                        factory.TimeModel.SlotCount;
+
+
+                for(var slot = startSlot;
+                    slot < endSlot;
+                    slot++)
+                {
+                    if(factory.TimeModel.ContainsSlot(
+                           slot))
+                    {
+                        unavailableSlots.Add(
+                            slot);
+                    }
+                }
+            }
+        }
+
+
+        return unavailableSlots.Count;
     }
 }

@@ -43,16 +43,14 @@ public sealed class OperationContinuityConstraint
                     $"超出时间轴范围:{operation.JobTicketCode}");
             }
 
-            ValidateNoPreemption(
+            ValidateWorkingSlots(
                 operation,
-                solution,
                 factory);
         }
     }
 
-    private void ValidateNoPreemption(
+    private void ValidateWorkingSlots(
         ScheduledOperation operation,
-        SchedulingSolution solution,
         FactoryTimeline factory)
     {
         for(var slot = operation.StartSlot;
@@ -65,22 +63,6 @@ public sealed class OperationContinuityConstraint
                 throw new ConstraintViolationException(
                     Name,
                     $"工序跨越非工作Slot:{operation.JobTicketCode},Slot={slot}");
-            }
-
-            var inserted =
-                solution.Operations
-                    .Any(x =>
-                        x != operation &&
-                        x.FactoryCode == operation.FactoryCode &&
-                        x.MachineCode == operation.MachineCode &&
-                        x.StartSlot <= slot &&
-                        x.EndSlot > slot);
-
-            if(inserted)
-            {
-                throw new ConstraintViolationException(
-                    Name,
-                    $"工序被其他任务插入:{operation.JobTicketCode},Slot={slot}");
             }
         }
     }

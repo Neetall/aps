@@ -1,4 +1,5 @@
 using ProductionScheduling.Algorithm.Scheduling;
+using ProductionScheduling.Algorithm.Index;
 using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
 
@@ -8,11 +9,21 @@ public class SchedulingResultConverter
 {
     private readonly TimelineConverter converter;
 
+    private readonly JobTicketIndex? jobTicketIndex;
+
 
     public SchedulingResultConverter()
     {
         converter =
             new TimelineConverter();
+    }
+
+    public SchedulingResultConverter(
+        JobTicketIndex jobTicketIndex)
+        : this()
+    {
+        this.jobTicketIndex =
+            jobTicketIndex;
     }
 
 
@@ -79,6 +90,9 @@ public class SchedulingResultConverter
 
 
             var jobTicket =
+                jobTicketIndex?.Get(
+                    operation.JobTicketCode)
+                ??
                 context.Orders
                     .SelectMany(x =>
                         x.JobTickets)
