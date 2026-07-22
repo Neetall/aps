@@ -27,11 +27,14 @@ public class SchedulingExecutionOptions
     /// LNS
     /// </summary>
     public List<OptimizationAlgorithmType> Algorithms { get; set; }
-        =
-        [
-            OptimizationAlgorithmType.LocalSearch,
-            OptimizationAlgorithmType.SimulatedAnnealing,
-            OptimizationAlgorithmType.Tabu,
-            OptimizationAlgorithmType.Lns
-        ];
+        = [];
+
+
+
+    /// <summary>
+    /// 优化总超时时间，单位秒。
+    ///
+    /// 0表示不限制。
+    /// </summary>
+    public int TimeoutSeconds { get; set; }
 }

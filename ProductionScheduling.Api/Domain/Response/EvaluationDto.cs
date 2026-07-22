@@ -38,6 +38,30 @@ public class EvaluationDto
 
 
     /// <summary>
+    /// 排程窗口内设备利用率
+    /// </summary>
+    public double ScheduleWindowMachineUtilization { get; set; }
+
+
+    /// <summary>
+    /// 瓶颈设备利用率
+    /// </summary>
+    public double BottleneckMachineUtilization { get; set; }
+
+
+    /// <summary>
+    /// 有排程任务的设备数量
+    /// </summary>
+    public int UsedMachineCount { get; set; }
+
+
+    /// <summary>
+    /// 总设备数量
+    /// </summary>
+    public int TotalMachineCount { get; set; }
+
+
+    /// <summary>
     /// 延期订单数量
     /// </summary>
     public int DelayCount { get; set; }

@@ -164,6 +164,7 @@ public static class TestEngineFactory
             pipelineRunner,
             new SchedulingSolutionValidator(),
             ticketIndex,
-            resourceIndex);
+            resourceIndex,
+            options.Effectiveness);
     }
 }

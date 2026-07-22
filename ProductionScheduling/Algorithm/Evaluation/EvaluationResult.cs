@@ -31,6 +31,31 @@ public class EvaluationResult
 
 
     /// <summary>
+    /// 排程窗口内设备利用率
+    /// 分母只统计从日历开始到最终完工之间的可用设备时间
+    /// </summary>
+    public double ScheduleWindowMachineUtilization { get; set; }
+
+
+    /// <summary>
+    /// 瓶颈设备利用率
+    /// </summary>
+    public double BottleneckMachineUtilization { get; set; }
+
+
+    /// <summary>
+    /// 有排程任务的设备数量
+    /// </summary>
+    public int UsedMachineCount { get; set; }
+
+
+    /// <summary>
+    /// 总设备数量
+    /// </summary>
+    public int TotalMachineCount { get; set; }
+
+
+    /// <summary>
     /// 超期订单数量
     /// </summary>
     public int DelayCount { get; set; }

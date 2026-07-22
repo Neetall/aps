@@ -67,6 +67,13 @@ public class SchedulingResult
 
 
     /// <summary>
+    /// 优化执行摘要
+    /// </summary>
+    public OptimizationSummary? Optimization { get; set; }
+
+
+
+    /// <summary>
     /// 已排产工单数量
     /// </summary>
     public int Count =>

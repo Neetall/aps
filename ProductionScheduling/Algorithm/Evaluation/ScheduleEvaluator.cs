@@ -122,18 +122,74 @@ public class ScheduleEvaluator
         var totalSlotsCapacity =
             0;
 
+        var windowSlotsCapacity =
+            0;
+
+        var bottleneckUtilization =
+            0.0;
+
+        var usedMachineCodes =
+            solution.Operations
+                .Select(x =>
+                    $"{x.FactoryCode}|{x.MachineCode}")
+                .Distinct(
+                    StringComparer.OrdinalIgnoreCase)
+                .ToHashSet(
+                    StringComparer.OrdinalIgnoreCase);
+
+        result.UsedMachineCount =
+            usedMachineCodes.Count;
+
 
 
         foreach(var factory in timelines.Factories.Values)
         {
             foreach(var machine in factory.Machines.Values)
             {
+                result.TotalMachineCount++;
+
                 totalSlotsCapacity +=
                     machine.SlotCount -
                     CountUnavailableSlots(
                         factory,
                         machine.MachineCode,
                         context.MachineCalendars);
+
+                var windowCapacity =
+                    Math.Min(
+                        machine.SlotCount,
+                        maxMakespanSlot)
+                    -
+                    CountUnavailableSlots(
+                        factory,
+                        machine.MachineCode,
+                        context.MachineCalendars,
+                        maxMakespanSlot);
+
+                if(windowCapacity < 0)
+                    windowCapacity = 0;
+
+                windowSlotsCapacity +=
+                    windowCapacity;
+
+                var machineUsedSlots =
+                    solution.Operations
+                        .Where(x =>
+                            x.FactoryCode ==
+                            factory.FactoryCode &&
+                            x.MachineCode ==
+                            machine.MachineCode)
+                        .Sum(x =>
+                            x.DurationSlots);
+
+                if(windowCapacity > 0)
+                {
+                    bottleneckUtilization =
+                        Math.Max(
+                            bottleneckUtilization,
+                            (double)machineUsedSlots /
+                            windowCapacity);
+                }
             }
         }
 
@@ -144,6 +200,15 @@ public class ScheduleEvaluator
                 ? 0
                 : (double)totalSlots /
                   totalSlotsCapacity;
+
+        result.ScheduleWindowMachineUtilization =
+            windowSlotsCapacity == 0
+                ? 0
+                : (double)totalSlots /
+                  windowSlotsCapacity;
+
+        result.BottleneckMachineUtilization =
+            bottleneckUtilization;
 
 
 
@@ -306,6 +371,19 @@ public class ScheduleEvaluator
         string machineCode,
         IEnumerable<MachineCalendar> machineCalendars)
     {
+        return CountUnavailableSlots(
+            factory,
+            machineCode,
+            machineCalendars,
+            factory.TimeModel.SlotCount);
+    }
+
+    private int CountUnavailableSlots(
+        FactoryTimeline factory,
+        string machineCode,
+        IEnumerable<MachineCalendar> machineCalendars,
+        int exclusiveEndSlot)
+    {
         var unavailableSlots =
             new HashSet<int>();
 
@@ -347,6 +425,11 @@ public class ScheduleEvaluator
                 if(endSlot < 0)
                     endSlot =
                         factory.TimeModel.SlotCount;
+
+                endSlot =
+                    Math.Min(
+                        endSlot,
+                        exclusiveEndSlot);
 
 
                 for(var slot = startSlot;

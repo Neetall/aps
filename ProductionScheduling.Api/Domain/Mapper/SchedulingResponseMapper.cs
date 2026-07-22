@@ -51,6 +51,18 @@ public static class SchedulingResponseMapper
                         MachineUtilization =
                             result.Evaluation.MachineUtilization,
 
+                        ScheduleWindowMachineUtilization =
+                            result.Evaluation.ScheduleWindowMachineUtilization,
+
+                        BottleneckMachineUtilization =
+                            result.Evaluation.BottleneckMachineUtilization,
+
+                        UsedMachineCount =
+                            result.Evaluation.UsedMachineCount,
+
+                        TotalMachineCount =
+                            result.Evaluation.TotalMachineCount,
+
                         DelayCount =
                             result.Evaluation.DelayCount,
 
@@ -59,6 +71,92 @@ public static class SchedulingResponseMapper
 
                         DelayMessages =
                             result.Evaluation.DelayMessages
+                    },
+
+
+            Optimization =
+                result.Optimization == null
+                    ? null
+                    : new OptimizationSummaryDto
+                    {
+                        Attempted =
+                            result.Optimization.Attempted,
+
+                        Effective =
+                            result.Optimization.Effective,
+
+                        TimedOut =
+                            result.Optimization.TimedOut,
+
+                        BeforeScore =
+                            result.Optimization.BeforeScore,
+
+                        AfterScore =
+                            result.Optimization.AfterScore,
+
+                        Improvement =
+                            result.Optimization.Improvement,
+
+                        ImprovementRate =
+                            result.Optimization.ImprovementRate,
+
+                        MinimumEffectiveImprovement =
+                            result.Optimization.MinimumEffectiveImprovement,
+
+                        MinimumEffectiveImprovementRate =
+                            result.Optimization.MinimumEffectiveImprovementRate,
+
+                        StartedAt =
+                            result.Optimization.StartedAt,
+
+                        EndedAt =
+                            result.Optimization.EndedAt,
+
+                        ElapsedMilliseconds =
+                            result.Optimization.ElapsedMilliseconds,
+
+                        AlgorithmResults =
+                            result.Optimization.AlgorithmResults
+                                .Select(x =>
+                                    new OptimizationAlgorithmResultDto
+                                    {
+                                        Algorithm =
+                                            x.Algorithm,
+
+                                        Success =
+                                            x.Success,
+
+                                        Accepted =
+                                            x.Accepted,
+
+                                        TimedOut =
+                                            x.TimedOut,
+
+                                        BeforeScore =
+                                            x.BeforeScore,
+
+                                        AfterScore =
+                                            x.AfterScore,
+
+                                        Improvement =
+                                            x.Improvement,
+
+                                        ImprovementRate =
+                                            x.ImprovementRate,
+
+                                        StartedAt =
+                                            x.StartedAt,
+
+                                        EndedAt =
+                                            x.EndedAt,
+
+                                        ElapsedMilliseconds =
+                                            x.ElapsedMilliseconds,
+
+                                        Message =
+                                            x.Message
+                                    })
+                                .ToList()
                     },
 
 

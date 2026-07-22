@@ -4,6 +4,7 @@ using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Optimization.Core;
 using ProductionScheduling.Algorithm.Optimization.Factory;
 using ProductionScheduling.Algorithm.Scheduling;
+using ProductionScheduling.Application.Result;
 using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
 
@@ -42,6 +43,9 @@ public class OptimizationPipelineRunner
         var pipelineWatch =
             Stopwatch.StartNew();
 
+        var algorithmResults =
+            new List<OptimizationAlgorithmResult>();
+
         var current = new OptimizationResult
         {
             Solution = solution,
@@ -49,7 +53,9 @@ public class OptimizationPipelineRunner
             Evaluation = evaluator.Evaluate(
                 solution,
                 timelines,
-                context)
+                context),
+            StartedAt = pipelineStartedAt,
+            AlgorithmResults = algorithmResults
         };
 
         Console.WriteLine(
@@ -82,16 +88,40 @@ public class OptimizationPipelineRunner
             Console.WriteLine(
                 $"优化结束 时间:{FormatTime(DateTime.Now)}, 耗时:{FormatElapsed(pipelineWatch.Elapsed)}, Score:{current.Evaluation.Score}");
 
+            CompletePipelineResult(
+                current,
+                pipelineStartedAt,
+                pipelineWatch,
+                false,
+                algorithmResults);
+
             return current;
         }
 
         foreach(var step in steps)
         {
+            if(IsTimedOut(
+                   context,
+                   pipelineWatch))
+            {
+                current.TimedOut =
+                    true;
+
+                Console.WriteLine(
+                    $"优化超时，跳过剩余算法，已耗时:{FormatElapsed(pipelineWatch.Elapsed)}");
+
+                break;
+            }
+
             var algorithmStartedAt =
                 DateTime.Now;
 
             var algorithmWatch =
                 Stopwatch.StartNew();
+
+            var beforeScore =
+                current.Evaluation?.Score
+                ?? double.MaxValue;
 
             Console.WriteLine(
                 $"执行优化算法:{step.Algorithm}, 开始时间:{FormatTime(algorithmStartedAt)}");
@@ -113,6 +143,19 @@ public class OptimizationPipelineRunner
             {
                 algorithmWatch.Stop();
 
+                algorithmResults.Add(
+                    BuildAlgorithmResult(
+                        step.Algorithm,
+                        false,
+                        false,
+                        false,
+                        beforeScore,
+                        null,
+                        algorithmStartedAt,
+                        DateTime.Now,
+                        algorithmWatch.Elapsed,
+                        ex.Message));
+
                 Console.WriteLine(
                     $"算法执行失败:{step.Algorithm}, 结束时间:{FormatTime(DateTime.Now)}, 耗时:{FormatElapsed(algorithmWatch.Elapsed)}, {ex.Message}");
 
@@ -123,6 +166,19 @@ public class OptimizationPipelineRunner
 
             if(result.Evaluation == null)
             {
+                algorithmResults.Add(
+                    BuildAlgorithmResult(
+                        step.Algorithm,
+                        false,
+                        false,
+                        false,
+                        beforeScore,
+                        null,
+                        algorithmStartedAt,
+                        DateTime.Now,
+                        algorithmWatch.Elapsed,
+                        "算法未返回评估结果"));
+
                 Console.WriteLine(
                     $"算法未返回评估结果:{step.Algorithm}, 结束时间:{FormatTime(DateTime.Now)}, 耗时:{FormatElapsed(algorithmWatch.Elapsed)}");
 
@@ -141,13 +197,41 @@ public class OptimizationPipelineRunner
             if(result.Evaluation.Score <
                current.Evaluation.Score)
             {
+                algorithmResults.Add(
+                    BuildAlgorithmResult(
+                        step.Algorithm,
+                        true,
+                        true,
+                        IsTimedOut(context,pipelineWatch),
+                        beforeScore,
+                        result.Evaluation.Score,
+                        algorithmStartedAt,
+                        DateTime.Now,
+                        algorithmWatch.Elapsed,
+                        "接受优化结果"));
+
                 current = result;
+                current.AlgorithmResults =
+                    algorithmResults;
 
                 Console.WriteLine(
                     $"接受优化结果:{step.Algorithm}");
             }
             else
             {
+                algorithmResults.Add(
+                    BuildAlgorithmResult(
+                        step.Algorithm,
+                        true,
+                        false,
+                        IsTimedOut(context,pipelineWatch),
+                        beforeScore,
+                        result.Evaluation.Score,
+                        algorithmStartedAt,
+                        DateTime.Now,
+                        algorithmWatch.Elapsed,
+                        "未优于当前方案"));
+
                 Console.WriteLine(
                     $"拒绝优化结果:{step.Algorithm}");
             }
@@ -158,7 +242,90 @@ public class OptimizationPipelineRunner
         Console.WriteLine(
             $"优化结束 时间:{FormatTime(DateTime.Now)}, 耗时:{FormatElapsed(pipelineWatch.Elapsed)}, Score:{current.Evaluation.Score}");
 
+        CompletePipelineResult(
+            current,
+            pipelineStartedAt,
+            pipelineWatch,
+            current.TimedOut,
+            algorithmResults);
+
         return current;
+    }
+
+    private static bool IsTimedOut(
+        SchedulingContext context,
+        Stopwatch watch)
+    {
+        return context.ExecutionOptions.TimeoutSeconds > 0 &&
+               watch.Elapsed.TotalSeconds >=
+               context.ExecutionOptions.TimeoutSeconds;
+    }
+
+    private static OptimizationAlgorithmResult BuildAlgorithmResult(
+        OptimizationAlgorithmType algorithm,
+        bool success,
+        bool accepted,
+        bool timedOut,
+        double beforeScore,
+        double? afterScore,
+        DateTime startedAt,
+        DateTime endedAt,
+        TimeSpan elapsed,
+        string? message)
+    {
+        double? improvement =
+            afterScore.HasValue
+                ? beforeScore -
+                  afterScore.Value
+                : null;
+
+        double? improvementRate =
+            improvement.HasValue &&
+            beforeScore > 0 &&
+            beforeScore < double.MaxValue
+                ? improvement.Value /
+                  beforeScore
+                : null;
+
+        return new OptimizationAlgorithmResult
+        {
+            Algorithm = algorithm,
+            Success = success,
+            Accepted = accepted,
+            TimedOut = timedOut,
+            BeforeScore = beforeScore,
+            AfterScore = afterScore,
+            Improvement = improvement,
+            ImprovementRate = improvementRate,
+            StartedAt = startedAt,
+            EndedAt = endedAt,
+            ElapsedMilliseconds = elapsed.TotalMilliseconds,
+            Message = message
+        };
+    }
+
+    private static void CompletePipelineResult(
+        OptimizationResult result,
+        DateTime startedAt,
+        Stopwatch watch,
+        bool timedOut,
+        List<OptimizationAlgorithmResult> algorithmResults)
+    {
+        result.StartedAt =
+            startedAt;
+
+        result.EndedAt =
+            DateTime.Now;
+
+        result.ElapsedMilliseconds =
+            watch.Elapsed.TotalMilliseconds;
+
+        result.TimedOut =
+            timedOut ||
+            algorithmResults.Any(x => x.TimedOut);
+
+        result.AlgorithmResults =
+            algorithmResults;
     }
 
     private static string FormatAlgorithms(

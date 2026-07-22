@@ -78,6 +78,13 @@ public class SchedulingResponse
 
 
     /// <summary>
+    /// 优化执行摘要
+    /// </summary>
+    public OptimizationSummaryDto? Optimization { get; set; }
+
+
+
+    /// <summary>
     /// 警告信息
     ///
     /// 例如:

@@ -8,17 +8,17 @@ public sealed class MoveOptions
     /// <summary>
     /// 更换设备权重
     /// </summary>
-    public int ChangeMachineWeight { get; init; } = 10;
+    public int ChangeMachineWeight { get; set; } = 10;
 
 
     /// <summary>
     /// 时间移动权重
     /// </summary>
-    public int ShiftTimeWeight { get; init; } = 3;
+    public int ShiftTimeWeight { get; set; } = 3;
 
 
     /// <summary>
     /// 交换任务权重
     /// </summary>
-    public int SwapOperationWeight { get; init; } = 5;
+    public int SwapOperationWeight { get; set; } = 5;
 }

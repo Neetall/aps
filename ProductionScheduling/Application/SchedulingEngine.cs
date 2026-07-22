@@ -1,5 +1,7 @@
 using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Index;
+using ProductionScheduling.Algorithm.Configuration;
+using ProductionScheduling.Algorithm.Optimization.Core;
 using ProductionScheduling.Algorithm.Optimization.Pipeline;
 using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Algorithm.Validation;
@@ -11,12 +13,6 @@ namespace ProductionScheduling.Application;
 
 public class SchedulingEngine
 {
-    private const double MinimumEffectiveScoreImprovement =
-        1;
-
-    private const double MinimumEffectiveScoreImprovementRate =
-        0.001;
-
     private readonly ScheduleEvaluator evaluator;
     private readonly OptimizationPipelineRunner pipelineRunner;
     private readonly SchedulingResultConverter resultConverter;
@@ -25,6 +21,7 @@ public class SchedulingEngine
     private readonly TimelineInitializer timelineInitializer;
     private readonly JobTicketIndex jobTicketIndex;
     private readonly SchedulingResourceIndex resourceIndex;
+    private readonly OptimizationEffectivenessOptions effectivenessOptions;
 
     public SchedulingEngine(
         TimelineInitializer timelineInitializer,
@@ -34,7 +31,8 @@ public class SchedulingEngine
         OptimizationPipelineRunner pipelineRunner,
         SchedulingSolutionValidator validator,
         JobTicketIndex jobTicketIndex,
-        SchedulingResourceIndex resourceIndex)
+        SchedulingResourceIndex resourceIndex,
+        OptimizationEffectivenessOptions effectivenessOptions)
     {
         this.timelineInitializer = timelineInitializer;
         this.scheduler = scheduler;
@@ -44,6 +42,7 @@ public class SchedulingEngine
         this.validator = validator;
         this.jobTicketIndex = jobTicketIndex;
         this.resourceIndex = resourceIndex;
+        this.effectivenessOptions = effectivenessOptions;
     }
 
     public SchedulingResult Execute(
@@ -106,6 +105,9 @@ public class SchedulingEngine
                     timelines,
                     context);
 
+            OptimizationResult? optimizeResult =
+                null;
+
             /*
              * 4.
              * 执行优化流水线
@@ -115,7 +117,7 @@ public class SchedulingEngine
                 Console.WriteLine(
                     $"Engine收到算法:{FormatAlgorithms(context)}");
 
-                var optimizeResult =
+                optimizeResult =
                     pipelineRunner.Run(
                         solution,
                         context,
@@ -148,6 +150,13 @@ public class SchedulingEngine
                     timelines,
                     context);
 
+            var optimizationSummary =
+                BuildOptimizationSummary(
+                    context,
+                    initialEvaluation,
+                    evaluation,
+                    optimizeResult);
+
             /*
              * 6.
              * 转换接口结果
@@ -160,6 +169,9 @@ public class SchedulingEngine
 
             result.Evaluation =
                 evaluation;
+
+            result.Optimization =
+                optimizationSummary;
 
             foreach(var warning in evaluation.DelayMessages)
             {
@@ -198,8 +210,8 @@ public class SchedulingEngine
             result.Message =
                 BuildMessage(
                     context.ExecutionOptions.EnableOptimization,
-                    initialEvaluation,
                     evaluation,
+                    optimizationSummary,
                     delayMessage);
 
             return result;
@@ -256,8 +268,8 @@ public class SchedulingEngine
 
     private static string BuildMessage(
         bool enableOptimization,
-        EvaluationResult initialEvaluation,
         EvaluationResult evaluation,
+        OptimizationSummary? optimizationSummary,
         string delayMessage)
     {
         var baseMessage =
@@ -267,6 +279,33 @@ public class SchedulingEngine
         {
             return $"排产完成，{baseMessage}";
         }
+
+        if(optimizationSummary?.Effective == true)
+        {
+            return
+                $"排产完成(优化成功)，{baseMessage}," +
+                $"优化前Score:{FormatScore(optimizationSummary.BeforeScore)}," +
+                $"优化后Score:{FormatScore(optimizationSummary.AfterScore)}," +
+                $"降低Score:{FormatScore(optimizationSummary.Improvement)}," +
+                $"降低比例:{FormatPercent(optimizationSummary.ImprovementRate)}";
+        }
+
+        return
+            $"排产完成(未有效优化)，{baseMessage}," +
+            $"优化前Score:{FormatScore(optimizationSummary?.BeforeScore ?? evaluation.Score)}," +
+            $"优化后Score:{FormatScore(optimizationSummary?.AfterScore ?? evaluation.Score)}," +
+            $"降低Score:{FormatScore(Math.Max(0,optimizationSummary?.Improvement ?? 0))}," +
+            $"降低比例:{FormatPercent(Math.Max(0,optimizationSummary?.ImprovementRate ?? 0))}";
+    }
+
+    private OptimizationSummary? BuildOptimizationSummary(
+        SchedulingContext context,
+        EvaluationResult initialEvaluation,
+        EvaluationResult evaluation,
+        OptimizationResult? optimizeResult)
+    {
+        if(!context.ExecutionOptions.EnableOptimization)
+            return null;
 
         var improvement =
             initialEvaluation.Score -
@@ -278,23 +317,41 @@ public class SchedulingEngine
                 : improvement /
                   initialEvaluation.Score;
 
-        if(improvement >= MinimumEffectiveScoreImprovement ||
-           improvementRate >= MinimumEffectiveScoreImprovementRate)
+        return new OptimizationSummary
         {
-            return
-                $"排产完成(优化成功)，{baseMessage}," +
-                $"优化前Score:{FormatScore(initialEvaluation.Score)}," +
-                $"优化后Score:{FormatScore(evaluation.Score)}," +
-                $"降低Score:{FormatScore(improvement)}," +
-                $"降低比例:{FormatPercent(improvementRate)}";
-        }
-
-        return
-            $"排产完成(未有效优化)，{baseMessage}," +
-            $"优化前Score:{FormatScore(initialEvaluation.Score)}," +
-            $"优化后Score:{FormatScore(evaluation.Score)}," +
-            $"降低Score:{FormatScore(Math.Max(0,improvement))}," +
-            $"降低比例:{FormatPercent(Math.Max(0,improvementRate))}";
+            Attempted = true,
+            Effective =
+                improvement >=
+                effectivenessOptions.MinimumScoreImprovement ||
+                improvementRate >=
+                effectivenessOptions.MinimumScoreImprovementRate,
+            TimedOut =
+                optimizeResult?.TimedOut
+                ?? false,
+            BeforeScore =
+                initialEvaluation.Score,
+            AfterScore =
+                evaluation.Score,
+            Improvement =
+                improvement,
+            ImprovementRate =
+                improvementRate,
+            MinimumEffectiveImprovement =
+                effectivenessOptions.MinimumScoreImprovement,
+            MinimumEffectiveImprovementRate =
+                effectivenessOptions.MinimumScoreImprovementRate,
+            StartedAt =
+                optimizeResult?.StartedAt,
+            EndedAt =
+                optimizeResult?.EndedAt,
+            ElapsedMilliseconds =
+                optimizeResult?.ElapsedMilliseconds
+                ?? 0,
+            AlgorithmResults =
+                optimizeResult?.AlgorithmResults
+                    .ToList()
+                ?? []
+        };
     }
 
     private static string FormatScore(

@@ -31,7 +31,18 @@ public static class DependencyInjection
     public static IServiceCollection AddProductionScheduling(
         this IServiceCollection services)
     {
-        RegisterConfiguration(services);
+        return AddProductionScheduling(
+            services,
+            new SchedulingAlgorithmOptions());
+    }
+
+    public static IServiceCollection AddProductionScheduling(
+        this IServiceCollection services,
+        SchedulingAlgorithmOptions options)
+    {
+        RegisterConfiguration(
+            services,
+            options);
         RegisterTimeline(services);
         RegisterCalculation(services);
         RegisterIndexes(services);
@@ -48,7 +59,8 @@ public static class DependencyInjection
     }
 
     private static void RegisterConfiguration(
-        IServiceCollection services)
+        IServiceCollection services,
+        SchedulingAlgorithmOptions options)
     {
         services.AddSingleton(
             new AlgorithmDebugOptions
@@ -65,7 +77,8 @@ public static class DependencyInjection
          * 各子配置均从总配置中获取，
          * 避免出现两套不同的配置实例。
          */
-        services.AddSingleton<SchedulingAlgorithmOptions>();
+        services.AddSingleton(
+            options);
 
         services.AddScoped<GeneticPopulationInitializer>();
         
@@ -122,6 +135,12 @@ public static class DependencyInjection
                 provider
                     .GetRequiredService<SchedulingAlgorithmOptions>()
                     .Evaluation);
+
+        services.AddSingleton(
+            provider =>
+                provider
+                    .GetRequiredService<SchedulingAlgorithmOptions>()
+                    .Effectiveness);
     }
 
     private static void RegisterTimeline(

@@ -1,5 +1,6 @@
 using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Scheduling;
+using ProductionScheduling.Application.Result;
 using ProductionScheduling.Timeline;
 
 namespace ProductionScheduling.Algorithm.Optimization.Core;
@@ -26,4 +27,14 @@ public class OptimizationResult
     ///     评价结果
     /// </summary>
     public EvaluationResult? Evaluation { get; set; }
+
+    public bool TimedOut { get; set; }
+
+    public DateTime? StartedAt { get; set; }
+
+    public DateTime? EndedAt { get; set; }
+
+    public double ElapsedMilliseconds { get; set; }
+
+    public List<OptimizationAlgorithmResult> AlgorithmResults { get; set; } = [];
 }

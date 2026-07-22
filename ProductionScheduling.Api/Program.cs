@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
+using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Api.Services;
 using ProductionScheduling.Application;
 
@@ -19,7 +20,15 @@ builder.Services
 builder.Services.AddOpenApi();
 
 // APS Service
-builder.Services.AddProductionScheduling();
+var algorithmOptions =
+    builder.Configuration
+        .GetSection(
+            "SchedulingAlgorithms")
+        .Get<SchedulingAlgorithmOptions>()
+    ?? new SchedulingAlgorithmOptions();
+
+builder.Services.AddProductionScheduling(
+    algorithmOptions);
 builder.Services.AddScoped<ISchedulingService, SchedulingService>();
 
 var app = builder.Build();

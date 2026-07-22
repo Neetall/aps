@@ -186,6 +186,22 @@ public class SolutionCloner
                 source.MachineUtilization,
 
 
+            ScheduleWindowMachineUtilization =
+                source.ScheduleWindowMachineUtilization,
+
+
+            BottleneckMachineUtilization =
+                source.BottleneckMachineUtilization,
+
+
+            UsedMachineCount =
+                source.UsedMachineCount,
+
+
+            TotalMachineCount =
+                source.TotalMachineCount,
+
+
             DelayCount =
                 source.DelayCount,
 

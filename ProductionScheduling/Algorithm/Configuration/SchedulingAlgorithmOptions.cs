@@ -66,50 +66,53 @@ public sealed class SchedulingAlgorithmOptions
     /// <summary>
     /// 局部搜索配置
     /// </summary>
-    public LocalSearchOptions LocalSearch { get; init; }
+    public LocalSearchOptions LocalSearch { get; set; }
         = new();
 
 
     /// <summary>
     /// 模拟退火配置
     /// </summary>
-    public SimulatedAnnealingOptions SimulatedAnnealing { get; init; }
+    public SimulatedAnnealingOptions SimulatedAnnealing { get; set; }
         = new();
 
 
     /// <summary>
     /// 接受准则配置
     /// </summary>
-    public AcceptanceOptions Acceptance { get; init; }
+    public AcceptanceOptions Acceptance { get; set; }
         = new();
 
 
     /// <summary>
     /// 禁忌搜索配置
     /// </summary>
-    public TabuSearchOptions TabuSearch { get; init; }
+    public TabuSearchOptions TabuSearch { get; set; }
         = new();
 
 
     /// <summary>
     /// LNS配置
     /// </summary>
-    public LnsOptions Lns { get; init; }
+    public LnsOptions Lns { get; set; }
         = new();
 
 
     /// <summary>
     /// Move配置
     /// </summary>
-    public MoveOptions Moves { get; init; }
+    public MoveOptions Moves { get; set; }
         = new();
     
-    public GeneticAlgorithmOptions GeneticAlgorithm { get; init; }
+    public GeneticAlgorithmOptions GeneticAlgorithm { get; set; }
         = new();
 
-    public CpSatOptions CpSat { get; init; }
+    public CpSatOptions CpSat { get; set; }
         = new();
 
-    public EvaluationScoreOptions Evaluation { get; init; }
+    public EvaluationScoreOptions Evaluation { get; set; }
+        = new();
+
+    public OptimizationEffectivenessOptions Effectiveness { get; set; }
         = new();
 }

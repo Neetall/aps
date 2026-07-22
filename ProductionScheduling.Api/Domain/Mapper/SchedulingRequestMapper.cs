@@ -1,5 +1,6 @@
 using ProductionScheduling.Api.Domain.Request;
 using ProductionScheduling.Api.Domain.Response;
+using ProductionScheduling.Application.Options;
 using ProductionScheduling.Domain.Calendars;
 using ProductionScheduling.Domain.Orders;
 using ProductionScheduling.Domain.Resources;
@@ -43,11 +44,31 @@ public static class SchedulingRequestMapper
                     .Select(ToMachineCalendar)
                     .ToList()
                 ?? [],
+            Options =
+                new SchedulingOptions
+                {
+                    TimeGranularityMinutes =
+                        request.Options.TimeGranularityMinutes > 0
+                            ? request.Options.TimeGranularityMinutes
+                            : 60,
+
+                    MaxExecutionSeconds =
+                        request.Options.TimeoutSeconds > 0
+                            ? request.Options.TimeoutSeconds
+                            : 60
+                },
             ExecutionOptions =
                 new SchedulingExecutionOptions
                 {
-                    EnableOptimization = request.ExecutionOptions.EnableOptimization,
-                    Algorithms = request.ExecutionOptions.Algorithms
+                    EnableOptimization =
+                        request.ExecutionOptions.EnableOptimization,
+
+                    Algorithms = request.ExecutionOptions.Algorithms,
+
+                    TimeoutSeconds =
+                        request.ExecutionOptions.TimeoutSeconds > 0
+                            ? request.ExecutionOptions.TimeoutSeconds
+                            : request.Options.TimeoutSeconds
                 }
         };
     }
