@@ -5,14 +5,14 @@ public class LnsOptions
     /// <summary>
     /// 迭代次数
     /// </summary>
-    public int Iterations { get; set; } = 100;
+    public int Iterations { get; set; } = 60;
 
 
     /// <summary>
     /// 每次破坏比例
     /// 例如0.2表示移除20%的任务
     /// </summary>
-    public double DestroyRate { get; set; } = 0.2;
+    public double DestroyRate { get; set; } = 0.15;
 
 
     /// <summary>

@@ -7,7 +7,7 @@ public sealed class CpSatOptions
     /// 单位:秒
     /// </summary>
     public double MaxSolveSeconds { get; set; }
-        = 30;
+        = 10;
 
     /// <summary>
     /// 并行搜索线程数
@@ -34,4 +34,22 @@ public sealed class CpSatOptions
     /// 时间截止时允许返回可行解
     /// </summary>
     public bool RequireOptimal { get; set; }
+
+    /// <summary>
+    /// 延期订单数量权重
+    /// </summary>
+    public int DelayCountWeight { get; set; }
+        = 100000;
+
+    /// <summary>
+    /// 最大完工时间权重
+    /// </summary>
+    public int MakespanWeight { get; set; }
+        = 10000;
+
+    /// <summary>
+    /// 延期Slot数量权重
+    /// </summary>
+    public int TardinessWeight { get; set; }
+        = 1000;
 }

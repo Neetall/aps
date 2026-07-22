@@ -1,0 +1,94 @@
+{
+  "requestId": "CPSAT_MACHINE_CHOICE",
+  "executionOptions": {
+    "enableOptimization": true,
+    "algorithms": [
+      "CpSat"
+    ]
+  },
+  "orders": [
+    {
+      "code": "ORD001",
+      "priority": 1,
+      "dueDate": "2026-07-20T20:00:00",
+      "jobTickets": [
+        {
+          "code": "JT001",
+          "sequence": 1,
+          "length": 100,
+          "factoryCode": "F001"
+        }
+      ]
+    },
+    {
+      "code": "ORD002",
+      "priority": 2,
+      "dueDate": "2026-07-20T20:00:00",
+      "jobTickets": [
+        {
+          "code": "JT002",
+          "sequence": 1,
+          "length": 200,
+          "factoryCode": "F001"
+        }
+      ]
+    }
+  ],
+  "machines": [
+    {
+      "code": "M001",
+      "factoryCode": "F001",
+      "capabilities": [
+        {
+          "jobTicketCode": "JT001",
+          "hourlyCapacity": 100,
+          "setupMinutes": 0
+        },
+        {
+          "jobTicketCode": "JT002",
+          "hourlyCapacity": 100,
+          "setupMinutes": 0
+        }
+      ]
+    },
+    {
+      "code": "M002",
+      "factoryCode": "F001",
+      "capabilities": [
+        {
+          "jobTicketCode": "JT001",
+          "hourlyCapacity": 50,
+          "setupMinutes": 0
+        },
+        {
+          "jobTicketCode": "JT002",
+          "hourlyCapacity": 20,
+          "setupMinutes": 0
+        }
+      ]
+    }
+  ],
+  "factoryCalendars": [
+    {
+      "factoryCode": "F001",
+      "periods": [
+        {
+          "startTime": "2026-07-20T08:00:00",
+          "endTime": "2026-07-20T20:00:00"
+        }
+      ]
+    }
+  ],
+  "machineCalendars": [
+    {
+      "factoryCode": "F001",
+      "machineCode": "M001",
+      "blocks": []
+    },
+    {
+      "factoryCode": "F001",
+      "machineCode": "M002",
+      "blocks": []
+    }
+  ]
+}

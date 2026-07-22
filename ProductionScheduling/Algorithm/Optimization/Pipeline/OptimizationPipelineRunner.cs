@@ -51,12 +51,16 @@ public class OptimizationPipelineRunner
         Console.WriteLine(
             $"请求算法:{FormatAlgorithms(algorithms)}");
 
+        var hasRequestedAlgorithms =
+            algorithms != null &&
+            algorithms.Count > 0;
+
         var steps = options.Pipeline
-            .Where(x => x.Enabled)
             .Where(x =>
-                algorithms == null ||
-                algorithms.Count == 0 ||
-                algorithms.Contains(x.Algorithm))
+                hasRequestedAlgorithms
+                    ? algorithms!.Contains(
+                        x.Algorithm)
+                    : x.Enabled)
             .OrderBy(x => x.Order)
             .ToList();
 

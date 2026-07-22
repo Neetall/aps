@@ -48,14 +48,14 @@ public sealed class SchedulingAlgorithmOptions
             },
             new()
             {
-                Enabled = true,
+                Enabled = false,
                 Order = 5,
                 Algorithm =
                     OptimizationAlgorithmType.GeneticAlgorithm
             },
             new()
             {
-                Enabled = true,
+                Enabled = false,
                 Order = 6,
                 Algorithm =
                     OptimizationAlgorithmType.CpSat
@@ -108,5 +108,8 @@ public sealed class SchedulingAlgorithmOptions
         = new();
 
     public CpSatOptions CpSat { get; init; }
+        = new();
+
+    public EvaluationScoreOptions Evaluation { get; init; }
         = new();
 }

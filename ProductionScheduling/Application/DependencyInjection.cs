@@ -115,6 +115,12 @@ public static class DependencyInjection
                 provider
                     .GetRequiredService<SchedulingAlgorithmOptions>()
                     .Moves);
+
+        services.AddSingleton(
+            provider =>
+                provider
+                    .GetRequiredService<SchedulingAlgorithmOptions>()
+                    .Evaluation);
     }
 
     private static void RegisterTimeline(

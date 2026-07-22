@@ -6,19 +6,19 @@ public sealed class GeneticAlgorithmOptions
     /// 种群数量
     /// </summary>
     public int PopulationSize { get; set; }
-        = 50;
+        = 32;
 
     /// <summary>
     /// 最大迭代代数
     /// </summary>
     public int Generations { get; set; }
-        = 200;
+        = 120;
 
     /// <summary>
     /// 精英保留数量
     /// </summary>
     public int EliteCount { get; set; }
-        = 5;
+        = 3;
 
     /// <summary>
     /// 交叉概率
@@ -42,5 +42,5 @@ public sealed class GeneticAlgorithmOptions
     /// 连续多少代无改善后终止
     /// </summary>
     public int MaxNoImprovementGenerations { get; set; }
-        = 50;
+        = 30;
 }

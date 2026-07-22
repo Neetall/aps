@@ -1,4 +1,5 @@
 using ProductionScheduling.Algorithm.Scheduling;
+using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
 
@@ -6,6 +7,28 @@ namespace ProductionScheduling.Algorithm.Evaluation;
 
 public class ScheduleEvaluator
 {
+    private readonly EvaluationScoreOptions scoreOptions;
+
+    public ScheduleEvaluator()
+        : this(
+            new EvaluationScoreOptions())
+    {
+    }
+
+    public ScheduleEvaluator(
+        SchedulingAlgorithmOptions options)
+        : this(
+            options.Evaluation)
+    {
+    }
+
+    public ScheduleEvaluator(
+        EvaluationScoreOptions scoreOptions)
+    {
+        this.scoreOptions =
+            scoreOptions;
+    }
+
     public EvaluationResult Evaluate(
         SchedulingSolution solution,
         TimelineContextGroup timelines,
@@ -253,26 +276,26 @@ public class ScheduleEvaluator
 
         var makespanPenalty =
             result.MakespanSlots *
-            10000;
+            scoreOptions.MakespanSlotWeight;
 
 
 
         var delayPenalty =
             result.DelayCount *
-            100000;
+            scoreOptions.DelayCountWeight;
 
 
 
         var unscheduledPenalty =
             result.UnscheduledCount *
-            1000000;
+            scoreOptions.UnscheduledWeight;
 
 
 
         var utilizationPenalty =
             (1 -
-             result.MachineUtilization)
-            * 100;
+            result.MachineUtilization)
+            * scoreOptions.UtilizationWeight;
 
 
 

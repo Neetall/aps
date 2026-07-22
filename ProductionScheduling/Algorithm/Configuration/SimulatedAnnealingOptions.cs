@@ -8,19 +8,19 @@ public sealed class SimulatedAnnealingOptions
     /// <summary>
     /// 最大迭代次数
     /// </summary>
-    public int Iterations { get; init; } = 10000;
+    public int Iterations { get; init; } = 1200;
 
 
     /// <summary>
     /// 初始温度
     /// </summary>
-    public double InitialTemperature { get; init; } = 1000;
+    public double InitialTemperature { get; init; } = 500;
 
 
     /// <summary>
     /// 降温比例
     /// </summary>
-    public double CoolingRate { get; init; } = 0.95;
+    public double CoolingRate { get; init; } = 0.985;
 
 
     /// <summary>

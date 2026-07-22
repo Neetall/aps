@@ -70,8 +70,8 @@ public class SchedulingResultConverter
 
 
 
-            var period =
-                converter.ToPeriod(
+            var periods =
+                converter.ToPeriods(
                     factoryTimeline.TimeModel,
                     operation.StartSlot,
                     operation.DurationSlots);
@@ -112,9 +112,7 @@ public class SchedulingResultConverter
 
 
                     ShiftPeriods =
-                    [
-                        period
-                    ]
+                        periods
                 });
         }
 

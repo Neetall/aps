@@ -149,6 +149,16 @@ public class SchedulingEngine
             result.Evaluation =
                 evaluation;
 
+            foreach(var warning in evaluation.DelayMessages)
+            {
+                if(!result.Warnings.Contains(
+                       warning))
+                {
+                    result.Warnings.Add(
+                        warning);
+                }
+            }
+
             /*
              * Success:
              *
@@ -168,10 +178,15 @@ public class SchedulingEngine
             result.IsFeasible =
                 solution.IsFeasible;
 
+            var delayMessage =
+                evaluation.DelayCount > 0
+                    ? $",延期订单:{evaluation.DelayCount}"
+                    : string.Empty;
+
             result.Message =
                 context.ExecutionOptions.EnableOptimization
-                    ? $"排产完成(已优化)，完工时间:{evaluation.EndTime:yyyy-MM-dd HH:mm},设备利用率:{evaluation.MachineUtilization:P2}"
-                    : $"排产完成，完工时间:{evaluation.EndTime:yyyy-MM-dd HH:mm},设备利用率:{evaluation.MachineUtilization:P2}";
+                    ? $"排产完成(已优化)，完工时间:{evaluation.EndTime:yyyy-MM-dd HH:mm},设备利用率:{evaluation.MachineUtilization:P2}{delayMessage}"
+                    : $"排产完成，完工时间:{evaluation.EndTime:yyyy-MM-dd HH:mm},设备利用率:{evaluation.MachineUtilization:P2}{delayMessage}";
 
             return result;
         }

@@ -1,0 +1,75 @@
+{
+  "requestId": "OPERATION_CROSSES_BREAK_WITHOUT_PREEMPTION",
+  "executionOptions": {
+    "enableOptimization": false,
+    "algorithms": []
+  },
+  "orders": [
+    {
+      "code": "ORD_CROSS_BREAK",
+      "priority": 1,
+      "dueDate": "2026-07-20T18:00:00",
+      "jobTickets": [
+        {
+          "code": "JT_CROSS_BREAK_001",
+          "sequence": 1,
+          "length": 180,
+          "factoryCode": "F001"
+        }
+      ]
+    },
+    {
+      "code": "ORD_WAIT",
+      "priority": 2,
+      "dueDate": "2026-07-20T18:00:00",
+      "jobTickets": [
+        {
+          "code": "JT_WAIT_001",
+          "sequence": 1,
+          "length": 60,
+          "factoryCode": "F001"
+        }
+      ]
+    }
+  ],
+  "machines": [
+    {
+      "code": "M001",
+      "factoryCode": "F001",
+      "capabilities": [
+        {
+          "jobTicketCode": "JT_CROSS_BREAK_001",
+          "hourlyCapacity": 60,
+          "setupMinutes": 0
+        },
+        {
+          "jobTicketCode": "JT_WAIT_001",
+          "hourlyCapacity": 60,
+          "setupMinutes": 0
+        }
+      ]
+    }
+  ],
+  "factoryCalendars": [
+    {
+      "factoryCode": "F001",
+      "periods": [
+        {
+          "startTime": "2026-07-20T08:00:00",
+          "endTime": "2026-07-20T10:00:00"
+        },
+        {
+          "startTime": "2026-07-20T11:00:00",
+          "endTime": "2026-07-20T18:00:00"
+        }
+      ]
+    }
+  ],
+  "machineCalendars": [
+    {
+      "factoryCode": "F001",
+      "machineCode": "M001",
+      "blocks": []
+    }
+  ]
+}

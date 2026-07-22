@@ -1,0 +1,73 @@
+{
+  "requestId": "LOCAL_SEARCH_DUE_DATE_SWAP",
+  "executionOptions": {
+    "enableOptimization": true,
+    "algorithms": [
+      "LocalSearch"
+    ]
+  },
+  "orders": [
+    {
+      "code": "ORD_SLOW_DUE_LATE",
+      "priority": 1,
+      "dueDate": "2026-07-20T20:00:00",
+      "jobTickets": [
+        {
+          "code": "JT_LATE_DUE",
+          "sequence": 1,
+          "length": 200,
+          "factoryCode": "F001"
+        }
+      ]
+    },
+    {
+      "code": "ORD_FAST_DUE_EARLY",
+      "priority": 2,
+      "dueDate": "2026-07-20T10:00:00",
+      "jobTickets": [
+        {
+          "code": "JT_EARLY_DUE",
+          "sequence": 1,
+          "length": 200,
+          "factoryCode": "F001"
+        }
+      ]
+    }
+  ],
+  "machines": [
+    {
+      "code": "M001",
+      "factoryCode": "F001",
+      "capabilities": [
+        {
+          "jobTicketCode": "JT_LATE_DUE",
+          "hourlyCapacity": 100,
+          "setupMinutes": 0
+        },
+        {
+          "jobTicketCode": "JT_EARLY_DUE",
+          "hourlyCapacity": 100,
+          "setupMinutes": 0
+        }
+      ]
+    }
+  ],
+  "factoryCalendars": [
+    {
+      "factoryCode": "F001",
+      "periods": [
+        {
+          "startTime": "2026-07-20T08:00:00",
+          "endTime": "2026-07-20T20:00:00"
+        }
+      ]
+    }
+  ],
+  "machineCalendars": [
+    {
+      "factoryCode": "F001",
+      "machineCode": "M001",
+      "blocks": []
+    }
+  ]
+}
