@@ -121,6 +121,9 @@ public class LnsOptimizer : ISolutionOptimizer
         var bestCount =
             0;
 
+        var noImprovementCount =
+            0;
+
 
 
         for(var i = 0;
@@ -230,9 +233,25 @@ public class LnsOptimizer : ISolutionOptimizer
 
                 bestCount++;
 
+                noImprovementCount =
+                    0;
+
 
                 PipelineLog(
                     $"LNS发现更优方案 Score:{best.Evaluation.Score}");
+            }
+            else
+            {
+                noImprovementCount++;
+
+                if(noImprovementCount >=
+                   options.NoImprovementLimit)
+                {
+                    PipelineLog(
+                        $"LNS提前结束，无改善轮数:{noImprovementCount}");
+
+                    break;
+                }
             }
         }
 

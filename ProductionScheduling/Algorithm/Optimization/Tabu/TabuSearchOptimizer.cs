@@ -121,6 +121,9 @@ public class TabuSearchOptimizer : ISolutionOptimizer
         var noNeighborCount =
             0;
 
+        var noImprovementCount =
+            0;
+
 
 
         for(var iteration = 0;
@@ -128,8 +131,9 @@ public class TabuSearchOptimizer : ISolutionOptimizer
             iteration++)
         {
             var neighbors =
-                neighborhoodGenerator.Generate(
-                    current.Solution);
+                SelectNeighborhood(
+                    neighborhoodGenerator.Generate(
+                        current.Solution));
 
 
 
@@ -336,9 +340,24 @@ public class TabuSearchOptimizer : ISolutionOptimizer
                     cloner.Clone(
                         current);
 
+                noImprovementCount =
+                    0;
 
                 PipelineLog(
                     $"Tabu发现更优方案 Score:{best.Evaluation.Score}");
+            }
+            else
+            {
+                noImprovementCount++;
+
+                if(noImprovementCount >=
+                   options.NoImprovementLimit)
+                {
+                    PipelineLog(
+                        $"TabuSearch提前结束，无改善轮数:{noImprovementCount}");
+
+                    break;
+                }
             }
         }
 
@@ -365,6 +384,41 @@ public class TabuSearchOptimizer : ISolutionOptimizer
             Evaluation =
                 best.Evaluation
         };
+    }
+
+    private List<MoveCandidate> SelectNeighborhood(
+        List<MoveCandidate> neighbors)
+    {
+        if(options.MaxNeighborhoodSize <= 0 ||
+           neighbors.Count <= options.MaxNeighborhoodSize)
+        {
+            return neighbors;
+        }
+
+        var lateOperations =
+            neighbors
+                .OrderByDescending(x =>
+                    x.Operation.EndSlot)
+                .Take(
+                    Math.Max(
+                        1,
+                        options.MaxNeighborhoodSize / 2))
+                .ToList();
+
+        var sampled =
+            neighbors
+                .Except(
+                    lateOperations)
+                .OrderBy(_ =>
+                    Random.Shared.Next())
+                .Take(
+                    options.MaxNeighborhoodSize -
+                    lateOperations.Count);
+
+        return lateOperations
+            .Concat(
+                sampled)
+            .ToList();
     }
 
 

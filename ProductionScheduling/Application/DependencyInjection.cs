@@ -210,20 +210,23 @@ public static class DependencyInjection
         services.AddScoped<MoveSelector>(
             provider =>
             {
+                var options =
+                    provider.GetRequiredService<MoveOptions>();
+
                 var selector =
                     new MoveSelector();
 
                 selector.Register(
                     provider.GetRequiredService<ChangeMachineMove>(),
-                    5);
+                    options.ChangeMachineWeight);
 
                 selector.Register(
                     provider.GetRequiredService<ShiftTimeMove>(),
-                    3);
+                    options.ShiftTimeWeight);
 
                 selector.Register(
                     provider.GetRequiredService<SwapOperationMove>(),
-                    2);
+                    options.SwapOperationWeight);
 
                 return selector;
             });

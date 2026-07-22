@@ -36,7 +36,8 @@ public class GreedyRepairOperator : IRepairOperator
         TimelineContextGroup timelines,
         List<ScheduledOperation> removed)
     {
-        foreach(var operation in removed)
+        foreach(var operation in SortForRepair(
+                    removed))
         {
             var ticket =
                 jobTicketIndex.Get(
@@ -57,6 +58,12 @@ public class GreedyRepairOperator : IRepairOperator
             var capabilities =
                 resourceIndex.GetCapabilities(
                     ticket.Code);
+
+            var earliestStart =
+                GetEarliestStartByPrecedence(
+                    solution,
+                    ticket.OrderCode,
+                    ticket.Sequence);
 
 
 
@@ -85,7 +92,8 @@ public class GreedyRepairOperator : IRepairOperator
                     factory.TimeModel
                         .FindEarliestAvailable(
                             machine,
-                            duration);
+                            duration,
+                            earliestStart);
 
 
 
@@ -169,6 +177,53 @@ public class GreedyRepairOperator : IRepairOperator
             solution.Operations.Add(
                 operation);
         }
+    }
+
+    private List<ScheduledOperation> SortForRepair(
+        IEnumerable<ScheduledOperation> operations)
+    {
+        return operations
+            .OrderBy(x =>
+                jobTicketIndex.Get(
+                    x.JobTicketCode)
+                    ?.OrderCode
+                ?? x.OrderCode,
+                StringComparer.OrdinalIgnoreCase)
+            .ThenBy(x =>
+                jobTicketIndex.Get(
+                    x.JobTicketCode)
+                    ?.Sequence
+                ?? int.MaxValue)
+            .ThenBy(x =>
+                x.JobTicketCode,
+                StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private int GetEarliestStartByPrecedence(
+        SchedulingSolution solution,
+        string orderCode,
+        int sequence)
+    {
+        var previous =
+            solution.Operations
+                .Select(x =>
+                    new
+                    {
+                        Operation = x,
+                        Ticket = jobTicketIndex.Get(
+                            x.JobTicketCode)
+                    })
+                .Where(x =>
+                    x.Ticket != null &&
+                    x.Ticket.OrderCode == orderCode &&
+                    x.Ticket.Sequence < sequence)
+                .OrderByDescending(x =>
+                    x.Ticket!.Sequence)
+                .FirstOrDefault();
+
+        return previous?.Operation.EndSlot
+               ?? 0;
     }
 
 

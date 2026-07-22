@@ -8,5 +8,5 @@ public sealed class LocalSearchOptions
     /// <summary>
     /// 最大迭代次数
     /// </summary>
-    public int Iterations { get; init; } = 150;
+    public int Iterations { get; init; } = 400;
 }
