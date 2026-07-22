@@ -1,10 +1,9 @@
-using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Configuration;
+using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Index;
-using ProductionScheduling.Algorithm.Time;
-using ProductionScheduling.Domain.Orders;
 using ProductionScheduling.Domain.Scheduling;
 using ProductionScheduling.Timeline;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ProductionScheduling.Algorithm.Scheduling;
 
@@ -19,26 +18,39 @@ namespace ProductionScheduling.Algorithm.Scheduling;
 /// </summary>
 public class GreedyScheduler : IScheduler
 {
-    private readonly ScheduleDurationCalculator durationCalculator;
-
     private readonly SchedulingResourceIndex resourceIndex;
+
+    private readonly SchedulePlacementService placementService;
 
     private readonly AlgorithmDebugOptions debugOptions;
 
 
+    [ActivatorUtilitiesConstructor]
     public GreedyScheduler(
-        ScheduleDurationCalculator durationCalculator,
         SchedulingResourceIndex resourceIndex,
+        SchedulePlacementService placementService,
         AlgorithmDebugOptions debugOptions)
     {
-        this.durationCalculator =
-            durationCalculator;
-
         this.resourceIndex =
             resourceIndex;
 
+        this.placementService =
+            placementService;
+
         this.debugOptions =
             debugOptions;
+    }
+
+    public GreedyScheduler(
+        ScheduleDurationCalculator durationCalculator,
+        SchedulingResourceIndex resourceIndex)
+        : this(
+            resourceIndex,
+            new SchedulePlacementService(
+                durationCalculator,
+                resourceIndex),
+            new AlgorithmDebugOptions())
+    {
     }
 
 
@@ -102,7 +114,7 @@ public class GreedyScheduler : IScheduler
 
 
                 var candidate =
-                    FindBestMachine(
+                    placementService.FindBestMachine(
                         ticket,
                         timelines,
                         previousEndSlot);
@@ -127,14 +139,9 @@ public class GreedyScheduler : IScheduler
 
 
 
-                solution.Operations.Add(
-                    candidate.Operation);
-
-
-
-                candidate.MachineTimeline.Occupy(
-                    candidate.Operation.StartSlot,
-                    candidate.Operation.DurationSlots);
+                placementService.Commit(
+                    solution,
+                    candidate);
 
 
 
@@ -169,138 +176,6 @@ public class GreedyScheduler : IScheduler
 
 
         return solution;
-    }
-
-
-
-    private MachineScheduleCandidate? FindBestMachine(
-        JobTicket ticket,
-        TimelineContextGroup timelines,
-        int earliestStartSlot)
-    {
-        MachineScheduleCandidate? best =
-            null;
-
-
-
-        var factoryTimeline =
-            timelines.Get(
-                ticket.FactoryCode);
-
-
-
-        var capabilities =
-            resourceIndex
-                .GetCapabilities(
-                    ticket.Code);
-
-
-
-        Debug(
-            $"工单:{ticket.Code}, 可用设备能力:{capabilities.Count}");
-
-
-
-        foreach(var capability in capabilities)
-        {
-            var machineCode =
-                capability.MachineCode;
-
-
-
-            if(!factoryTimeline.Machines
-                    .TryGetValue(
-                        machineCode,
-                        out var machineTimeline))
-            {
-                Debug(
-                    $"设备不存在Timeline:{machineCode}");
-
-                continue;
-            }
-
-
-
-            var duration =
-                durationCalculator.Calculate(
-                    ticket,
-                    capability);
-
-
-
-            var startSlot =
-                factoryTimeline.TimeModel
-                    .FindEarliestAvailable(
-                        machineTimeline,
-                        duration,
-                        earliestStartSlot);
-
-
-
-            if(startSlot < 0)
-            {
-                Debug(
-                    $"设备无可用时间:{machineCode}");
-
-                continue;
-            }
-
-
-
-            var endSlot =
-                startSlot +
-                duration;
-
-
-
-            Debug(
-                $"候选设备:{machineCode}, Start:{startSlot}, End:{endSlot}");
-
-
-
-            if(best == null ||
-               endSlot < best.EndSlot)
-            {
-                best =
-                    new MachineScheduleCandidate
-                    {
-                        MachineTimeline =
-                            machineTimeline,
-
-
-                        EndSlot =
-                            endSlot,
-
-
-                        Operation =
-                            new ScheduledOperation
-                            {
-                                FactoryCode =
-                                    ticket.FactoryCode,
-
-
-                                JobTicketCode =
-                                    ticket.Code,
-
-
-                                MachineCode =
-                                    machineCode,
-
-
-                                StartSlot =
-                                    startSlot,
-
-
-                                DurationSlots =
-                                    duration
-                            }
-                    };
-            }
-        }
-
-
-
-        return best;
     }
 
 

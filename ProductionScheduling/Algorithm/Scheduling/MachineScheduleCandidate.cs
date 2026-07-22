@@ -2,7 +2,7 @@ using ProductionScheduling.Timeline;
 
 namespace ProductionScheduling.Algorithm.Scheduling;
 
-internal class MachineScheduleCandidate
+public class MachineScheduleCandidate
 {
     public MachineTimeline MachineTimeline { get; set; }
 

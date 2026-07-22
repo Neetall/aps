@@ -95,3 +95,4 @@
 /Users/neetall/Code/WordExchange/APC/ProductionScheduling/ProductionScheduling.Test/obj/Debug/net10.0/ProductionScheduling.Test.pdb
 /Users/neetall/Code/WordExchange/APC/ProductionScheduling/ProductionScheduling.Test/obj/Debug/net10.0/ProductionScheduling.Test.genruntimeconfig.cache
 /Users/neetall/Code/WordExchange/APC/ProductionScheduling/ProductionScheduling.Test/obj/Debug/net10.0/ref/ProductionScheduling.Test.dll
+/Users/neetall/Code/WordExchange/APC/ProductionScheduling/ProductionScheduling.Test/obj/Debug/net10.0/ProductionScheduling.Test.sourcelink.json

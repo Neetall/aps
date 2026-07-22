@@ -141,8 +141,14 @@ public static class DependencyInjection
     private static void RegisterScheduling(
         IServiceCollection services)
     {
-        services.AddScoped<IScheduler,
-            GreedyScheduler>();
+        services.AddScoped<SchedulePlacementService>();
+
+        services.AddScoped<IScheduler>(
+            provider =>
+                new GreedyScheduler(
+                    provider.GetRequiredService<SchedulingResourceIndex>(),
+                    provider.GetRequiredService<SchedulePlacementService>(),
+                    provider.GetRequiredService<AlgorithmDebugOptions>()));
     }
 
     private static void RegisterEvaluation(
@@ -246,6 +252,10 @@ public static class DependencyInjection
         /*
          * Genetic Algorithm
          */
+        services.AddScoped<GeneticDecoder>();
+        services.AddScoped<TournamentSelection>();
+        services.AddScoped<OrderCrossover>();
+        services.AddScoped<GeneticMutation>();
         services.AddScoped<GeneticAlgorithmOptimizer>();
 
         /*

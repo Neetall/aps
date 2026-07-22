@@ -51,6 +51,9 @@ public class SchedulingSolution
             operations.Add(
                 new ScheduledOperation
                 {
+                    OrderCode =
+                        x.OrderCode,
+
                     FactoryCode =
                         x.FactoryCode,
 

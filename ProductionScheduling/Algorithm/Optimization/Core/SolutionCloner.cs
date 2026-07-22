@@ -187,7 +187,20 @@ public class SolutionCloner
 
 
             DelayCount =
-                source.DelayCount
+                source.DelayCount,
+
+
+            DelayPenalty =
+                source.DelayPenalty,
+
+
+            DelayMessages =
+                new List<string>(
+                    source.DelayMessages),
+
+
+            UnscheduledCount =
+                source.UnscheduledCount
         };
     }
 
@@ -207,6 +220,9 @@ public class SolutionCloner
             result.Operations.Add(
                 new ScheduledOperation
                 {
+                    OrderCode =
+                        operation.OrderCode,
+
                     FactoryCode =
                         operation.FactoryCode,
 
@@ -229,6 +245,13 @@ public class SolutionCloner
         }
 
 
+
+        result.IsFeasible =
+            solution.IsFeasible;
+
+        result.UnscheduledJobTickets =
+            new List<string>(
+                solution.UnscheduledJobTickets);
 
         return result;
     }
