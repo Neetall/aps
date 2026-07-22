@@ -1,13 +1,8 @@
 {
-  "requestId": "REAL_SCALE_NO_GA_CPSAT_001",
+  "requestId": "REAL_SCALE_DEFAULT_GREEDY_CPSAT_001",
   "executionOptions": {
     "enableOptimization": true,
-    "algorithms": [
-      "LocalSearch",
-      "SimulatedAnnealing",
-      "Tabu",
-      "Lns"
-    ]
+    "algorithms": []
   },
   "options": {
     "timeGranularityMinutes": 60,

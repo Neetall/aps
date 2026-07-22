@@ -17,7 +17,7 @@ public sealed class SchedulingAlgorithmOptions
         [
             new()
             {
-                Enabled = true,
+                Enabled = false,
                 Order = 1,
                 Algorithm =
                     OptimizationAlgorithmType.LocalSearch
@@ -25,7 +25,7 @@ public sealed class SchedulingAlgorithmOptions
 
             new()
             {
-                Enabled = true,
+                Enabled = false,
                 Order = 2,
                 Algorithm =
                     OptimizationAlgorithmType.SimulatedAnnealing
@@ -33,7 +33,7 @@ public sealed class SchedulingAlgorithmOptions
 
             new()
             {
-                Enabled = true,
+                Enabled = false,
                 Order = 3,
                 Algorithm =
                     OptimizationAlgorithmType.Tabu
@@ -41,7 +41,7 @@ public sealed class SchedulingAlgorithmOptions
 
             new()
             {
-                Enabled = true,
+                Enabled = false,
                 Order = 4,
                 Algorithm =
                     OptimizationAlgorithmType.Lns
@@ -55,7 +55,7 @@ public sealed class SchedulingAlgorithmOptions
             },
             new()
             {
-                Enabled = false,
+                Enabled = true,
                 Order = 6,
                 Algorithm =
                     OptimizationAlgorithmType.CpSat

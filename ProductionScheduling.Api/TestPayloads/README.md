@@ -18,6 +18,7 @@
 8. `07-due-date-warning-soft-constraint.json`
 9. `08-operation-crosses-break-without-preemption.json`
 10. `09-cpsat-machine-choice.json`
+11. `10-real-scale-30-orders-60-machines-no-ga-cpsat.json`
 
 说明：
 
@@ -26,4 +27,6 @@
 - LNS 当前是基础 destroy/greedy repair，适合作为观察破坏-修复流水线的测试入口；它不一定每次都优于 Greedy。
 - `DueDateWarning` 场景用于确认交期是软约束：实在无法满足时仍返回方案，并在 `message`、`warnings`、`evaluation.delayMessages` 中说明延期。
 - `OperationCrossesBreak` 场景用于确认单个子订单可以跨休息时间，但不会被其他子订单插入；响应里的 `shiftPeriods` 会按实际工作时间拆段。
-- `CpSatMachineChoice` 场景用于确认 CP-SAT 以数学求解方式选择机器和开始时间；默认流水线不自动跑 CP-SAT，需要在 `algorithms` 中显式传入 `CpSat`。
+- `CpSatMachineChoice` 场景用于确认 CP-SAT 以数学求解方式选择机器和开始时间。
+- 当前默认优化流水线是 `Greedy + CpSat`：`enableOptimization=true` 且 `algorithms=[]` 时，会在 Greedy 初始解后执行 CP-SAT。
+- LocalSearch、SimulatedAnnealing、Tabu、Lns、GeneticAlgorithm 仍可在 `algorithms` 中显式传入开启。
