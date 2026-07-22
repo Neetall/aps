@@ -95,7 +95,8 @@ public class ShiftTimeMoveTests
 
 
         var move =
-            new ShiftTimeMove();
+            new ShiftTimeMove(
+                TestAlgorithmFactory.CreateDebugOptions());
 
 
 

@@ -98,7 +98,8 @@ public class TabuSearchOptimizerTests
 
         moveSelector.Register(
             new ChangeMachineMove(
-                new ScheduleDurationCalculator()),
+                new ScheduleDurationCalculator(),
+                TestAlgorithmFactory.CreateDebugOptions()),
             10);
 
 
@@ -123,7 +124,8 @@ public class TabuSearchOptimizerTests
                     TabuTenure = 5,
 
                     AllowWorseMoves = true
-                });
+                },
+                TestAlgorithmFactory.CreateDebugOptions());
 
 
 
@@ -281,12 +283,14 @@ public class TabuSearchOptimizerTests
 
         moveSelector.Register(
             new ChangeMachineMove(
-                new ScheduleDurationCalculator()),
+                new ScheduleDurationCalculator(),
+                TestAlgorithmFactory.CreateDebugOptions()),
             10);
 
 
         moveSelector.Register(
-            new ShiftTimeMove(),
+            new ShiftTimeMove(
+                TestAlgorithmFactory.CreateDebugOptions()),
             10);
 
 
@@ -311,7 +315,8 @@ public class TabuSearchOptimizerTests
                     TabuTenure = 5,
 
                     AllowWorseMoves = true
-                });
+                },
+                TestAlgorithmFactory.CreateDebugOptions());
 
 
 

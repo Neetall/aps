@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "kjaNc+A6TtA=",
+  "dgSpecHash": "eJYaVhGxElg=",
   "success": true,
   "projectFilePath": "/Users/neetall/Code/WordExchange/APC/ProductionScheduling/ProductionScheduling.Test/ProductionScheduling.Test.csproj",
   "expectedPackageFiles": [
@@ -23,7 +23,8 @@
     "/Users/neetall/.nuget/packages/xunit.assert/2.9.3/xunit.assert.2.9.3.nupkg.sha512",
     "/Users/neetall/.nuget/packages/xunit.core/2.9.3/xunit.core.2.9.3.nupkg.sha512",
     "/Users/neetall/.nuget/packages/xunit.extensibility.core/2.9.3/xunit.extensibility.core.2.9.3.nupkg.sha512",
-    "/Users/neetall/.nuget/packages/xunit.extensibility.execution/2.9.3/xunit.extensibility.execution.2.9.3.nupkg.sha512"
+    "/Users/neetall/.nuget/packages/xunit.extensibility.execution/2.9.3/xunit.extensibility.execution.2.9.3.nupkg.sha512",
+    "/Users/neetall/.nuget/packages/xunit.runner.visualstudio/3.1.5/xunit.runner.visualstudio.3.1.5.nupkg.sha512"
   ],
   "logs": []
 }

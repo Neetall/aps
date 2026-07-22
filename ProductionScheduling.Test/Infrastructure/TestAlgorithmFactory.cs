@@ -3,7 +3,10 @@ using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Index;
 using ProductionScheduling.Algorithm.Moves.Implementations;
 using ProductionScheduling.Algorithm.Optimization.Core;
+using ProductionScheduling.Algorithm.Optimization.CpSat;
 using ProductionScheduling.Algorithm.Optimization.Factory;
+using ProductionScheduling.Algorithm.Optimization.Genetic;
+using ProductionScheduling.Algorithm.Optimization.Lns;
 using ProductionScheduling.Algorithm.Optimization.Lns.Acceptance;
 using ProductionScheduling.Algorithm.Optimization.Lns.Core;
 using ProductionScheduling.Algorithm.Optimization.Lns.Destroy;
@@ -12,14 +15,23 @@ using ProductionScheduling.Algorithm.Optimization.LocalSearch;
 using ProductionScheduling.Algorithm.Optimization.Pipeline;
 using ProductionScheduling.Algorithm.Optimization.Selection;
 using ProductionScheduling.Algorithm.Optimization.SimulatedAnnealing;
+using ProductionScheduling.Algorithm.Optimization.Tabu;
 using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Algorithm.Validation;
 using ProductionScheduling.Domain.Scheduling;
+using ProductionScheduling.Timeline;
 
 namespace ProductionScheduling.Test.Infrastructure;
 
 public static class TestAlgorithmFactory
 {
+    public static AlgorithmDebugOptions CreateDebugOptions()
+    {
+        return new AlgorithmDebugOptions();
+    }
+
+
+
     public static IScheduler CreateGreedyScheduler(
         SchedulingContext context)
     {
@@ -27,10 +39,16 @@ public static class TestAlgorithmFactory
             CreateResourceIndex(
                 context);
 
+        var durationCalculator =
+            new ScheduleDurationCalculator();
+
 
         return new GreedyScheduler(
-            new ScheduleDurationCalculator(),
-            resourceIndex);
+            resourceIndex,
+            new SchedulePlacementService(
+                durationCalculator,
+                resourceIndex),
+            CreateDebugOptions());
     }
 
 
@@ -54,19 +72,30 @@ public static class TestAlgorithmFactory
                 new Random(1));
 
 
+        var durationCalculator =
+            new ScheduleDurationCalculator();
+
+
+        var debugOptions =
+            CreateDebugOptions();
+
+
         moveSelector.Register(
             new ChangeMachineMove(
-                new ScheduleDurationCalculator()),
+                durationCalculator,
+                debugOptions),
             options.Moves.ChangeMachineWeight);
 
 
         moveSelector.Register(
-            new ShiftTimeMove(),
+            new ShiftTimeMove(
+                debugOptions),
             options.Moves.ShiftTimeWeight);
 
 
         moveSelector.Register(
-            new SwapOperationMove(),
+            new SwapOperationMove(
+                debugOptions),
             options.Moves.SwapOperationWeight);
 
 
@@ -79,7 +108,8 @@ public static class TestAlgorithmFactory
             moveSelector,
             new SolutionCloner(),
             new SchedulingSolutionValidator(),
-            options.LocalSearch);
+            options.LocalSearch,
+            debugOptions);
     }
 
 
@@ -105,13 +135,16 @@ public static class TestAlgorithmFactory
             new OperationSelector(
                 new Random(1)),
             new MoveSelectorFactory(
-                    options.Moves)
+                    options.Moves,
+                    new ScheduleDurationCalculator(),
+                    CreateDebugOptions())
                 .Create(),
             new SolutionCloner(),
             new AcceptanceCriteria(
                 options.Acceptance),
             new SchedulingSolutionValidator(),
-            options.SimulatedAnnealing);
+            options.SimulatedAnnealing,
+            CreateDebugOptions());
     }
 
 
@@ -156,6 +189,32 @@ public static class TestAlgorithmFactory
         ILnsAcceptance lnsAcceptance,
         MoveNeighborhoodGenerator neighborhoodGenerator)
     {
+        var optimizerFactory =
+            CreateOptimizerFactory(
+                context,
+                options,
+                destroyOperator,
+                repairOperator,
+                lnsAcceptance,
+                neighborhoodGenerator);
+
+
+
+        return new OptimizationPipelineRunner(
+            options,
+            optimizerFactory);
+    }
+
+
+
+    public static OptimizerFactory CreateOptimizerFactory(
+        SchedulingContext context,
+        SchedulingAlgorithmOptions options,
+        IDestroyOperator? destroyOperator = null,
+        IRepairOperator? repairOperator = null,
+        ILnsAcceptance? lnsAcceptance = null,
+        MoveNeighborhoodGenerator? neighborhoodGenerator = null)
+    {
         var resourceIndex =
             CreateResourceIndex(
                 context);
@@ -166,62 +225,117 @@ public static class TestAlgorithmFactory
                 context);
 
 
+        var durationCalculator =
+            new ScheduleDurationCalculator();
 
-        var moveSelectorFactory =
+
+        var debugOptions =
+            CreateDebugOptions();
+
+
+        var moveSelector =
             new MoveSelectorFactory(
-                options.Moves);
+                    options.Moves,
+                    durationCalculator,
+                    debugOptions)
+                .Create();
 
 
-
-        var factoryContext =
-            new OptimizerFactoryContext
-            {
-                ResourceIndex =
-                    resourceIndex,
-
-                JobTicketIndex =
-                    ticketIndex,
-
-                OperationSelector =
-                    new OperationSelector(
-                        new Random(1)),
-
-                MoveSelectorFactory =
-                    moveSelectorFactory,
-
-                Cloner =
-                    new SolutionCloner(),
-
-                Validator =
-                    new SchedulingSolutionValidator(),
+        neighborhoodGenerator ??=
+            new MoveNeighborhoodGenerator(
+                moveSelector);
 
 
-                DestroyOperator =
-                    destroyOperator,
-
-                RepairOperator =
-                    repairOperator,
-
-                LnsAcceptance =
-                    lnsAcceptance,
-
-                NeighborhoodGenerator =
-                    neighborhoodGenerator,
-
-                Options =
-                    options
-            };
+        destroyOperator ??=
+            new RandomDestroyOperator();
 
 
+        repairOperator ??=
+            new GreedyRepairOperator(
+                resourceIndex,
+                ticketIndex,
+                durationCalculator);
 
-        var optimizerFactory =
-            new OptimizerFactory(
-                factoryContext);
+
+        lnsAcceptance ??=
+            new LnsAcceptance();
 
 
+        var cloner =
+            new SolutionCloner();
 
-        return new OptimizationPipelineRunner(
-            options,
-            optimizerFactory.Create);
+
+        var validator =
+            new SchedulingSolutionValidator();
+
+
+        var placementService =
+            new SchedulePlacementService(
+                durationCalculator,
+                resourceIndex);
+
+
+        var timelineInitializer =
+            new TimelineInitializer();
+
+
+        return new OptimizerFactory(
+            new LocalSearchOptimizer(
+                resourceIndex,
+                ticketIndex,
+                new OperationSelector(
+                    new Random(1)),
+                moveSelector,
+                cloner,
+                validator,
+                options.LocalSearch,
+                debugOptions),
+            new SimulatedAnnealingOptimizer(
+                resourceIndex,
+                ticketIndex,
+                new OperationSelector(
+                    new Random(1)),
+                moveSelector,
+                cloner,
+                new AcceptanceCriteria(
+                    options.Acceptance),
+                validator,
+                options.SimulatedAnnealing,
+                debugOptions),
+            new TabuSearchOptimizer(
+                resourceIndex,
+                ticketIndex,
+                neighborhoodGenerator,
+                cloner,
+                validator,
+                options.TabuSearch,
+                debugOptions),
+            new LnsOptimizer(
+                cloner,
+                destroyOperator,
+                repairOperator,
+                lnsAcceptance,
+                validator,
+                options.Lns,
+                debugOptions),
+            new GeneticAlgorithmOptimizer(
+                options,
+                resourceIndex,
+                new GeneticPopulationInitializer(),
+                new GeneticDecoder(
+                    timelineInitializer,
+                    placementService),
+                new TournamentSelection(
+                    options.GeneticAlgorithm),
+                new OrderCrossover(),
+                new GeneticMutation(
+                    options.GeneticAlgorithm),
+                cloner),
+            new CpSatOptimizer(
+                options,
+                resourceIndex,
+                durationCalculator,
+                timelineInitializer,
+                validator));
     }
 }

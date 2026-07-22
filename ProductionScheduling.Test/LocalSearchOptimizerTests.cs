@@ -1,3 +1,4 @@
+using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Optimization.Core;
@@ -72,7 +73,9 @@ public class LocalSearchOptimizerTests
 
         var moveSelector =
             new MoveSelectorFactory(
-                    options.Moves)
+                    options.Moves,
+                    new ScheduleDurationCalculator(),
+                    TestAlgorithmFactory.CreateDebugOptions())
                 .Create();
 
 
@@ -86,7 +89,8 @@ public class LocalSearchOptimizerTests
                 moveSelector,
                 new SolutionCloner(),
                 new SchedulingSolutionValidator(),
-                options.LocalSearch);
+                options.LocalSearch,
+                TestAlgorithmFactory.CreateDebugOptions());
 
 
 

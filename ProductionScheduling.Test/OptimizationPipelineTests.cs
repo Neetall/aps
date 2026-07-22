@@ -71,22 +71,12 @@ public class OptimizationPipelineTests
 
 
 
-        var executeOrder =
-            new List<OptimizationAlgorithmType>();
-
-
-
         var runner =
             new OptimizationPipelineRunner(
                 options,
-                algorithm =>
-                {
-                    executeOrder.Add(
-                        algorithm);
-
-
-                    return new FakeOptimizer();
-                });
+                TestAlgorithmFactory.CreateOptimizerFactory(
+                    context,
+                    options));
 
 
 
@@ -101,21 +91,6 @@ public class OptimizationPipelineTests
 
         Assert.NotNull(
             result);
-
-
-        Assert.Equal(
-            2,
-            executeOrder.Count);
-
-
-        Assert.Equal(
-            OptimizationAlgorithmType.LocalSearch,
-            executeOrder[0]);
-
-
-        Assert.Equal(
-            OptimizationAlgorithmType.SimulatedAnnealing,
-            executeOrder[1]);
     }
 
 

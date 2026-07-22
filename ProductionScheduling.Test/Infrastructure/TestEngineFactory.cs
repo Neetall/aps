@@ -8,6 +8,7 @@ using ProductionScheduling.Algorithm.Optimization.Lns.Acceptance;
 using ProductionScheduling.Algorithm.Optimization.Lns.Destroy;
 using ProductionScheduling.Algorithm.Optimization.Lns.Repair;
 using ProductionScheduling.Algorithm.Optimization.Selection;
+using ProductionScheduling.Algorithm.Validation;
 using ProductionScheduling.Application;
 using ProductionScheduling.Application.Result;
 using ProductionScheduling.Domain.Scheduling;
@@ -79,6 +80,11 @@ public static class TestEngineFactory
                     context);
 
 
+        var debugOptions =
+            TestAlgorithmFactory
+                .CreateDebugOptions();
+
+
 
         /*
          * Move
@@ -90,17 +96,20 @@ public static class TestEngineFactory
 
         moveSelector.Register(
             new ChangeMachineMove(
-                new ScheduleDurationCalculator()),
+                new ScheduleDurationCalculator(),
+                debugOptions),
             options.Moves.ChangeMachineWeight);
 
 
         moveSelector.Register(
-            new ShiftTimeMove(),
+            new ShiftTimeMove(
+                debugOptions),
             options.Moves.ShiftTimeWeight);
 
 
         moveSelector.Register(
-            new SwapOperationMove(),
+            new SwapOperationMove(
+                debugOptions),
             options.Moves.SwapOperationWeight);
 
 
@@ -152,6 +161,9 @@ public static class TestEngineFactory
             scheduler,
             evaluator,
             resultConverter,
-            pipelineRunner);
+            pipelineRunner,
+            new SchedulingSolutionValidator(),
+            ticketIndex,
+            resourceIndex);
     }
 }

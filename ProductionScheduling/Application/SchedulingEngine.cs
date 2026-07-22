@@ -94,6 +94,12 @@ public class SchedulingEngine
                 context,
                 timelines);
 
+            var initialEvaluation =
+                evaluator.Evaluate(
+                    solution,
+                    timelines,
+                    context);
+
             /*
              * 4.
              * 执行优化流水线
@@ -184,9 +190,11 @@ public class SchedulingEngine
                     : string.Empty;
 
             result.Message =
-                context.ExecutionOptions.EnableOptimization
-                    ? $"排产完成(已优化)，完工时间:{evaluation.EndTime:yyyy-MM-dd HH:mm},设备利用率:{evaluation.MachineUtilization:P2}{delayMessage}"
-                    : $"排产完成，完工时间:{evaluation.EndTime:yyyy-MM-dd HH:mm},设备利用率:{evaluation.MachineUtilization:P2}{delayMessage}";
+                BuildMessage(
+                    context.ExecutionOptions.EnableOptimization,
+                    initialEvaluation,
+                    evaluation,
+                    delayMessage);
 
             return result;
         }
@@ -238,5 +246,45 @@ public class SchedulingEngine
         return string.Join(
             ",",
             algorithms);
+    }
+
+    private static string BuildMessage(
+        bool enableOptimization,
+        EvaluationResult initialEvaluation,
+        EvaluationResult evaluation,
+        string delayMessage)
+    {
+        var baseMessage =
+            $"完工时间:{evaluation.EndTime:yyyy-MM-dd HH:mm},设备利用率:{evaluation.MachineUtilization:P2}{delayMessage}";
+
+        if(!enableOptimization)
+        {
+            return $"排产完成，{baseMessage}";
+        }
+
+        var improvement =
+            initialEvaluation.Score -
+            evaluation.Score;
+
+        if(improvement > 0.000001)
+        {
+            return
+                $"排产完成(优化成功)，{baseMessage}," +
+                $"优化前Score:{FormatScore(initialEvaluation.Score)}," +
+                $"优化后Score:{FormatScore(evaluation.Score)}," +
+                $"降低Score:{FormatScore(improvement)}";
+        }
+
+        return
+            $"排产完成(未成功优化)，{baseMessage}," +
+            $"优化前Score:{FormatScore(initialEvaluation.Score)}," +
+            $"优化后Score:{FormatScore(evaluation.Score)}";
+    }
+
+    private static string FormatScore(
+        double score)
+    {
+        return score.ToString(
+            "0.######");
     }
 }

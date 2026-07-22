@@ -1,5 +1,8 @@
+using ProductionScheduling.Algorithm.Constraints;
 using ProductionScheduling.Algorithm.Scheduling;
 using ProductionScheduling.Algorithm.Validation;
+using ProductionScheduling.Domain.Orders;
+using ProductionScheduling.Domain.Resources;
 using ProductionScheduling.Test.Infrastructure;
 using Xunit;
 
@@ -72,7 +75,7 @@ public class SchedulingSolutionValidatorTests
 
 
 
-        Assert.Throws<InvalidOperationException>(
+        Assert.Throws<ConstraintViolationException>(
             () =>
                 validator.Validate(
                     solution,
@@ -88,6 +91,30 @@ public class SchedulingSolutionValidatorTests
         var context =
             TestSchedulingDataFactory
                 .CreateSimpleContext();
+
+
+        context.Orders[0]
+            .JobTickets
+            .Add(
+                new JobTicket
+                {
+                    Code = "JT002",
+                    FactoryCode = "F001",
+                    Sequence = 2,
+                    Length = 100
+                });
+
+
+        context.Machines[0]
+            .Capabilities
+            .Add(
+                new MachineCapability
+                {
+                    MachineCode = "M001",
+                    JobTicketCode = "JT002",
+                    HourlyCapacity = 50,
+                    SetupMinutes = 0
+                });
 
 
 
@@ -148,7 +175,7 @@ public class SchedulingSolutionValidatorTests
 
 
 
-        Assert.Throws<InvalidOperationException>(
+        Assert.Throws<ConstraintViolationException>(
             () =>
                 validator.Validate(
                     solution,
@@ -209,7 +236,7 @@ public class SchedulingSolutionValidatorTests
 
 
 
-        Assert.Throws<InvalidOperationException>(
+        Assert.Throws<ConstraintViolationException>(
             () =>
                 validator.Validate(
                     solution,

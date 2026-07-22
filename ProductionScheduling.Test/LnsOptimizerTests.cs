@@ -104,8 +104,7 @@ public class LnsOptimizerTests
 
         var destroy =
             new WorstScoreDestroyOperator(
-                evaluator,
-                context);
+                evaluator);
 
 
 
@@ -130,7 +129,8 @@ public class LnsOptimizerTests
                 {
                     Iterations = 20,
                     DestroyRate = 0.5
-                });
+                },
+                TestAlgorithmFactory.CreateDebugOptions());
 
 
 

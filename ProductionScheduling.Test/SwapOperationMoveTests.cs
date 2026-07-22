@@ -132,7 +132,8 @@ public class SwapOperationMoveTests
 
 
         var move =
-            new SwapOperationMove();
+            new SwapOperationMove(
+                TestAlgorithmFactory.CreateDebugOptions());
 
 
 

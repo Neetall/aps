@@ -101,7 +101,8 @@ public class ChangeMachineMoveTests
 
         var move =
             new ChangeMachineMove(
-                new ScheduleDurationCalculator());
+                new ScheduleDurationCalculator(),
+                TestAlgorithmFactory.CreateDebugOptions());
 
 
 
