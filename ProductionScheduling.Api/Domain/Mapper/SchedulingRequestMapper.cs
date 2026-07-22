@@ -46,8 +46,8 @@ public static class SchedulingRequestMapper
             ExecutionOptions =
                 new SchedulingExecutionOptions
                 {
-                    EnableOptimization =
-                        request.ExecutionOptions.EnableOptimization,
+                    EnableOptimization = request.ExecutionOptions.EnableOptimization,
+                    Algorithms = request.ExecutionOptions.Algorithms
                 }
         };
     }

@@ -1,33 +1,42 @@
-using Microsoft.Extensions.DependencyInjection;
-
 using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Optimization.Core;
-using ProductionScheduling.Algorithm.Optimization.LocalSearch;
+using ProductionScheduling.Algorithm.Optimization.CpSat;
+using ProductionScheduling.Algorithm.Optimization.Genetic;
 using ProductionScheduling.Algorithm.Optimization.Lns;
+using ProductionScheduling.Algorithm.Optimization.LocalSearch;
 using ProductionScheduling.Algorithm.Optimization.SimulatedAnnealing;
 using ProductionScheduling.Algorithm.Optimization.Tabu;
-
 
 namespace ProductionScheduling.Algorithm.Optimization.Factory;
 
 /// <summary>
 /// 优化器工厂
-///
-/// 根据算法类型从DI容器获取优化器
+/// 根据算法类型返回对应优化器
 /// </summary>
-public class OptimizerFactory
+public sealed class OptimizerFactory
 {
-    private readonly IServiceProvider provider;
-
+    private readonly LocalSearchOptimizer localSearch;
+    private readonly SimulatedAnnealingOptimizer simulatedAnnealing;
+    private readonly TabuSearchOptimizer tabu;
+    private readonly LnsOptimizer lns;
+    private readonly GeneticAlgorithmOptimizer geneticAlgorithm;
+    private readonly CpSatOptimizer cpSat;
 
     public OptimizerFactory(
-        IServiceProvider provider)
+        LocalSearchOptimizer localSearch,
+        SimulatedAnnealingOptimizer simulatedAnnealing,
+        TabuSearchOptimizer tabu,
+        LnsOptimizer lns,
+        GeneticAlgorithmOptimizer geneticAlgorithm,
+        CpSatOptimizer cpSat)
     {
-        this.provider =
-            provider;
+        this.localSearch = localSearch;
+        this.simulatedAnnealing = simulatedAnnealing;
+        this.tabu = tabu;
+        this.lns = lns;
+        this.geneticAlgorithm = geneticAlgorithm;
+        this.cpSat = cpSat;
     }
-
-
 
     public ISolutionOptimizer Create(
         OptimizationAlgorithmType type)
@@ -35,33 +44,28 @@ public class OptimizerFactory
         return type switch
         {
             OptimizationAlgorithmType.LocalSearch =>
-                provider.GetRequiredService<
-                    LocalSearchOptimizer>(),
-
+                localSearch,
 
             OptimizationAlgorithmType.SimulatedAnnealing =>
-                provider.GetRequiredService<
-                    SimulatedAnnealingOptimizer>(),
-
+                simulatedAnnealing,
 
             OptimizationAlgorithmType.Tabu =>
-                provider.GetRequiredService<
-                    TabuSearchOptimizer>(),
-
+                tabu,
 
             OptimizationAlgorithmType.Lns =>
-                provider.GetRequiredService<
-                    LnsOptimizer>(),
+                lns,
 
+            OptimizationAlgorithmType.GeneticAlgorithm =>
+                geneticAlgorithm,
 
-            OptimizationAlgorithmType.Genetic =>
-                throw new NotImplementedException(
-                    "Genetic优化器尚未实现"),
-
+            OptimizationAlgorithmType.CpSat =>
+                cpSat,
 
             _ =>
                 throw new ArgumentOutOfRangeException(
-                    nameof(type))
+                    nameof(type),
+                    type,
+                    $"不支持的优化算法:{type}")
         };
     }
 }

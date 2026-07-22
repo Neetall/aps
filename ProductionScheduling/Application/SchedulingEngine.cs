@@ -12,22 +12,13 @@ namespace ProductionScheduling.Application;
 public class SchedulingEngine
 {
     private readonly ScheduleEvaluator evaluator;
-
     private readonly OptimizationPipelineRunner pipelineRunner;
-
     private readonly SchedulingResultConverter resultConverter;
-
     private readonly IScheduler scheduler;
-
     private readonly SchedulingSolutionValidator validator;
-
     private readonly TimelineInitializer timelineInitializer;
-
     private readonly JobTicketIndex jobTicketIndex;
-
     private readonly SchedulingResourceIndex resourceIndex;
-
-
 
     public SchedulingEngine(
         TimelineInitializer timelineInitializer,
@@ -39,32 +30,15 @@ public class SchedulingEngine
         JobTicketIndex jobTicketIndex,
         SchedulingResourceIndex resourceIndex)
     {
-        this.timelineInitializer =
-            timelineInitializer;
-
-        this.scheduler =
-            scheduler;
-
-        this.evaluator =
-            evaluator;
-
-        this.resultConverter =
-            resultConverter;
-
-        this.pipelineRunner =
-            pipelineRunner;
-
-        this.validator =
-            validator;
-
-        this.jobTicketIndex =
-            jobTicketIndex;
-
-        this.resourceIndex =
-            resourceIndex;
+        this.timelineInitializer = timelineInitializer;
+        this.scheduler = scheduler;
+        this.evaluator = evaluator;
+        this.resultConverter = resultConverter;
+        this.pipelineRunner = pipelineRunner;
+        this.validator = validator;
+        this.jobTicketIndex = jobTicketIndex;
+        this.resourceIndex = resourceIndex;
     }
-
-
 
     public SchedulingResult Execute(
         SchedulingContext context)
@@ -82,11 +56,8 @@ public class SchedulingEngine
             jobTicketIndex.Build(
                 context.Orders);
 
-
             resourceIndex.Build(
                 context.Machines);
-
-
 
             /*
              * 1.
@@ -95,8 +66,6 @@ public class SchedulingEngine
             var timelines =
                 timelineInitializer.Initialize(
                     context);
-
-
 
             /*
              * 2.
@@ -107,11 +76,8 @@ public class SchedulingEngine
                     context,
                     timelines);
 
-
             Console.WriteLine(
                 $"Greedy结果数量:{solution.Operations.Count}");
-
-
 
             /*
              * 3.
@@ -128,31 +94,28 @@ public class SchedulingEngine
                 context,
                 timelines);
 
-
-
             /*
              * 4.
              * 执行优化流水线
              */
             if(context.ExecutionOptions.EnableOptimization)
             {
+                Console.WriteLine(
+                    $"Engine收到算法:{FormatAlgorithms(context)}");
+
                 var optimizeResult =
                     pipelineRunner.Run(
                         solution,
                         context,
                         timelines,
-                        evaluator);
-
-
+                        evaluator,
+                        context.ExecutionOptions.Algorithms);
 
                 solution =
                     optimizeResult.Solution;
 
-
                 timelines =
                     optimizeResult.Timelines;
-
-
 
                 /*
                  * 优化后再次校验
@@ -162,8 +125,6 @@ public class SchedulingEngine
                     context,
                     timelines);
             }
-
-
 
             /*
              * 5.
@@ -175,8 +136,6 @@ public class SchedulingEngine
                     timelines,
                     context);
 
-
-
             /*
              * 6.
              * 转换接口结果
@@ -187,12 +146,8 @@ public class SchedulingEngine
                     timelines,
                     context);
 
-
-
             result.Evaluation =
                 evaluation;
-
-
 
             /*
              * Success:
@@ -205,8 +160,6 @@ public class SchedulingEngine
             result.Success =
                 true;
 
-
-
             /*
              * IsFeasible:
              *
@@ -215,15 +168,10 @@ public class SchedulingEngine
             result.IsFeasible =
                 solution.IsFeasible;
 
-
-
             result.Message =
                 context.ExecutionOptions.EnableOptimization
-                    ?
-                    $"排产完成(已优化)，完工时间:{evaluation.EndTime:yyyy-MM-dd HH:mm},设备利用率:{evaluation.MachineUtilization:P2}"
-                    :
-                    $"排产完成，完工时间:{evaluation.EndTime:yyyy-MM-dd HH:mm},设备利用率:{evaluation.MachineUtilization:P2}";
-
+                    ? $"排产完成(已优化)，完工时间:{evaluation.EndTime:yyyy-MM-dd HH:mm},设备利用率:{evaluation.MachineUtilization:P2}"
+                    : $"排产完成，完工时间:{evaluation.EndTime:yyyy-MM-dd HH:mm},设备利用率:{evaluation.MachineUtilization:P2}";
 
             return result;
         }
@@ -232,15 +180,11 @@ public class SchedulingEngine
             return new SchedulingResult
             {
                 Success = false,
-
                 IsFeasible = false,
-
                 Message = ex.Message
             };
         }
     }
-
-
 
     private void TryValidate(
         SchedulingSolution solution,
@@ -259,9 +203,25 @@ public class SchedulingEngine
             solution.IsFeasible =
                 false;
 
-
             Console.WriteLine(
                 $"排产校验警告:{ex.Message}");
         }
+    }
+
+    private static string FormatAlgorithms(
+        SchedulingContext context)
+    {
+        var algorithms =
+            context.ExecutionOptions.Algorithms;
+
+        if(algorithms == null)
+            return "未传入";
+
+        if(algorithms.Count == 0)
+            return "空集合";
+
+        return string.Join(
+            ",",
+            algorithms);
     }
 }

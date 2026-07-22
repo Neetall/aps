@@ -157,7 +157,7 @@ public class SolutionCloner
 
 
 
-    private EvaluationResult? CloneEvaluation(
+    public EvaluationResult? CloneEvaluation(
         EvaluationResult? source)
     {
         if(source == null)

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using ProductionScheduling.Api.Services;
 using ProductionScheduling.Application;
 
@@ -5,7 +6,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 // MVC Controller
-builder.Services.AddControllers();
+
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
+    });
 
 
 // APS Service

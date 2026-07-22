@@ -45,6 +45,20 @@ public sealed class SchedulingAlgorithmOptions
                 Order = 4,
                 Algorithm =
                     OptimizationAlgorithmType.Lns
+            },
+            new()
+            {
+                Enabled = true,
+                Order = 5,
+                Algorithm =
+                    OptimizationAlgorithmType.GeneticAlgorithm
+            },
+            new()
+            {
+                Enabled = true,
+                Order = 6,
+                Algorithm =
+                    OptimizationAlgorithmType.CpSat
             }
         ];
 
@@ -88,5 +102,11 @@ public sealed class SchedulingAlgorithmOptions
     /// Move配置
     /// </summary>
     public MoveOptions Moves { get; init; }
+        = new();
+    
+    public GeneticAlgorithmOptions GeneticAlgorithm { get; init; }
+        = new();
+
+    public CpSatOptions CpSat { get; init; }
         = new();
 }

@@ -45,5 +45,7 @@ public enum OptimizationAlgorithmType
     ///
     /// 群体搜索
     /// </summary>
-    Genetic
+    GeneticAlgorithm,
+    
+    CpSat
 }
