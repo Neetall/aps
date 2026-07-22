@@ -11,21 +11,20 @@ public class SchedulingSolutionValidator
 
     public SchedulingSolutionValidator()
         : this(
-            [
-                new JobTicketIntegrityConstraint(),
-                new MachineEligibilityConstraint(),
-                new OperationPrecedenceConstraint(),
-                new OperationContinuityConstraint(),
-                new MachineCapacityConstraint()
-            ])
+            CreateDefaultConstraints())
     {
     }
 
     public SchedulingSolutionValidator(
         IEnumerable<ISchedulingConstraint> constraints)
     {
-        this.constraints =
+        var constraintList =
             constraints.ToList();
+
+        this.constraints =
+            constraintList.Count > 0
+                ? constraintList
+                : CreateDefaultConstraints();
     }
 
     public void Validate(
@@ -40,5 +39,17 @@ public class SchedulingSolutionValidator
                 context,
                 timelines);
         }
+    }
+
+    private static IReadOnlyList<ISchedulingConstraint> CreateDefaultConstraints()
+    {
+        return
+        [
+            new JobTicketIntegrityConstraint(),
+            new MachineEligibilityConstraint(),
+            new OperationPrecedenceConstraint(),
+            new OperationContinuityConstraint(),
+            new MachineCapacityConstraint()
+        ];
     }
 }

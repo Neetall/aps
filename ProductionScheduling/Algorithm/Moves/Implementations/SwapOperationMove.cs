@@ -161,14 +161,31 @@ public class SwapOperationMove : IMove
 
 
 
-        if(!timeline.CanOccupy(
-                firstNewStart,
-                firstDuration)
-            ||
-           !timeline.CanOccupy(
-                secondNewStart,
-                secondDuration))
+        try
         {
+            timeline.Occupy(
+                firstNewStart,
+                firstDuration);
+
+
+            timeline.Occupy(
+                secondNewStart,
+                secondDuration);
+        }
+        catch(InvalidOperationException ex)
+        {
+            SafeRelease(
+                timeline,
+                firstNewStart,
+                firstDuration);
+
+
+            SafeRelease(
+                timeline,
+                secondNewStart,
+                secondDuration);
+
+
             timeline.Occupy(
                 firstOldStart,
                 firstDuration);
@@ -180,24 +197,13 @@ public class SwapOperationMove : IMove
 
 
             Debug(
-                "SwapOperation失败:交换后时间冲突");
+                $"SwapOperation失败:交换后时间冲突:{ex.Message}");
 
 
             Fail(context);
 
             return false;
         }
-
-
-
-        timeline.Occupy(
-            firstNewStart,
-            firstDuration);
-
-
-        timeline.Occupy(
-            secondNewStart,
-            secondDuration);
 
 
 
@@ -399,6 +405,23 @@ public class SwapOperationMove : IMove
 
 
         return null;
+    }
+
+    private static void SafeRelease(
+        Timeline.MachineTimeline timeline,
+        int startSlot,
+        int duration)
+    {
+        try
+        {
+            timeline.Release(
+                startSlot,
+                duration);
+        }
+        catch
+        {
+            // Ignore rollback cleanup failures. The original slots are restored afterwards.
+        }
     }
 
 

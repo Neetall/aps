@@ -4,12 +4,101 @@ using ProductionScheduling.Algorithm.Validation;
 using ProductionScheduling.Domain.Orders;
 using ProductionScheduling.Domain.Resources;
 using ProductionScheduling.Test.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace ProductionScheduling.Test;
 
 public class SchedulingSolutionValidatorTests
 {
+    [Fact]
+    public void Validate_From_DI_Should_Fail_When_Order_Precedence_Broken()
+    {
+        var services =
+            new ServiceCollection();
+
+
+        services.AddProductionScheduling();
+
+
+        using var provider =
+            services.BuildServiceProvider();
+
+
+        var validator =
+            provider.GetRequiredService<SchedulingSolutionValidator>();
+
+
+        var context =
+            TestSchedulingDataFactory
+                .CreateSimpleContext();
+
+
+        context.Orders[0]
+            .JobTickets
+            .Add(
+                new JobTicket
+                {
+                    Code = "JT002",
+                    FactoryCode = "F001",
+                    Sequence = 2,
+                    Length = 100
+                });
+
+
+        context.Machines[0]
+            .Capabilities
+            .Add(
+                new MachineCapability
+                {
+                    MachineCode = "M001",
+                    JobTicketCode = "JT002",
+                    HourlyCapacity = 50,
+                    SetupMinutes = 0
+                });
+
+
+        var timelines =
+            TestTimelineFactory
+                .Create(
+                    context);
+
+
+        var solution =
+            new SchedulingSolution
+            {
+                Operations =
+                [
+                    new ScheduledOperation
+                    {
+                        JobTicketCode = "JT001",
+                        MachineCode = "M001",
+                        FactoryCode = "F001",
+                        StartSlot = 2,
+                        DurationSlots = 1
+                    },
+                    new ScheduledOperation
+                    {
+                        JobTicketCode = "JT002",
+                        MachineCode = "M001",
+                        FactoryCode = "F001",
+                        StartSlot = 0,
+                        DurationSlots = 1
+                    }
+                ]
+            };
+
+
+        Assert.Throws<ConstraintViolationException>(
+            () =>
+                validator.Validate(
+                    solution,
+                    context,
+                    timelines));
+    }
+
+
+
     [Fact]
     public void Validate_Should_Fail_When_JobTicket_Duplicate()
     {

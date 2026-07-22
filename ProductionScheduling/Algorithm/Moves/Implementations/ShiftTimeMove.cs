@@ -150,9 +150,31 @@ public class ShiftTimeMove : IMove
 
 
 
-        timeline.Occupy(
-            newStart,
-            duration);
+        try
+        {
+            timeline.Occupy(
+                newStart,
+                duration);
+        }
+        catch(InvalidOperationException ex)
+        {
+            timeline.Occupy(
+                oldStart,
+                duration);
+
+            Debug(
+                $"ShiftTime失败:目标时间不可用:{ex.Message}");
+
+            context.ExecutionRecord =
+                new MoveExecutionRecord
+                {
+                    MoveName = Name,
+
+                    Success = false
+                };
+
+            return false;
+        }
 
 
 

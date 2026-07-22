@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using ProductionScheduling.Algorithm.Calculation;
 using ProductionScheduling.Algorithm.Configuration;
+using ProductionScheduling.Algorithm.Constraints;
 using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Index;
 using ProductionScheduling.Algorithm.Moves.Implementations;
@@ -169,6 +170,21 @@ public static class DependencyInjection
     private static void RegisterValidation(
         IServiceCollection services)
     {
+        services.AddScoped<ISchedulingConstraint,
+            JobTicketIntegrityConstraint>();
+
+        services.AddScoped<ISchedulingConstraint,
+            MachineEligibilityConstraint>();
+
+        services.AddScoped<ISchedulingConstraint,
+            OperationPrecedenceConstraint>();
+
+        services.AddScoped<ISchedulingConstraint,
+            OperationContinuityConstraint>();
+
+        services.AddScoped<ISchedulingConstraint,
+            MachineCapacityConstraint>();
+
         services.AddScoped<SchedulingSolutionValidator>();
     }
 

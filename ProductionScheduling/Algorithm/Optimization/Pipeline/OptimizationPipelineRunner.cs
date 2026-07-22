@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using ProductionScheduling.Algorithm.Configuration;
 using ProductionScheduling.Algorithm.Evaluation;
 using ProductionScheduling.Algorithm.Optimization.Core;
@@ -35,6 +36,12 @@ public class OptimizationPipelineRunner
         ScheduleEvaluator evaluator,
         IReadOnlyCollection<OptimizationAlgorithmType>? algorithms = null)
     {
+        var pipelineStartedAt =
+            DateTime.Now;
+
+        var pipelineWatch =
+            Stopwatch.StartNew();
+
         var current = new OptimizationResult
         {
             Solution = solution,
@@ -46,7 +53,7 @@ public class OptimizationPipelineRunner
         };
 
         Console.WriteLine(
-            $"优化开始 Score:{current.Evaluation.Score}");
+            $"优化开始 时间:{FormatTime(pipelineStartedAt)}, Score:{current.Evaluation.Score}");
 
         Console.WriteLine(
             $"请求算法:{FormatAlgorithms(algorithms)}");
@@ -70,36 +77,60 @@ public class OptimizationPipelineRunner
         if(steps.Count == 0)
         {
             Console.WriteLine("没有匹配到可执行的优化算法");
+            pipelineWatch.Stop();
+
             Console.WriteLine(
-                $"优化结束 Score:{current.Evaluation.Score}");
+                $"优化结束 时间:{FormatTime(DateTime.Now)}, 耗时:{FormatElapsed(pipelineWatch.Elapsed)}, Score:{current.Evaluation.Score}");
 
             return current;
         }
 
         foreach(var step in steps)
         {
+            var algorithmStartedAt =
+                DateTime.Now;
+
+            var algorithmWatch =
+                Stopwatch.StartNew();
+
             Console.WriteLine(
-                $"执行优化算法:{step.Algorithm}");
+                $"执行优化算法:{step.Algorithm}, 开始时间:{FormatTime(algorithmStartedAt)}");
 
-            var optimizer = optimizerFactory.Create(
-                step.Algorithm);
+            OptimizationResult result;
 
-            var result = optimizer.Optimize(
-                current.Solution,
-                context,
-                current.Timelines,
-                evaluator);
+            try
+            {
+                var optimizer = optimizerFactory.Create(
+                    step.Algorithm);
+
+                result = optimizer.Optimize(
+                    current.Solution,
+                    context,
+                    current.Timelines,
+                    evaluator);
+            }
+            catch(Exception ex)
+            {
+                algorithmWatch.Stop();
+
+                Console.WriteLine(
+                    $"算法执行失败:{step.Algorithm}, 结束时间:{FormatTime(DateTime.Now)}, 耗时:{FormatElapsed(algorithmWatch.Elapsed)}, {ex.Message}");
+
+                continue;
+            }
+
+            algorithmWatch.Stop();
 
             if(result.Evaluation == null)
             {
                 Console.WriteLine(
-                    $"算法未返回评估结果:{step.Algorithm}");
+                    $"算法未返回评估结果:{step.Algorithm}, 结束时间:{FormatTime(DateTime.Now)}, 耗时:{FormatElapsed(algorithmWatch.Elapsed)}");
 
                 continue;
             }
 
             Console.WriteLine(
-                $"算法:{step.Algorithm}, Score:{result.Evaluation.Score}");
+                $"算法:{step.Algorithm}, 结束时间:{FormatTime(DateTime.Now)}, 耗时:{FormatElapsed(algorithmWatch.Elapsed)}, Score:{result.Evaluation.Score}");
 
             /*
              * 只接受更优方案
@@ -122,8 +153,10 @@ public class OptimizationPipelineRunner
             }
         }
 
+        pipelineWatch.Stop();
+
         Console.WriteLine(
-            $"优化结束 Score:{current.Evaluation.Score}");
+            $"优化结束 时间:{FormatTime(DateTime.Now)}, 耗时:{FormatElapsed(pipelineWatch.Elapsed)}, Score:{current.Evaluation.Score}");
 
         return current;
     }
@@ -138,5 +171,20 @@ public class OptimizationPipelineRunner
             return "空集合";
 
         return string.Join(",",algorithms);
+    }
+
+    private static string FormatTime(
+        DateTime time)
+    {
+        return time.ToString(
+            "yyyy-MM-dd HH:mm:ss.fff");
+    }
+
+    private static string FormatElapsed(
+        TimeSpan elapsed)
+    {
+        return elapsed.TotalSeconds >= 1
+            ? $"{elapsed.TotalSeconds:0.###}s"
+            : $"{elapsed.TotalMilliseconds:0.###}ms";
     }
 }

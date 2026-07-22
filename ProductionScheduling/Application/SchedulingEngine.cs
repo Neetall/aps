@@ -11,6 +11,12 @@ namespace ProductionScheduling.Application;
 
 public class SchedulingEngine
 {
+    private const double MinimumEffectiveScoreImprovement =
+        1;
+
+    private const double MinimumEffectiveScoreImprovementRate =
+        0.001;
+
     private readonly ScheduleEvaluator evaluator;
     private readonly OptimizationPipelineRunner pipelineRunner;
     private readonly SchedulingResultConverter resultConverter;
@@ -266,19 +272,29 @@ public class SchedulingEngine
             initialEvaluation.Score -
             evaluation.Score;
 
-        if(improvement > 0.000001)
+        var improvementRate =
+            initialEvaluation.Score <= 0
+                ? 0
+                : improvement /
+                  initialEvaluation.Score;
+
+        if(improvement >= MinimumEffectiveScoreImprovement ||
+           improvementRate >= MinimumEffectiveScoreImprovementRate)
         {
             return
                 $"排产完成(优化成功)，{baseMessage}," +
                 $"优化前Score:{FormatScore(initialEvaluation.Score)}," +
                 $"优化后Score:{FormatScore(evaluation.Score)}," +
-                $"降低Score:{FormatScore(improvement)}";
+                $"降低Score:{FormatScore(improvement)}," +
+                $"降低比例:{FormatPercent(improvementRate)}";
         }
 
         return
-            $"排产完成(未成功优化)，{baseMessage}," +
+            $"排产完成(未有效优化)，{baseMessage}," +
             $"优化前Score:{FormatScore(initialEvaluation.Score)}," +
-            $"优化后Score:{FormatScore(evaluation.Score)}";
+            $"优化后Score:{FormatScore(evaluation.Score)}," +
+            $"降低Score:{FormatScore(Math.Max(0,improvement))}," +
+            $"降低比例:{FormatPercent(Math.Max(0,improvementRate))}";
     }
 
     private static string FormatScore(
@@ -286,5 +302,12 @@ public class SchedulingEngine
     {
         return score.ToString(
             "0.######");
+    }
+
+    private static string FormatPercent(
+        double value)
+    {
+        return value.ToString(
+            "P4");
     }
 }

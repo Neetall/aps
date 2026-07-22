@@ -192,9 +192,23 @@ public class ChangeMachineMove : IMove
 
 
 
-            newTimeline.Occupy(
-                start,
-                duration);
+            try
+            {
+                newTimeline.Occupy(
+                    start,
+                    duration);
+            }
+            catch(InvalidOperationException ex)
+            {
+                oldTimeline.Occupy(
+                    oldStart,
+                    oldDuration);
+
+                Debug(
+                    $"ChangeMachine失败:目标时间不可用:{ex.Message}");
+
+                continue;
+            }
 
 
 
